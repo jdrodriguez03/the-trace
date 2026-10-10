@@ -1,0 +1,1 @@
+# app/providers/ · Dueño: Julian. De dónde salen los precios: base.py (lo que debe tener un proveedor), yahoo.py (yfinance) y csv.py (respaldo). Cambiar de proveedor en la v2 = un archivo nuevo aquí. Las pruebas usan un proveedor falso, nunca Yahoo.
