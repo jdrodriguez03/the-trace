@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Trace — Entiende tus acciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';s.onload=function(){window.dispatchEvent(new Event('chartready'))};document.head.appendChild(s)"></script>
+<style>
+:root{
+  --bg:#f6f6f1; --bg-2:#eeeee7; --surface:#ffffff; --surface-2:#fbfbf8;
+  --ink:#12151b; --ink-2:#303641; --muted:#747a84; --line:#e2e4dc;
+  --sidebar:#11151c; --sidebar-2:#171b23; --sidebar-text:#c9ced8;
+  --accent:#b78b43; --accent-2:#d9bd87; --accent-soft:#f1eadc;
+  --positive:#20724c; --positive-soft:#e2f0e8; --negative:#9a3831; --negative-soft:#f5e4e2;
+  --warning:#8e6420; --warning-soft:#f7edd8; --info:#355a8a; --info-soft:#e7eef7;
+  --shadow:0 14px 40px rgba(20,24,32,.07); --shadow-sm:0 6px 20px rgba(20,24,32,.06);
+  --radius:16px; --radius-sm:11px;
+  --font:'Inter',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit} button{cursor:pointer} svg{display:block} .mono{font-family:var(--mono)}
+:focus-visible{outline:3px solid rgba(183,139,67,.35);outline-offset:2px}
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(900px 500px at 50% -15%,#f0e7d2 0%,transparent 65%),var(--bg)}
+.login-box{width:min(460px,100%);text-align:center}.wordmark{font-size:32px;font-weight:800;letter-spacing:-.04em;margin:0}.wordmark .dot{color:var(--accent)}
+.login-sub{color:var(--muted);font-size:14px;margin:7px 0 30px}.login-panel{background:rgba(255,255,255,.78);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:24px;padding:28px;text-align:left;box-shadow:var(--shadow)}
+.field-label{display:block;font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 7px}.field-input{width:100%;background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px;color:var(--ink);font-size:14px;margin-bottom:15px;transition:.2s}
+.field-input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(183,139,67,.11);outline:none}.btn-primary{background:var(--ink);color:#fff;border:0;border-radius:11px;padding:12px 16px;font-weight:700;transition:transform .18s,box-shadow .18s,background .18s}.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);background:#20252d}.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}.btn-secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-weight:600;transition:.18s}.btn-secondary:hover{background:var(--bg-2);transform:translateY(-1px)}.btn-ghost{border:0;background:transparent;color:var(--muted);padding:8px 10px;border-radius:9px}.btn-ghost:hover{background:var(--bg-2);color:var(--ink)}
+.login-note{font-size:12px;color:var(--muted);margin:14px 0 0}.login-actions{display:flex;gap:9px;align-items:center}.login-actions .btn-primary{flex:1}.login-actions .btn-secondary{white-space:nowrap}
+/* APP SHELL */
+#appShell{display:none;min-height:100vh}.app-shell-active{display:flex!important;flex-direction:column}.topbar{height:72px;background:rgba(246,246,241,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:20px;padding:0 22px;position:sticky;top:0;z-index:40}.topbar .wordmark{font-size:20px;min-width:156px}.topbar-search-wrap{position:relative;flex:1;max-width:560px}.topbar-search{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.86);border:1px solid var(--line);border-radius:12px;padding:10px 13px;transition:.2s}.topbar-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px rgba(183,139,67,.08)}.topbar-search svg{width:16px;height:16px;stroke:var(--muted)}.topbar-search input{border:0;outline:0;background:transparent;width:100%;font-size:13px;color:var(--ink)}.search-results-overlay{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:8px;display:none;max-height:430px;overflow:auto;z-index:60}.search-results-overlay.open{display:block}.search-section-label{font:600 10px var(--mono);letter-spacing:.08em;color:var(--muted);padding:9px 10px 6px}.search-item{display:flex;justify-content:space-between;gap:12px;padding:10px;border-radius:9px;cursor:pointer}.search-item:hover{background:var(--bg-2)}.search-item-sub{font-size:11px;color:var(--muted);text-align:right}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:9px}.icon-btn{position:relative;width:38px;height:38px;border-radius:10px;background:transparent;border:1px solid transparent;display:grid;place-items:center}.icon-btn:hover{background:var(--surface);border-color:var(--line)}.icon-btn svg{width:18px;height:18px}.bell-dot{position:absolute;right:6px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--negative);display:none;box-shadow:0 0 0 3px var(--bg)}.bell-dot.show{display:block}.avatar-circle{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#d8bf91,#9c702e);color:#fff;display:grid;place-items:center;font:600 12px var(--mono);box-shadow:inset 0 1px rgba(255,255,255,.4)}
+.app-body{display:flex;min-height:calc(100vh - 72px)}.sidebar{width:236px;background:var(--sidebar);padding:16px 12px 18px;display:flex;flex-direction:column;gap:5px;flex:none;color:var(--sidebar-text);position:sticky;top:72px;height:calc(100vh - 72px);overflow:auto}.sidebar-label{font:600 10px var(--mono);letter-spacing:.12em;color:#777f8d;padding:15px 12px 7px}.side-btn{display:flex;align-items:center;gap:11px;border:1px solid transparent;background:transparent;color:#aeb5c0;padding:11px 12px;border-radius:10px;font-size:13px;text-align:left;width:100%;transition:.18s}.side-btn svg{width:17px;height:17px;stroke:#89919f;flex:none}.side-btn:hover{background:var(--sidebar-2);color:#eef1f5}.side-btn.active{background:#202630;color:#fff;border-color:#2b313c}.side-btn.active svg{stroke:#d7b46f}.sidebar-footer{margin-top:auto;padding:12px}.status-mini{border:1px solid #2a3039;border-radius:12px;padding:11px;background:#171b22}.status-mini-title{font-size:11px;color:#e5e7eb;font-weight:700;margin-bottom:3px}.status-mini-sub{font-size:10px;color:#7d8592;line-height:1.4}.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#72849a;margin-right:6px}.status-dot.ok{background:#55a87a;box-shadow:0 0 0 4px rgba(85,168,122,.08)}
+main{flex:1;min-width:0;padding:28px clamp(18px,3vw,40px) 100px;overflow-x:hidden}.view{display:none;max-width:1180px;margin:0 auto}.view.active{display:block;animation:viewIn .38s ease}.view-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:22px}.eyebrow{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 7px}.view-title{font-size:28px;line-height:1.15;letter-spacing:-.035em;margin:0;font-weight:800}.view-sub{margin:6px 0 0;color:var(--muted);font-size:13px}.head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--line);background:var(--surface);border-radius:999px;color:var(--muted);font-size:11px}
+/* COMMON CARDS */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 2px 12px rgba(20,24,32,.03)}.card-pad{padding:20px}.section-title{font-size:14px;font-weight:800;letter-spacing:-.01em;margin:0}.section-sub{font-size:11px;color:var(--muted);margin:4px 0 0}.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.divider{height:1px;background:var(--line)}
+/* PORTFOLIO */
+.portfolio-hero{background:linear-gradient(135deg,#161b23 0%,#1d2530 60%,#24201a 100%);color:#fff;border-radius:20px;padding:22px 24px;margin-bottom:18px;position:relative;overflow:hidden}.portfolio-hero:after{content:"";position:absolute;width:220px;height:220px;border:1px solid rgba(217,189,135,.18);border-radius:50%;right:-70px;top:-95px;box-shadow:0 0 0 30px rgba(217,189,135,.05),0 0 0 70px rgba(217,189,135,.03)}.hero-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;position:relative;z-index:1}.hero-kicker{font:600 10px var(--mono);color:#9fa7b4;letter-spacing:.1em;text-transform:uppercase}.hero-value{font-size:34px;line-height:1;margin:7px 0 9px;font-weight:800;letter-spacing:-.045em}.hero-meta{display:flex;gap:8px;flex-wrap:wrap}.hero-right{display:flex;align-items:flex-end;justify-content:flex-end;gap:8px;flex-wrap:wrap}.hero-stat{min-width:120px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);padding:11px 12px;border-radius:12px}.hero-stat-label{font:500 9px var(--mono);color:#8f98a6;text-transform:uppercase}.hero-stat-value{font-size:16px;font-weight:800;margin-top:3px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.kpi{padding:15px 16px;transition:.2s}.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm)}.kpi-label{font:600 10px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.kpi-value{font-size:19px;font-weight:800;letter-spacing:-.025em;margin-top:6px}.kpi-sub{font-size:10.5px;color:var(--muted);margin-top:3px}.positive{color:var(--positive)}.negative{color:var(--negative)}
+.ai-strip{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:17px 19px;background:linear-gradient(120deg,#f8f0e0,#fff);border:1px solid #e9dcc0;border-radius:15px;margin-bottom:18px;position:relative;overflow:hidden}.ai-strip:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent)}.ai-title-row{display:flex;align-items:center;gap:8px}.ai-orb{width:23px;height:23px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3cf,#c48b35 60%,#805619);box-shadow:0 0 0 5px rgba(183,139,67,.09);animation:pulseOrb 2.6s ease-in-out infinite}.ai-strip h3{font-size:13px;margin:0}.ai-strip p{font-size:12px;color:var(--ink-2);margin:5px 0 0;max-width:760px}.ai-prompt-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.prompt-chip{border:1px solid #eadfc7;background:#fff;color:var(--ink-2);border-radius:999px;padding:6px 9px;font-size:10.5px;transition:.18s}.prompt-chip:hover{border-color:var(--accent-2);transform:translateY(-1px)}
+.portfolio-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.9fr);gap:14px;align-items:start}.holdings-card{overflow:hidden}.table-wrap{overflow:auto}.holdings-table{width:100%;border-collapse:collapse;min-width:720px}.holdings-table th{padding:11px 17px;text-align:left;font:600 10px var(--mono);text-transform:uppercase;color:var(--muted);letter-spacing:.06em;background:var(--surface-2);border-bottom:1px solid var(--line)}.holdings-table td{padding:13px 17px;border-bottom:1px solid #eef0eb;font-size:12px;vertical-align:middle}.holding-row{cursor:pointer;transition:.16s}.holding-row:hover{background:#fafaf6}.asset-cell{display:flex;align-items:center;gap:10px}.asset-logo{width:33px;height:33px;border-radius:10px;display:grid;place-items:center;background:var(--bg-2);border:1px solid var(--line);font:600 10px var(--mono);color:var(--ink-2)}.asset-name{font-weight:800;font-size:12px}.asset-sub{font-size:10px;color:var(--muted);margin-top:2px}.sector-tag{display:inline-flex;padding:4px 7px;border-radius:999px;background:var(--bg-2);color:var(--ink-2);font-size:9.5px}.weight-wrap{min-width:110px}.weight-row{display:flex;justify-content:space-between;gap:8px;font:600 10px var(--mono);margin-bottom:4px}.weight-bar{height:5px;background:#edf0eb;border-radius:99px;overflow:hidden}.weight-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#d7ba82);border-radius:99px}.action-btn{width:29px;height:29px;border:1px solid var(--line);background:#fff;border-radius:8px;display:grid;place-items:center;color:var(--muted)}.action-btn:hover{color:var(--ink);border-color:#c9cfc4}
+.chart-card{padding:19px}.chart-wrap{height:280px;position:relative;margin-top:8px}.chart-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;padding-bottom:18px;text-align:center}.chart-center strong{display:block;font-size:23px;letter-spacing:-.04em}.chart-center span{font:500 9px var(--mono);color:var(--muted);text-transform:uppercase}.sector-list{display:flex;flex-direction:column;gap:8px;margin-top:4px}.sector-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;transition:.16s}.sector-item:hover,.sector-item.selected{background:var(--bg-2)}.sector-dot{width:8px;height:8px;border-radius:50%;flex:none}.sector-name{flex:1;font-size:10.5px}.sector-pct{font:600 10px var(--mono);color:var(--ink-2)}.filter-row{display:flex;gap:7px;flex-wrap:wrap;padding:12px 17px;border-top:1px solid var(--line);background:var(--surface-2)}.filter-chip{padding:6px 9px;border:1px solid var(--line);background:#fff;border-radius:999px;font-size:10px;color:var(--muted);transition:.16s}.filter-chip.active,.filter-chip:hover{background:#f4ecdd;border-color:#dcc79d;color:#63491c}
+/* INSIGHTS */
+.insight-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}.insight-hero{padding:20px;border-radius:18px;background:#171c24;color:#fff;min-height:220px;position:relative;overflow:hidden}.insight-hero:after{content:"";position:absolute;width:330px;height:330px;border-radius:50%;border:1px solid rgba(255,255,255,.08);right:-130px;bottom:-180px;box-shadow:0 0 0 35px rgba(255,255,255,.035),0 0 0 80px rgba(255,255,255,.025)}.insight-hero > *{position:relative;z-index:1}.insight-hero .eyebrow{color:#c7a563}.insight-hero h2{font-size:24px;line-height:1.15;letter-spacing:-.035em;margin:4px 0 9px;max-width:680px}.insight-hero p{font-size:12px;color:#b9c0cb;max-width:700px;margin:0}.insight-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.mini-dark{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);padding:10px;border-radius:10px}.mini-dark .label{font:500 9px var(--mono);color:#808998;text-transform:uppercase}.mini-dark .value{font-weight:800;font-size:14px;margin-top:3px}.list-stack{display:flex;flex-direction:column;gap:9px}.impact-item{padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:.18s}.impact-item:hover{transform:translateX(3px);box-shadow:var(--shadow-sm)}.impact-row{display:flex;align-items:center;gap:8px}.impact-ticker{font:700 10px var(--mono)}.impact-dir{font:600 9px var(--mono);padding:3px 7px;border-radius:999px}.dir-pos{color:var(--positive);background:var(--positive-soft)}.dir-neg{color:var(--negative);background:var(--negative-soft)}.dir-neu{color:var(--muted);background:var(--bg-2)}.impact-item h4{font-size:12px;margin:7px 0 4px}.impact-item p{font-size:10.5px;color:var(--muted);margin:0}.exposure-map{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.exposure-box{padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff}.exposure-box .label{font:600 9px var(--mono);color:var(--muted);text-transform:uppercase}.exposure-box strong{display:block;font-size:17px;margin-top:5px}.exposure-box span{font-size:10px;color:var(--muted)}
+/* RADAR */
+.radar-top{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-bottom:14px}.radar-control{padding:16px}.control-row{display:flex;justify-content:space-between;align-items:center;gap:12px}.radar-status{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}.live-dot{width:8px;height:8px;border-radius:50%;background:#65a77f;box-shadow:0 0 0 5px rgba(101,167,127,.1)}.live-dot.searching{background:var(--accent);animation:blink 1s infinite}.radar-filters{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.radar-filter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 9px;font-size:10px;color:var(--muted)}.radar-filter.active{background:var(--ink);color:#fff;border-color:var(--ink)}.radar-context{padding:16px;background:#f8f1e4;border-color:#eadcc0}.radar-context h3{font-size:12px;margin:0}.radar-context p{font-size:10.5px;color:#6f6758;margin:5px 0 0}.radar-list{display:flex;flex-direction:column;gap:10px}.news-card{padding:17px;border:1px solid var(--line);border-radius:15px;background:#fff;transition:.2s}.news-card:hover{box-shadow:var(--shadow-sm);transform:translateY(-2px)}.news-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.news-meta .source{font:500 9.5px var(--mono);color:var(--muted)}.news-meta .time{font-size:9.5px;color:var(--muted);margin-left:auto}.severity{font:700 9px var(--mono);padding:4px 7px;border-radius:999px}.severity.high{background:var(--negative-soft);color:var(--negative)}.severity.medium{background:var(--warning-soft);color:var(--warning)}.severity.low{background:var(--info-soft);color:var(--info)}.news-card h3{font-size:14px;line-height:1.35;margin:9px 0 5px;letter-spacing:-.01em}.news-why{font-size:11.5px;color:var(--ink-2);margin:0 0 12px}.news-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}.news-mini{background:var(--surface-2);border:1px solid #eceee9;border-radius:9px;padding:9px}.news-mini-label{font:600 8.5px var(--mono);color:var(--muted);text-transform:uppercase}.news-mini-value{font-size:10.5px;margin-top:4px}.affected-tags{display:flex;gap:5px;flex-wrap:wrap}.affected-tag{font:600 9.5px var(--mono);padding:5px 7px;border-radius:999px;background:var(--bg-2)}.news-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}.source-note{font-size:9.5px;color:var(--muted)}.source-note strong{color:var(--ink-2)}.empty-state{text-align:center;padding:42px 24px;color:var(--muted)}.empty-icon{width:44px;height:44px;border-radius:13px;background:var(--bg-2);display:grid;place-items:center;margin:0 auto 12px}.empty-state h3{font-size:14px;color:var(--ink);margin:0 0 4px}.empty-state p{font-size:11px;margin:0 auto 14px;max-width:450px}
+/* MARKET */
+.market-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.market-list{display:flex;flex-direction:column}.market-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid #eef0eb;transition:.16s}.market-row:last-child{border-bottom:0}.market-row:hover{background:#fafaf7}.market-main{flex:1;min-width:0}.market-ticker{font:700 10px var(--mono)}.market-name{font-size:10px;color:var(--muted);margin-left:5px}.market-price{font:600 11px var(--mono);min-width:92px;text-align:right}.market-change{font:600 10px var(--mono);min-width:65px;text-align:right}.market-chg.pos{color:var(--positive)}.market-chg.neg{color:var(--negative)}.heatmap{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.heat{padding:11px;border-radius:11px;border:1px solid var(--line);min-height:72px;display:flex;flex-direction:column;justify-content:space-between}.heat-ticker{font:700 9px var(--mono)}.heat-val{font:700 12px var(--mono)}.heat.pos{background:#edf6f1}.heat.neg{background:#f8ebea}.heat.neu{background:#f5f5f0}
+/* CHAT */
+.chat-layout{display:grid;grid-template-columns:1fr 260px;gap:13px}.chat-shell{height:600px;display:flex;flex-direction:column;overflow:hidden}.chat-log{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:11px;background:linear-gradient(#fff,#fbfbf8)}.msg{max-width:min(82%,760px);padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.62;animation:messageIn .25s ease}.msg.bot{align-self:flex-start;background:#f1f1eb;color:var(--ink)}.msg.user{align-self:flex-end;background:var(--ink);color:#fff}.msg.bot h2,.msg.bot h3,.msg.bot h4{font-size:13px;margin:9px 0 5px;color:var(--accent-deep)}.msg.bot ul{margin:5px 0;padding-left:18px}.msg.bot li{margin-bottom:3px}.msg.bot strong{font-weight:800}.typing{display:inline-flex;gap:4px;padding:3px 0}.typing span{width:5px;height:5px;background:#9a9fa8;border-radius:50%;animation:dot 1s infinite}.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}.chat-input-row{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:#fff}.chat-input{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 13px;font-size:12px;outline:0}.chat-input:focus{border-color:var(--accent)}.send-btn{width:42px;height:42px;border:0;border-radius:11px;background:var(--ink);color:#fff;display:grid;place-items:center}.send-btn svg{width:17px}.chat-side{display:flex;flex-direction:column;gap:10px}.context-card{padding:15px}.context-title{font:600 9px var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}.context-stat{display:flex;justify-content:space-between;font-size:10.5px;padding:7px 0;border-bottom:1px solid #eef0eb}.context-stat:last-child{border-bottom:0}.context-stat span:last-child{font-family:var(--mono);font-weight:600}.quick-ask{display:flex;flex-direction:column;gap:6px;margin-top:8px}.quick-ask button{text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;font-size:10px;color:var(--ink-2);transition:.16s}.quick-ask button:hover{background:var(--bg-2);border-color:#cdd2c8}
+/* MODALS / DRAWER */
+.modal-overlay{position:fixed;inset:0;background:rgba(9,12,16,.47);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:100}.modal-overlay.active{display:flex;animation:fadeIn .2s ease}.modal{width:min(480px,calc(100vw - 28px));background:#fff;border-radius:18px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.22);padding:22px;animation:modalIn .25s ease}.modal-title{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:0 0 17px}.drawer-overlay{position:fixed;inset:0;background:rgba(9,12,16,.28);display:none;z-index:90}.drawer-overlay.active{display:block}.asset-drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:#fff;z-index:101;transform:translateX(100%);transition:transform .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.15);display:flex;flex-direction:column}.asset-drawer.active{transform:translateX(0)}.drawer-head{padding:18px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start}.drawer-body{overflow:auto;padding:19px;display:flex;flex-direction:column;gap:12px}.drawer-hero{padding:16px;border-radius:14px;background:linear-gradient(135deg,#f7f2e8,#fff)}.drawer-ticker{font:700 11px var(--mono);color:var(--accent-deep)}.drawer-name{font-weight:800;font-size:20px;letter-spacing:-.03em;margin:3px 0}.drawer-meta{font-size:10.5px;color:var(--muted)}.drawer-metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.drawer-metric{border:1px solid var(--line);border-radius:11px;padding:12px}.drawer-metric label{font:600 9px var(--mono);color:var(--muted);text-transform:uppercase}.drawer-metric strong{display:block;font-size:15px;margin-top:4px}.drawer-block{border:1px solid var(--line);border-radius:12px;padding:13px}.drawer-block h4{font-size:11px;margin:0 0 6px}.drawer-block p{font-size:10.5px;color:var(--muted);margin:0}.drawer-news{padding:10px 0;border-top:1px solid #eef0eb}.drawer-news:first-child{border-top:0}.drawer-news-title{font-size:10.5px;font-weight:700}.drawer-news-dek{font-size:9.5px;color:var(--muted);margin-top:3px}
+/* FAB + toast */
+.fab-chat{position:fixed;right:25px;bottom:24px;width:56px;height:56px;border:0;border-radius:17px;background:var(--ink);color:#fff;box-shadow:0 18px 38px rgba(18,21,27,.24);display:grid;place-items:center;z-index:50;transition:.22s}.fab-chat:hover{transform:translateY(-3px) scale(1.02)}.fab-chat svg{width:22px}.fab-pulse{position:absolute;right:-2px;top:-2px;width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(183,139,67,.15)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,18px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;border-radius:11px;padding:10px 14px;font-size:11px;box-shadow:var(--shadow);z-index:150;transition:.25s}.toast.show{transform:translate(-50%,0);opacity:1}
+.skeleton{background:linear-gradient(90deg,#eee, #f7f7f3,#eee);background-size:200% 100%;animation:shimmer 1.25s infinite;border-radius:8px}.skeleton.line{height:12px}.skeleton.line.w80{width:80%}.skeleton.line.w55{width:55%}.skeleton.box{height:110px}
+/* MOBILE */
+.mobile-nav{display:none}.side-divider{height:1px;background:#262c35;margin:9px 12px}
+@media(max-width:1000px){.portfolio-layout,.insight-grid,.market-grid,.chat-layout,.radar-top,.hero-grid{grid-template-columns:1fr}.hero-right{justify-content:flex-start}.kpi-grid{grid-template-columns:repeat(2,1fr)}.sidebar{width:210px}}
+@media(max-width:760px){.topbar{padding:0 13px;height:64px;gap:9px}.topbar .wordmark{min-width:auto;font-size:18px}.topbar-search-wrap{max-width:none}.topbar-search input{font-size:12px}.topbar-right .bell-btn{display:none}.app-body{min-height:calc(100vh - 64px)}.sidebar{display:none}main{padding:16px 13px calc(104px + env(safe-area-inset-bottom,0px))}.view-title{font-size:24px}.portfolio-hero{padding:18px}.hero-value{font-size:30px}.kpi{padding:13px}.kpi-grid{gap:8px}.kpi-value{font-size:17px}.ai-strip{grid-template-columns:1fr}.ai-strip .btn-secondary{justify-self:start}.news-grid{grid-template-columns:1fr 1fr}.fab-chat{display:none}.holdings-table{min-width:690px}}
+@media(max-width:480px){.login-panel{padding:21px}.login-actions{flex-direction:column}.login-actions .btn-primary,.login-actions .btn-secondary{width:100%}.head-actions{width:100%}.head-actions .btn-primary,.head-actions .btn-secondary{flex:1}.kpi-grid{grid-template-columns:1fr 1fr}.news-grid{grid-template-columns:1fr}.exposure-map{grid-template-columns:1fr}.insight-metrics{grid-template-columns:1fr}.hero-meta{gap:6px}}
+
+/* NAVEGACIÓN: accesos principales + funcionalidades extra */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.side-btn:focus-visible,.side-group-toggle:focus-visible,.mobile-nav button:focus-visible{outline-color:#d9bd87}
+.side-btn svg,.side-group-toggle svg{width:17px;height:17px;flex:none}
+.side-group-toggle{display:flex;align-items:center;gap:8px;line-height:1.3;width:100%;min-height:44px;border:1px solid transparent;background:transparent;color:#aeb5c0;padding:11px 12px;border-radius:10px;font-size:13px;text-align:left;transition:.18s}
+.side-group-toggle svg{stroke:#89919f}
+.side-group-toggle:hover{background:var(--sidebar-2);color:#eef1f5}
+.side-group-toggle .chev{margin-left:auto;transition:transform .2s}
+.side-group-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.side-group-toggle .side-dot{display:none;width:7px;height:7px;border-radius:50%;background:#d7b46f;flex:none}
+.side-group-toggle.has-active .side-dot{display:inline-block}
+.side-extras{display:flex;flex-direction:column;gap:5px;margin:2px 0 0 12px;padding-left:8px;border-left:1px solid #262c35}
+.side-extras[hidden]{display:none}
+.side-btn-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.side-btn-note{font-size:11px;color:#7d8592;line-height:1.35}
+.side-btn.active .side-btn-note{color:#9aa2af}
+.side-btn-note .status-dot{margin-right:6px}
+.search-toggle,.search-close{display:none}
+.back-today{display:none;align-items:center;gap:6px;min-height:44px;padding:0 15px 0 10px;margin:0 0 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:14px;font-weight:600;color:var(--ink)}
+.back-today svg{width:18px;height:18px}
+.sheet-overlay,.sheet{display:none}
+body[data-current-view="chat"] .fab-chat{display:none}
+@media(max-width:760px){
+  .topbar-search-wrap{display:none}
+  .topbar.search-open .topbar-search-wrap{display:block;flex:1;max-width:none}
+  .topbar.search-open .wordmark,.topbar.search-open .topbar-right{display:none}
+  .topbar-search{min-height:46px}
+  .topbar-search input{font-size:16px}
+  .search-results-overlay{max-height:min(430px,60vh)}
+  .search-toggle{display:grid;width:44px;height:44px}
+  .search-close{display:grid;flex:none;place-items:center;width:36px;height:36px;margin-right:-6px;border:0;background:transparent;color:var(--muted);border-radius:9px;font-size:14px}
+  body.in-extra .back-today{display:inline-flex}
+  .mobile-nav{display:flex;gap:2px;position:fixed;left:10px;right:10px;bottom:calc(9px + env(safe-area-inset-bottom,0px));min-height:64px;background:rgba(17,21,28,.97);backdrop-filter:blur(16px);border:1px solid #2b313b;border-radius:18px;z-index:60;padding:5px;box-shadow:0 12px 35px rgba(0,0,0,.2)}
+  .mobile-nav button{flex:1 1 0;min-width:0;min-height:52px;border:0;background:transparent;color:#a3abb8;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px 2px;font-size:11px;line-height:1.15;text-align:center;text-wrap:balance}
+  .mobile-nav button svg{width:20px;height:20px;stroke:currentColor}
+  .mobile-nav button.active{background:#222833;color:#fff}
+  .mobile-nav button.active svg{stroke:#d7b46f}
+  .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+  .chat-shell{height:min(600px,calc(100vh - 300px));height:min(600px,calc(100dvh - 300px));min-height:360px}
+  body.more-open{overflow:hidden}
+  .sheet-overlay{display:block;position:fixed;inset:0;background:rgba(9,12,16,.42);z-index:95;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+  .sheet-overlay.open{opacity:1;visibility:visible;transition:opacity .25s}
+  .sheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:96;background:var(--surface);border-radius:22px 22px 0 0;box-shadow:0 -18px 50px rgba(0,0,0,.18);padding:8px 14px calc(16px + env(safe-area-inset-bottom,0px));max-height:85vh;max-height:85dvh;overflow:auto;transform:translateY(100%);visibility:hidden;transition:transform .28s ease,visibility 0s .28s}
+  .sheet.open{transform:none;visibility:visible;transition:transform .28s ease}
+  .sheet-grab{width:38px;height:4px;border-radius:99px;background:var(--line);margin:4px auto 8px}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 4px 4px}
+  .sheet-title{font-size:17px;font-weight:800;letter-spacing:-.02em;margin:0}
+  .sheet-close{width:44px;height:44px;border:0;background:transparent;border-radius:12px;color:var(--muted);display:grid;place-items:center;font-size:15px}
+  .sheet-list{display:flex;flex-direction:column;gap:2px}
+  .sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:56px;padding:8px 10px;border:0;border-radius:14px;background:transparent;text-align:left;color:var(--ink)}
+  .sheet-item:hover,.sheet-item:active{background:var(--bg-2)}
+  .sheet-item.active{background:var(--accent-soft)}
+  .sheet-ico{flex:none;width:38px;height:38px;border-radius:11px;background:var(--bg-2);display:grid;place-items:center}
+  .sheet-item.active .sheet-ico{background:#fff}
+  .sheet-ico svg{width:19px;height:19px;stroke:var(--ink-2)}
+  .sheet-text{display:flex;flex-direction:column;min-width:0}
+  .sheet-label{font-size:15px;font-weight:600}
+  .sheet-hint{font-size:12.5px;color:#626873}
+  .sheet-sep{height:1px;background:var(--line);margin:6px 8px}
+}
+@media(prefers-reduced-motion:reduce){.sheet,.sheet-overlay,.side-group-toggle .chev{transition:none!important}}
+/* animations */
+@keyframes viewIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}@keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes messageIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes pulseOrb{0%,100%{transform:scale(1);box-shadow:0 0 0 5px rgba(183,139,67,.09)}50%{transform:scale(1.06);box-shadow:0 0 0 8px rgba(183,139,67,.04)}}@keyframes blink{50%{opacity:.35}}@keyframes dot{50%{opacity:.25;transform:translateY(2px)}}@keyframes shimmer{to{background-position:-200% 0}}
+
+/* PARTE 3: onboarding + portafolio (mobile-first) */
+.ob{display:none;position:fixed;inset:0;z-index:130;background:radial-gradient(900px 500px at 50% -15%,#f0e7d2 0%,transparent 65%),var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
+.ob.active{display:block}
+.ob-in{max-width:560px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(150px + env(safe-area-inset-bottom,0px))}
+.ob-brand{font-size:20px;text-align:center}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin:10px 0 20px}
+.ob-dot{width:28px;height:6px;border-radius:9px;background:var(--line)}.ob-dot.on{background:var(--accent)}
+.ob-h{font-size:25px;line-height:1.2;letter-spacing:-.035em;font-weight:800;margin:0 0 8px}.ob-h:focus{outline:none}
+.ob-p{color:var(--ink-2);font-size:15px;margin:0 0 14px}
+.ob-count{font-size:13px;color:var(--muted);margin:0 0 10px;min-height:20px}
+.ob-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ob-card{position:relative;text-align:left;min-height:112px;padding:14px 12px;border:2px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.ob-card[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ob-check{position:absolute;right:10px;top:10px;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;color:transparent}
+.ob-card[aria-pressed="true"] .ob-check{background:var(--accent);border-color:var(--accent);color:#fff}
+.ob-name{font-weight:800;font-size:15px;padding-right:26px;line-height:1.25}.ob-sector{font-size:13px;color:var(--muted)}.ob-chg{font-size:13px;font-weight:700;margin-top:auto;padding-top:6px}
+.ob-back{min-height:44px;margin:-8px 0 6px -8px;font-size:15px}
+.ob-quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.ob-quick button{flex:1 1 30%;min-height:52px;border:2px solid var(--line);border-radius:12px;background:#fff;font-weight:700;font-size:14px;color:var(--ink)}
+.ob-quick button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ob .field-input{font-size:16px;padding:14px;font-family:var(--mono)}
+.ob-split{font-size:14px;color:var(--ink-2);margin:0}
+.ob-foot{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(rgba(246,246,241,0),var(--bg) 26%);padding:26px 16px calc(14px + env(safe-area-inset-bottom,0px))}
+.ob-foot-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.ob-foot .btn-primary,.ob-foot .btn-secondary{min-height:50px;width:100%;font-size:15px}
+.welcome{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--accent-soft);border:1px solid #e9dcc0;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+.welcome[hidden]{display:none}.welcome p{margin:0}.welcome .btn-ghost{min-height:44px;font-weight:700;color:#63491c;white-space:nowrap}
+.practice-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:var(--accent-soft);border:1px solid #e3d3ad;color:#63491c;font-size:12px;font-weight:700;margin:0 0 9px}
+.colcap-line{font-size:13px;color:var(--muted);margin:-6px 2px 16px}
+.conc-notice{background:var(--info-soft);border:1px solid #cfdcec;color:#27456c;border-radius:14px;padding:12px 14px;font-size:14px;margin-bottom:16px}
+.conc-notice[hidden]{display:none}.conc-notice:before{content:"ⓘ ";font-weight:700}
+.hero-stat-value.positive{color:#8fdcb1}.hero-stat-value.negative{color:#f4aaa4}.hero-stat{min-width:0}
+.hold-list{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
+.hold-card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:10px}
+.hold-top{display:flex;align-items:center;gap:10px;cursor:pointer;min-height:44px}
+.hold-id{flex:1;min-width:0}.hold-top .asset-name{font-size:15px}.hold-top .asset-sub{font-size:11px}
+.hold-chg{font-size:13px;font-weight:700;white-space:nowrap}
+.hold-mid{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.hold-mid .sector-tag{font-size:11.5px;padding:5px 9px}
+.hold-lbl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.hold-inrow{display:flex;align-items:center;gap:8px}.hold-cur{font-weight:700;color:var(--muted)}
+.hold-inrow .field-input{margin:0;flex:1;min-width:0;font-size:16px;padding:11px 12px;font-family:var(--mono)}
+.hold-rm{min-height:44px}
+.sector-item{width:100%;border:0;background:transparent;text-align:left;min-height:44px;color:var(--ink)}.sector-item.selected{background:var(--bg-2)}.sector-name{font-size:13px}.sector-pct{font-size:12px}
+.chart-center span{display:block;max-width:130px;margin:0 auto;line-height:1.25}
+.filter-chip{min-height:40px;font-size:12px;padding:6px 12px}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@media(max-width:760px){
+  .asset-drawer{top:auto;left:0;right:0;width:100%;height:94vh;height:94dvh;border-radius:22px 22px 0 0;transform:translateY(100%);box-shadow:0 -18px 50px rgba(0,0,0,.2)}
+  .asset-drawer.active{transform:none}
+  .drawer-body{padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .drawer-head .btn-ghost{min-width:44px;min-height:44px;font-size:16px}
+  .drawer-name{font-size:22px}.drawer-meta{font-size:13px}.drawer-block p,.drawer-news-dek{font-size:14px}.drawer-news-title{font-size:14px}.drawer-block h4{font-size:14px}
+  .drawer-ask{min-height:48px}
+  #addModal,#resetModal{align-items:flex-end}
+  #addModal .modal,#resetModal .modal{width:100%;border-radius:22px 22px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));animation:sheetUp .28s ease}
+  #addModal .field-input{font-size:16px}#addModal .btn-primary,#addModal .btn-secondary{min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){#addModal .modal,#resetModal .modal{animation:none}}
+
+/* PARTE 4: Hoy, publicidad y plan de pago (mobile-first) */
+:root{--neg-calm:#a35a3c;--neg-calm-soft:#f8ede6}
+#todayContent{max-width:760px;display:flex;flex-direction:column;gap:14px}
+.t4-kicker{font-size:14px;font-weight:700;color:var(--ink-2);margin:0}
+.t4-sub{font-size:14px;color:var(--muted);margin:4px 0 0}
+.t4-tk{font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+.t4-chg{font-size:15px;font-weight:800;white-space:nowrap}.t4-chg.up{color:var(--positive)}.t4-chg.down{color:var(--neg-calm)}.t4-chg.flat{color:var(--muted)}
+.t4-main{padding:20px 18px;border-left:5px solid var(--line)}.t4-main.up{border-left-color:var(--positive)}.t4-main.down{border-left-color:var(--neg-calm)}
+.t4-main-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.t4-main .practice-tag{margin:0;font-size:13px}
+.t4-dirchip{display:inline-flex;align-items:center;gap:7px;font-size:15px;font-weight:800;padding:7px 13px;border-radius:999px;margin-bottom:10px}
+.t4-dirchip.up{background:var(--positive-soft);color:var(--positive)}.t4-dirchip.down{background:var(--neg-calm-soft);color:var(--neg-calm)}.t4-dirchip.flat{background:var(--bg-2);color:var(--ink-2)}
+.t4-head{font-size:26px;line-height:1.2;letter-spacing:-.03em;font-weight:800;margin:0 0 12px}
+.t4-num.up{color:var(--positive)}.t4-num.down{color:var(--neg-calm)}
+.t4-lead{font-size:16px;line-height:1.55;color:var(--ink-2);margin:0 0 14px}
+.t4-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;padding:12px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);margin-bottom:14px}
+.t4-tl,.t4-tr{display:flex;flex-direction:column;gap:2px;min-width:0}.t4-tr{align-items:flex-end;text-align:right}
+.t4-lbl{font-size:14px;color:var(--muted)}.t4-tn{font-size:17px;font-weight:800}
+.t4-banner{font-size:14px;background:var(--info-soft);border:1px solid #cfdcec;color:#27456c;border-radius:12px;padding:11px 13px;margin:0 0 14px}
+.t4-explain{width:100%;min-height:50px;font-size:16px}
+.t4-x{margin-top:14px;padding:14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);font-size:14px;line-height:1.55;color:var(--ink-2)}.t4-x[hidden]{display:none}.t4-x:focus{outline:none}
+.t4-xh{font-size:15px;font-weight:800;margin:14px 0 6px;color:var(--ink)}.t4-xh:first-child{margin-top:0}
+.t4-xl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.t4-xl li{display:flex;flex-direction:column;gap:2px}.t4-xn{font-weight:800;color:var(--ink)}
+.t4-x p{margin:0}.t4-xfoot{margin-top:14px!important;color:var(--muted)}
+.t4-cc{padding:16px 18px}.t4-cc-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:6px}
+.t4-cc-val{font-size:28px;font-weight:800;letter-spacing:-.03em}.t4-cc-line{font-size:15px;color:var(--ink-2);margin:6px 0 0}
+.t4-news{padding:18px 14px}.t4-news .t4-kicker,.t4-news .t4-sub{padding:0 4px}
+.t4-nw{margin-top:12px}.t4-nwdir{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800;margin:0 2px 6px}
+.t4-nwdir.up{color:var(--positive)}.t4-nwdir.down{color:var(--neg-calm)}.t4-nwdir.flat{color:var(--ink-2)}
+.t4-nw .news-card{padding:14px;border-radius:12px}.t4-nw .news-card:hover{transform:none;box-shadow:none}
+.t4-nw .news-meta,.t4-nw .affected-tags,.t4-nw .source-note{display:none}
+.t4-nw .news-card h3{font-size:16px;margin:0 0 6px}.t4-nw .news-why{font-size:14px;margin:0 0 10px}
+.t4-nw .news-grid{grid-template-columns:1fr;margin-bottom:6px}.t4-nw .news-mini:nth-child(n+2){display:none}
+.t4-nw .news-mini-label{font:700 14px var(--font);text-transform:none;color:var(--ink-2)}.t4-nw .news-mini-value{font-size:14px;margin-top:2px}
+.t4-nw .news-footer{margin-top:4px;padding-top:6px;justify-content:flex-end}.t4-nw .news-footer .btn-ghost{font-size:14px;min-height:44px}
+.t4-newsbtn{width:100%;min-height:48px;margin-top:14px;font-size:15px}
+.t4-alert{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
+.t4-alert-txt{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:14px;color:var(--muted)}.t4-alert-txt strong{font-size:16px;color:var(--ink)}.t4-alert-txt b{color:var(--ink-2)}
+.t4-switch{flex:none;position:relative;width:64px;height:44px;border:0;background:transparent;padding:0}
+.t4-switch:before{content:"";position:absolute;left:6px;right:6px;top:7px;height:30px;border-radius:99px;background:#b9bdb3;transition:background .2s}
+.t4-switch:after{content:"";position:absolute;left:10px;top:11px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.t4-switch[aria-checked="true"]:before{background:var(--positive)}.t4-switch[aria-checked="true"]:after{transform:translateX(24px)}
+#adSlotPortfolio:not(:empty){margin-top:16px}
+.t4-ad{border:1px dashed #c9ccc2;border-radius:16px;background:var(--surface-2);padding:10px 14px 12px}
+.t4-ad-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.t4-ad-tag{font-size:14px;font-weight:700;letter-spacing:.02em;color:var(--ink-2);background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:3px 11px}
+.t4-ad-off{font-size:14px;min-height:44px;padding:0 6px;font-weight:600;color:#63491c;white-space:nowrap}
+.t4-ad-body{display:flex;gap:12px;align-items:center}.t4-ad-logo{flex:none;width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:15px;font-weight:800;color:#12151b}
+.t4-ad-brand{font-size:16px;font-weight:800}.t4-ad-line{font-size:14px;color:var(--ink-2);margin:2px 0 0}.t4-ad-note{font-size:14px;color:var(--muted);margin:8px 0 0}
+.t4-plan{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:48px;padding:10px 14px;border:1px solid #e3d3ad;background:var(--accent-soft);color:#4d3814;border-radius:14px;font-size:14px;text-align:left}
+.t4-plan svg{width:18px;height:18px;flex:none;transform:rotate(-90deg)}
+.bs-overlay{position:fixed;inset:0;background:rgba(9,12,16,.45);z-index:120;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}.bs-overlay.open{opacity:1;visibility:visible;transition:opacity .25s}
+.bs{position:fixed;left:50%;bottom:0;width:min(520px,100%);z-index:121;background:var(--surface);border-radius:22px 22px 0 0;box-shadow:0 -18px 50px rgba(0,0,0,.18);padding:8px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:90vh;max-height:90dvh;overflow:auto;transform:translate(-50%,100%);visibility:hidden;transition:transform .28s ease,visibility 0s .28s}
+.bs.open{transform:translate(-50%,0);visibility:visible;transition:transform .28s ease}body.plan-open{overflow:hidden}
+.bs-grab{width:38px;height:4px;border-radius:99px;background:var(--line);margin:4px auto 8px}
+.bs-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.bs-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0}
+.bs-close{width:44px;height:44px;border:0;background:transparent;border-radius:12px;color:var(--muted);font-size:16px}
+.bs-p{font-size:15px;color:var(--ink-2);margin:4px 0 0}
+.bs-list{list-style:none;margin:16px 0 18px;padding:0;display:flex;flex-direction:column;gap:13px}.bs-list li{display:flex;gap:12px;align-items:flex-start;font-size:15px}
+.bs-ck{flex:none;width:26px;height:26px;border-radius:50%;background:var(--positive-soft);color:var(--positive);display:grid;place-items:center;font-weight:800;font-size:14px}
+.bs-cta{width:100%;min-height:50px;font-size:16px}.bs-later{width:100%;min-height:48px;font-size:15px;margin-top:6px}
+@media(min-width:761px){.t4-head{font-size:30px}}
+@media(prefers-reduced-motion:reduce){.bs,.bs-overlay,.t4-switch:before,.t4-switch:after{transition:none!important}}
+
+/* PARTE 6: pulido móvil y contraste (360–390 px) */
+:root{--muted:#5a606b;--negative:#a5493f;--negative-soft:#f6e9e5}
+html,body{max-width:100%;overflow-x:hidden}main,.view,.card,.card-pad{min-width:0}.card,.news-card,.drawer-block,.msg{overflow-wrap:anywhere}canvas,svg,img{max-width:100%}
+input,select,textarea,.field-input,.chat-input,.topbar-search input{font-size:16px}
+.field-label,.search-section-label,.sidebar-label,.eyebrow,.hero-kicker,.hero-stat-label,.kpi-label,.holdings-table th,.chart-center span,.mini-dark .label,.exposure-box .label,.news-mini-label,.context-title,.drawer-metric label{font-family:var(--font);text-transform:none;letter-spacing:0;font-weight:600;font-size:13px}
+.sidebar-label{color:#a3abb8}.hero-stat-label,.mini-dark .label{color:#b3bac6}.hero-kicker{color:#b3bac6}
+.view-sub,.section-sub,.login-note,.news-why,.news-mini-value,.impact-item p,.radar-context p,.msg,.context-stat,.source-note,.exposure-box span,.empty-state p,.drawer-block p,.drawer-news-dek,.drawer-news-title,.radar-status,.quick-ask button,.toast{font-size:14px;line-height:1.55}
+.asset-sub,.market-name,.impact-ticker,.time,.source{font-family:var(--font);font-size:12.5px;text-transform:none;letter-spacing:0}
+.impact-dir.dir-pos:before{content:"▲ "}.impact-dir.dir-neg:before{content:"▼ "}.impact-dir.dir-neu:before{content:"● "}
+.skeleton{animation-duration:1.8s}
+@media(max-width:760px){
+ button,.btn-ghost,.btn-primary,.btn-secondary,.prompt-chip,.filter-chip,.radar-filter,.sector-item,.quick-ask button,.search-item{min-height:44px}
+ .icon-btn,.search-toggle,.send-btn{min-width:44px;min-height:44px}.send-btn{width:48px;height:48px}
+ .radar-filters{display:flex;flex-wrap:wrap;gap:8px}.radar-filter{padding:8px 12px;font-size:14px}
+ .modal-overlay{align-items:flex-end}.modal{width:100%;max-width:none;max-height:90dvh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));animation:sheetUp .28s ease}
+ .modal .btn-ghost,.drawer-head .btn-ghost{min-width:44px;font-weight:700;color:var(--ink)}
+ .msg{max-width:90%}.chat-side .quick-ask button{font-size:14px}.toast{max-width:calc(100vw - 28px)}
+ .news-grid,.insight-grid,.market-grid,.portfolio-layout{grid-template-columns:1fr}
+}
+.pill,.sector-tag,.severity,.affected-tag,.impact-dir,.market-ticker,.market-change,.heat-ticker,.heat-val,.market-price,.sector-name,.sector-pct,.kpi-sub,.search-item-sub,.status-mini-title,.status-mini-sub,.side-btn,.side-btn-note,.side-group-toggle,.drawer-ticker,.news-meta .source,.news-meta .time,.ob-check,.weight-row,.hold-mid,.hold-lbl,.asset-name,.practice-tag{font-size:13px}
+.ai-strip p,.insight-hero p,.radar-context h3,.impact-item h4,.drawer-block h4{font-size:15px}.impact-item p,.ai-strip p{font-size:14px}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Cuenta: menú del avatar */
+.acct-wrap{position:relative}button.avatar-circle{border:0;padding:0;cursor:pointer;min-width:40px;min-height:40px}button.avatar-circle:focus-visible{outline:3px solid rgba(183,139,67,.5);outline-offset:2px}
+.acct-menu{position:absolute;right:0;top:calc(100% + 10px);width:min(300px,calc(100vw - 26px));background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 50px rgba(20,24,32,.18);padding:8px;z-index:130;animation:fadeIn .16s ease}.acct-menu[hidden]{display:none}
+.acct-head{padding:10px 10px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}.acct-name{margin:0;font-weight:700;font-size:15px;color:var(--ink);overflow-wrap:anywhere}.acct-sub{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.acct-item{display:flex;align-items:center;gap:11px;width:100%;min-height:44px;padding:9px 10px;border:0;border-radius:11px;background:transparent;color:var(--ink);font-size:15px;font-weight:600;text-align:left}.acct-item svg{width:19px;height:19px;flex:none;color:var(--muted)}.acct-item:hover,.acct-item:focus-visible{background:var(--bg-2)}
+.acct-sep{height:1px;background:var(--line);margin:6px 4px}.acct-out,.acct-out svg{color:var(--negative)}.acct-note{margin:6px 10px 6px;font-size:13px;line-height:1.45;color:var(--muted)}
+@media(max-width:760px){button.avatar-circle{min-width:44px;min-height:44px;width:44px;height:44px}}
+</style>
+</head>
+<body data-current-view="today">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-today" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15.5" r="1.5" fill="currentColor"/></symbol>
+<symbol id="i-portfolio" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 16l3-4 3 2 4-6"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></symbol>
+<symbol id="i-insights" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M8 15l3-4 3 3 5-7"/><path d="M17 7h2v2"/></symbol>
+<symbol id="i-radar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12l5-3"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="i-market" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-9"/><path d="M15 6h6v6"/></symbol>
+<symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5"/><path d="M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4.5v4.5H8"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+</defs></svg>
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <p class="wordmark">The Trace<span class="dot">.</span></p>
+    <p class="login-sub">Entiende qué mueve tus acciones.</p>
+    <div class="login-panel">
+      <form id="loginForm">
+        <label class="field-label" for="emailInput">Tu correo (opcional)</label>
+        <input class="field-input" id="emailInput" type="email" placeholder="tucorreo@correo.com" autocomplete="email">
+        <div class="login-actions">
+          <button class="btn-primary" type="submit">Entrar y practicar</button>
+          <button class="btn-secondary" type="button" onclick="enterApp('Invitado')">Probar sin correo</button>
+        </div>
+      </form>
+      <p class="login-note">Practica con acciones de Colombia, sin dinero real. Tu portafolio de práctica se guarda solo en este navegador.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<section class="ob" id="onboarding" aria-label="Crea tu portafolio de práctica">
+  <div class="ob-in"><p class="wordmark ob-brand">The Trace<span class="dot">.</span></p><div class="ob-dots" id="obDots" role="img" aria-label="Paso 1 de 3"></div><div id="obBody"></div></div>
+  <div class="ob-foot"><div class="ob-foot-in" id="obFoot"></div></div>
+</section>
+
+<div id="appShell">
+  <header class="topbar" id="topbar">
+    <p class="wordmark">The Trace<span class="dot">.</span></p>
+    <div class="topbar-search-wrap" id="searchWrap">
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="globalSearch" placeholder="Buscar acciones, sectores o noticias…" aria-label="Buscar acciones, sectores o noticias" autocomplete="off" enterkeyhint="search" oninput="handleGlobalSearch(this.value)">
+        <button class="search-close" type="button" aria-label="Cerrar búsqueda" onclick="closeSearch();document.getElementById('searchToggle').focus()">✕</button>
+      </div>
+      <div class="search-results-overlay" id="searchOverlay"></div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn search-toggle" id="searchToggle" type="button" aria-label="Buscar" aria-expanded="false" aria-controls="searchWrap" onclick="openSearchMobile()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-search"/></svg></button>
+      <button class="icon-btn bell-btn" type="button" onclick="switchView('radar')" title="Noticias que te afectan" aria-label="Noticias que te afectan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bell-dot" id="bellDot"></span>
+      </button>
+      <div class="acct-wrap"><button class="avatar-circle" id="avatarCircle" type="button" aria-label="Mi cuenta" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu" onclick="toggleAccountMenu(event)">TR</button><div class="acct-menu" id="accountMenu" role="menu" aria-label="Mi cuenta" hidden><div class="acct-head"><p class="acct-name" id="acctName">Invitado</p><p class="acct-sub" id="acctSub">Sin correo · portafolio de práctica</p></div><button class="acct-item" type="button" role="menuitem" onclick="accountGo('portfolio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-portfolio"/></svg><span>Mi portafolio</span></button><button class="acct-item" type="button" role="menuitem" onclick="accountPlan()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span>Plan Trace+</span></button><button class="acct-item" type="button" role="menuitem" onclick="accountReset()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-reset"/></svg><span>Empezar de nuevo</span></button><div class="acct-sep" role="separator"></div><button class="acct-item acct-out" type="button" role="menuitem" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Cerrar sesión</span></button><p class="acct-note">Al cerrar sesión, tu portafolio de práctica sigue guardado en este navegador.</p></div></div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <nav class="sidebar" aria-label="Navegación principal">
+      <button class="side-btn active" type="button" data-view="today" aria-current="page" onclick="switchView('today')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-today"/></svg>Hoy</button>
+      <button class="side-btn" type="button" data-view="portfolio" onclick="switchView('portfolio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-portfolio"/></svg>Mi portafolio</button>
+      <button class="side-btn" type="button" data-view="chat" onclick="switchView('chat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chat"/></svg>Pregúntale a la IA</button>
+      <div class="side-divider"></div>
+      <button class="side-group-toggle" type="button" id="extrasToggle" aria-expanded="false" aria-controls="extrasGroup" onclick="toggleExtras()"><span>Funcionalidades extra</span><span class="side-dot" aria-hidden="true"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <div class="side-extras" id="extrasGroup" hidden>
+        <button class="side-btn" type="button" data-view="insights" onclick="switchView('insights')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-insights"/></svg>Lectura de tu portafolio</button>
+        <button class="side-btn" type="button" data-view="radar" onclick="switchView('radar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-radar"/></svg>Noticias que te afectan</button>
+        <button class="side-btn" type="button" data-view="market" onclick="switchView('market')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-market"/></svg>Mercado colombiano</button>
+        <button class="side-btn" type="button" onclick="openApiModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-plug"/></svg><span class="side-btn-text"><span>Conexión con IA</span><span class="side-btn-note">Solo para el equipo</span><span class="side-btn-note"><span class="status-dot" id="miniStatusDot"></span><span id="miniStatusText">Sin conectar</span></span><span id="miniStatusSub" hidden></span></span></button>
+        <button class="side-btn" type="button" onclick="resetDemo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-reset"/></svg>Empezar de nuevo</button>
+      </div>
+    </nav>
+
+    <main id="mainContent">
+      <button class="back-today" id="backToToday" type="button" onclick="switchView('today')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-back"/></svg>Volver a Hoy</button>
+      <!-- HOY -->
+      <section class="view active" id="view-today">
+        <div class="view-head"><div><h1 class="view-title">Hoy</h1></div></div>
+        <div class="welcome" id="welcomeBanner" hidden role="status"><p>Este es tu portafolio de práctica. Aquí encuentras cada día una explicación de lo que ocurrió.</p><button class="btn-ghost" type="button" onclick="dismissWelcome()">Entendido</button></div>
+        <div id="todayContent">
+          <section class="card t4-main" id="todayMain" aria-labelledby="t4MainTitle"></section>
+          <section class="card t4-cc" id="todayColcap"></section>
+          <section class="card t4-news" id="todayNews" aria-labelledby="todayNewsTitle">
+            <h2 class="t4-kicker" id="todayNewsTitle">Noticias de tus acciones</h2>
+            <p class="t4-sub">Lo que ocurrió con tus acciones y por qué te afecta. No es una recomendación.</p>
+            <div id="todayNewsList"></div>
+            <button class="btn-secondary t4-newsbtn" id="todayNewsBtn" type="button" onclick="runLiveRadarFromToday()">Buscar noticias recientes con IA</button>
+            <p class="sr-only" id="todayNewsStatus" aria-live="polite"></p>
+          </section>
+          <section class="card t4-alert" id="todayAlert">
+            <div class="t4-alert-txt"><strong id="dailyAlertLbl">Resumen diario</strong><span id="dailyAlertDesc">Un resumen breve de lo ocurrido con tus acciones. <b id="dailyAlertState">Desactivado</b></span></div>
+            <button class="t4-switch" id="dailyAlertSwitch" type="button" role="switch" aria-checked="false" aria-labelledby="dailyAlertLbl" aria-describedby="dailyAlertDesc" onclick="toggleDailyAlert()"></button>
+          </section>
+          <div id="adSlotToday"></div>
+          <button class="t4-plan" id="planStrip" type="button" aria-haspopup="dialog" onclick="openPlanSheet()"><span>Quita los anuncios y recibe alertas · <strong>Trace+</strong></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        </div>
+      </section>
+
+      <!-- PORTFOLIO -->
+      <section class="view" id="view-portfolio">
+        <div class="view-head">
+          <div><p class="practice-tag">Portafolio de práctica · sin dinero real</p><h1 class="view-title">Tu portafolio de práctica</h1><p class="view-sub">Consulta de qué está hecho tu portafolio, es decir, el conjunto de acciones que tienes o practicas, y qué lo mueve.</p></div>
+          <div class="head-actions"><span class="pill"><span class="status-dot" id="portfolioStatusDot"></span><strong id="portfolioUpdated">Actualizado ahora</strong></span><button class="btn-primary" type="button" onclick="openAddModal()">Agregar acción</button></div>
+        </div>
+
+        <div class="portfolio-hero" id="portfolioHero">
+          <div class="hero-grid"><div><div class="hero-kicker">Cuánto vale hoy tu portafolio de práctica</div><div class="hero-value" id="heroTotal">$0</div><div class="hero-meta"><span class="pill" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.08);color:#cbd1db"> <strong id="heroAssets">0 acciones</strong></span><span class="pill" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.08);color:#cbd1db"> <strong id="heroTopSector">—</strong></span></div></div><div class="hero-right"><div class="hero-stat"><div class="hero-stat-label">Cómo va hoy</div><div class="hero-stat-value" id="heroChange">—</div></div></div></div>
+        </div>
+        <p class="colcap-line" id="colcapLine"></p>
+
+        <div class="conc-notice" id="concNotice" hidden role="note"></div>
+
+        <div class="ai-strip">
+          <div><div class="ai-title-row"><span class="ai-orb"></span><h3>La IA tiene en cuenta tu portafolio</h3></div><p id="portfolioAiMini">Explica de qué está hecho tu portafolio.</p><div class="ai-prompt-chips"><button class="prompt-chip" onclick="runPortfolioAI('Dame un resumen de mi portafolio')">Resumen</button><button class="prompt-chip" onclick="runPortfolioAI('¿De qué sector depende más mi dinero y por qué?')">De qué depende</button><button class="prompt-chip" onclick="runPortfolioAI('¿Qué noticias conviene mirar según mis acciones?')">Qué conviene mirar</button></div></div>
+          <button class="btn-secondary" onclick="runPortfolioAI('Explícame mi portafolio y dame las 3 ideas más importantes')">Explícame mi portafolio</button>
+        </div>
+
+        <div class="portfolio-layout">
+          <div class="card holdings-card"><div class="card-pad"><div class="section-head"><div><h3 class="section-title">Tus acciones</h3><p class="section-sub">Toca una acción para ver qué la mueve.</p></div><button class="btn-ghost" onclick="clearSectorFilter()">Mostrar todo</button></div></div><div class="hold-list" id="holdingsBody"></div><div class="filter-row" id="sectorFilters"></div></div>
+          <div class="card chart-card"><div class="section-head"><div><h3 class="section-title">De qué está hecho tu portafolio</h3><p class="section-sub">Toca el gráfico o un sector para filtrar tus acciones.</p></div></div><div class="chart-wrap"><canvas id="portfolioChart" role="img" aria-label="Gráfico de dona: qué parte de tu dinero está en cada sector"></canvas><div class="chart-center"><div><strong id="chartCenterValue">100 %</strong><span id="chartCenterLabel">de tu dinero</span></div></div></div><div class="sector-list" id="sectorList"></div></div>
+        </div>
+        <div id="adSlotPortfolio"></div>
+      </section>
+
+      <!-- INSIGHTS -->
+      <section class="view" id="view-insights">
+        <div class="view-head"><div><p class="eyebrow">Tu portafolio</p><h1 class="view-title">Lectura de tu portafolio</h1><p class="view-sub">Análisis de la IA sobre de qué depende tu dinero y qué noticias te afectan.</p></div><div class="head-actions"><button class="btn-primary" onclick="runPortfolioAI('Hazme una lectura completa de mi portafolio: de qué sector depende más mi dinero, qué sectores son sensibles y qué noticias conviene mirar')">Pídele una lectura a la IA</button></div></div>
+        <div class="insight-grid"><div class="insight-hero"><p class="eyebrow">En corto</p><h2 id="insightHeadline">Leyendo tu portafolio…</h2><p id="insightSummary">Tu lectura se hace con las acciones que tienes hoy.</p><div class="insight-metrics"><div class="mini-dark"><div class="label">Donde más tienes tu dinero</div><div class="value" id="insightSector">—</div></div><div class="mini-dark"><div class="label">Cuánto depende de él</div><div class="value" id="insightDepends">—</div></div><div class="mini-dark"><div class="label">Acciones</div><div class="value" id="insightAssets">—</div></div></div></div><div class="card card-pad"><div class="section-head"><div><h3 class="section-title">Noticias sobre tus acciones</h3><p class="section-sub">Lo que pasó con las acciones que tienes.</p></div></div><div class="list-stack" id="insightSignals" style="margin-top:13px"></div></div></div>
+        <div class="insight-grid" style="margin-top:14px"><div class="card card-pad"><div class="section-head"><div><h3 class="section-title">Dónde está tu dinero</h3><p class="section-sub">Cuánto de tu dinero está en cada sector.</p></div></div><div class="exposure-map" id="exposureMap" style="margin-top:13px"></div></div><div class="card card-pad"><div class="section-head"><div><h3 class="section-title">Qué hace la IA</h3><p class="section-sub">Tres funciones de la IA.</p></div></div><div class="list-stack" style="margin-top:13px"><div class="impact-item"><div class="impact-row"><span class="impact-dir dir-neu">01</span><span class="impact-ticker">Relaciona</span></div><h4>Relaciona las noticias con tus acciones</h4><p>Identifica qué noticias afectan a cada una de tus acciones y cuánto de tu dinero está en juego.</p></div><div class="impact-item"><div class="impact-row"><span class="impact-dir dir-neu">02</span><span class="impact-ticker">Prioriza</span></div><h4>Ordena por importancia</h4><p>Muestra primero las noticias de impacto grande y deja al final las que casi no te afectan.</p></div><div class="impact-item"><div class="impact-row"><span class="impact-dir dir-neu">03</span><span class="impact-ticker">Explica</span></div><h4>Explica qué pasó y por qué te afecta</h4><p>Resume qué ocurrió, por qué te afecta y qué conviene mirar.</p></div></div></div></div>
+      </section>
+
+      <!-- RADAR -->
+      <section class="view" id="view-radar">
+        <div class="view-head"><div><p class="eyebrow">Noticias</p><h1 class="view-title">Noticias que te afectan</h1><p class="view-sub">Lo que ocurrió con las acciones de tu portafolio y por qué te afecta.</p></div><div class="head-actions"><button class="btn-secondary" onclick="switchView('portfolio')">Ver portafolio</button><button class="btn-primary" id="analyzeBtn" onclick="runLiveRadarAnalysis()">Buscar noticias de hoy</button></div></div>
+        <div class="radar-top"><div class="card radar-control"><div class="control-row"><div><h3 class="section-title">Acciones que seguimos</h3><p class="section-sub" id="radarCoverage">0 acciones de tu portafolio</p></div><div class="radar-status"><span class="live-dot" id="radarLiveDot"></span><span id="radarStatusText">Listo para buscar</span></div></div><div class="radar-filters"><button class="radar-filter active" data-radar-filter="all" onclick="setRadarFilter('all')">Todas</button><button class="radar-filter" data-radar-filter="Alta" onclick="setRadarFilter('Alta')">Impacto grande</button><button class="radar-filter" data-radar-filter="Media" onclick="setRadarFilter('Media')">Impacto mediano</button><button class="radar-filter" data-radar-filter="Baja" onclick="setRadarFilter('Baja')">Impacto pequeño</button><button class="radar-filter" data-radar-filter="Positivo" onclick="setRadarFilter('Positivo')">Buena noticia</button><button class="radar-filter" data-radar-filter="Negativo" onclick="setRadarFilter('Negativo')">Mala noticia</button><button class="radar-filter" data-radar-filter="Neutro" onclick="setRadarFilter('Neutro')">Neutra</button></div></div><div class="card radar-context"><h3>¿Cómo funciona?</h3><p>La IA busca noticias recientes, las relaciona con tus acciones y explica por qué te afectan. Primero aparecen las de mayor impacto.</p></div></div>
+        <div class="card" style="overflow:hidden"><div class="card-pad"><div class="section-head"><div><h3 class="section-title">Noticias para ti</h3><p class="section-sub" id="radarResultCount">Aún no has buscado noticias hoy.</p></div><button class="btn-ghost" onclick="renderRadar(RADAR_RESULTS)">Restablecer filtros</button></div></div><div id="briefList"></div></div>
+      </section>
+
+      <!-- MARKET -->
+      <section class="view" id="view-market"><div class="view-head"><div><p class="eyebrow">Explorar</p><h1 class="view-title">Mercado colombiano</h1><p class="view-sub">Consulta las acciones colombianas y toca una para ver más información.</p></div><span class="pill"><strong id="marketCount">10 acciones</strong>&nbsp; para practicar</span></div><div class="market-grid"><div class="card" style="overflow:hidden"><div class="card-pad"><div class="section-head"><div><h3 class="section-title">Qué subió y qué bajó</h3><p class="section-sub">Acciones colombianas que puedes practicar.</p></div></div></div><div class="market-list" id="moversList"></div></div><div class="card card-pad"><div class="section-head"><div><h3 class="section-title">Vista rápida</h3><p class="section-sub">Cambios de hoy.</p></div></div><div class="heatmap" id="marketHeatmap" style="margin-top:13px"></div></div></div></section>
+
+      <!-- CHAT -->
+      <section class="view" id="view-chat"><div class="view-head"><div><p class="eyebrow">Tu guía</p><h1 class="view-title">Pregúntale a la IA</h1><p class="view-sub">Haz preguntas sobre tus acciones. La IA responde con base en tu portafolio de práctica.</p></div></div><p class="t4-banner" role="note">The Trace explica lo que pasó. No te dice qué comprar ni vender.</p><div class="chat-layout"><div class="card chat-shell"><div class="chat-log" id="chatLog"></div><div class="chat-input-row"><input class="chat-input" id="chatInput" placeholder="Ej.: ¿Qué pasó hoy con mi portafolio?" aria-label="Escribe tu pregunta" onkeydown="if(event.key==='Enter')sendChat()"><button class="send-btn" type="button" aria-label="Enviar pregunta" onclick="sendChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M13 5l7 7-7 7"/></svg></button></div></div><div class="chat-side"><div class="card context-card"><div class="context-title">Preguntas rápidas</div><div class="quick-ask"><button onclick="fillChat('¿Qué pasó hoy con mi portafolio?')">¿Qué pasó hoy con mi portafolio?</button><button onclick="fillChat('¿De qué depende mi dinero?')">¿De qué depende mi dinero?</button><button onclick="fillChat('¿Qué noticias me afectan?')">¿Qué noticias me afectan?</button><button onclick="fillChat('Explícame mi portafolio como si fuera la primera vez')">Explícame mi portafolio como si fuera la primera vez</button></div></div><div class="card context-card"><div class="context-title">Contexto enviado a la IA</div><p class="section-sub" style="margin:8px 0 6px">Estos son los datos que recibe la IA cuando haces una pregunta. También recibe el COLCAP, el termómetro de las acciones más grandes de Colombia. No incluye tu nombre ni tu correo, y solo se envía si conectas la IA.</p><div id="chatContext"></div></div></div></div></section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="Navegación principal">
+    <button type="button" data-view="today" class="active" aria-current="page" onclick="switchView('today')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-today"/></svg><span>Hoy</span></button>
+    <button type="button" data-view="portfolio" onclick="switchView('portfolio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-portfolio"/></svg><span>Mi portafolio</span></button>
+    <button type="button" data-view="chat" onclick="switchView('chat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chat"/></svg><span>Pregúntale a la IA</span></button>
+    <button type="button" id="moreBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="moreSheet" onclick="openMoreSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-more"/></svg><span>Más</span></button>
+  </nav>
+  <div class="sheet-overlay" id="moreOverlay" onclick="closeMoreSheet()"></div>
+  <div class="sheet" id="moreSheet" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+    <div class="sheet-grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 class="sheet-title" id="moreTitle">Funcionalidades extra</h2><button class="sheet-close" type="button" aria-label="Cerrar" onclick="closeMoreSheet()">✕</button></div>
+    <div class="sheet-list">
+      <button class="sheet-item" type="button" data-view="insights" onclick="switchView('insights')"><span class="sheet-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-insights"/></svg></span><span class="sheet-text"><span class="sheet-label">Lectura de tu portafolio</span><span class="sheet-hint">De qué depende tu dinero</span></span></button>
+      <button class="sheet-item" type="button" data-view="radar" onclick="switchView('radar')"><span class="sheet-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-radar"/></svg></span><span class="sheet-text"><span class="sheet-label">Noticias que te afectan</span><span class="sheet-hint">Lo que pasó con tus acciones</span></span></button>
+      <button class="sheet-item" type="button" data-view="market" onclick="switchView('market')"><span class="sheet-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-market"/></svg></span><span class="sheet-text"><span class="sheet-label">Mercado colombiano</span><span class="sheet-hint">Qué subió y qué bajó hoy</span></span></button>
+      <div class="sheet-sep"></div>
+      <button class="sheet-item" type="button" onclick="closeMoreSheet(false);openApiModal()"><span class="sheet-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-plug"/></svg></span><span class="sheet-text"><span class="sheet-label">Conexión con IA</span><span class="sheet-hint">Solo para el equipo</span></span></button>
+      <button class="sheet-item" type="button" onclick="resetDemo()"><span class="sheet-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-reset"/></svg></span><span class="sheet-text"><span class="sheet-label">Empezar de nuevo</span></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="apiModal"><div class="modal"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><p class="eyebrow">Solo para el equipo</p><h3 class="modal-title">Conexión con IA</h3></div><button class="btn-ghost" aria-label="Cerrar" onclick="closeApiModal()">✕ Cerrar</button></div><p style="font-size:11px;color:var(--muted);margin:0 0 14px">Pega aquí la clave de la IA. Se guarda solo en este navegador y nunca se comparte.</p><label class="field-label">Clave de la IA (Gemini)</label><input class="field-input" id="geminiApiKey" type="password" placeholder="AIza…" autocomplete="off"><div style="display:flex;gap:8px"><button class="btn-primary" style="flex:1" onclick="saveApiKeyFromModal()">Guardar y conectar</button><button class="btn-secondary" onclick="clearApiKey()">Desconectar</button></div></div></div>
+<div class="modal-overlay" id="addModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="addTitle"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><p class="eyebrow">Nueva acción</p><h3 class="modal-title" id="addTitle">Agregar acción</h3></div><button class="btn-ghost" style="min-width:44px;min-height:44px" aria-label="Cerrar" onclick="closeAddModal()">✕ Cerrar</button></div><label class="field-label" for="addTickerSelect">Acción</label><select class="field-input" id="addTickerSelect"></select><label class="field-label" for="addAmountInput">Monto de práctica (en pesos)</label><input class="field-input" inputmode="numeric" autocomplete="off" id="addAmountInput" placeholder="Ej. $1.000.000" oninput="this.value=this.value?dots(parseCOP(this.value)):''"><p class="section-sub" style="margin:-6px 0 12px">Es un monto de práctica, sin dinero real.</p><div style="display:flex;gap:8px;margin-top:6px"><button class="btn-primary" style="flex:1" onclick="addAssetToPortfolio()">Guardar acción</button><button class="btn-secondary" onclick="closeAddModal()">Cancelar</button></div></div></div>
+<div class="modal-overlay" id="resetModal"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="resetTitle"><h3 class="modal-title" id="resetTitle">¿Empezar de nuevo?</h3><p style="font-size:14px;color:var(--ink-2);margin:0 0 16px">Se borrará tu portafolio de práctica y podrás elegir tus acciones otra vez. La conexión con la IA no se modifica.</p><div style="display:flex;gap:8px"><button class="btn-primary" style="flex:1;min-height:48px" onclick="doResetDemo()">Sí, reiniciar</button><button class="btn-secondary" style="min-height:48px" onclick="closeResetModal()">Cancelar</button></div></div></div>
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeAssetDrawer()"></div>
+<aside class="asset-drawer" id="assetDrawer" role="dialog" aria-modal="true" aria-label="Detalle de la acción"><div class="drawer-head"><div><p class="eyebrow">Sobre esta acción</p><div class="drawer-name" id="drawerTitle">—</div><div class="drawer-meta" id="drawerMeta">—</div></div><button class="btn-ghost" aria-label="Cerrar" onclick="closeAssetDrawer()">✕ Cerrar</button></div><div class="drawer-body" id="drawerBody"></div></aside>
+<button class="fab-chat" onclick="switchView('chat')" title="Pregúntale a la IA"><span class="fab-pulse"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+<div class="bs-overlay" id="planOverlay" onclick="closePlanSheet()"></div>
+<div class="bs" id="planSheet" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+  <div class="bs-grab" aria-hidden="true"></div>
+  <div class="bs-head"><h2 class="bs-title" id="planTitle">Trace+</h2><button class="bs-close" id="planClose" type="button" aria-label="Cerrar" onclick="closePlanSheet()">✕</button></div>
+  <p class="bs-p">Trace+ es un plan de pago que llegará más adelante. Hoy no se cobra nada.</p>
+  <ul class="bs-list">
+    <li><span class="bs-ck" aria-hidden="true">✓</span><span>Sin anuncios en toda la app.</span></li>
+    <li><span class="bs-ck" aria-hidden="true">✓</span><span>Alertas cuando pase algo importante con tus acciones.</span></li>
+    <li><span class="bs-ck" aria-hidden="true">✓</span><span>Más explicaciones con IA cada día.</span></li>
+    <li><span class="bs-ck" aria-hidden="true">✓</span><span>Más adelante: tu portafolio real, o sea, las acciones que tienes de verdad.</span></li>
+  </ul>
+  <button class="btn-primary bs-cta" type="button" onclick="planNotify()">Avísame cuando esté listo</button>
+  <button class="btn-ghost bs-later" type="button" onclick="closePlanSheet()">Ahora no</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* Respaldo: si el navegador bloquea localStorage (vistas previas con sandbox), se usa memoria y nada se rompe. */
+(function(){try{var k='__trace_t';localStorage.setItem(k,'1');localStorage.removeItem(k)}catch(e){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},key:function(i){var a=Object.keys(m);return i<a.length?a[i]:null},clear:function(){m={}}};Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});try{Object.defineProperty(window,'localStorage',{value:s,configurable:true})}catch(e2){}}})();
+</script>
+<script>
+/* ======================= DATA ======================= */
+const POOL_EXPANDIDO = [
+  {t:"ECOPETROL",n:"Ecopetrol",sector:"Petróleo y energía",price:2350,chg:-1.4},
+  {t:"PFBCOLOM",n:"Bancolombia",sector:"Bancos",price:38400,chg:0.8},
+  {t:"ISA",n:"ISA",sector:"Energía eléctrica",price:21800,chg:1.9},
+  {t:"GRUPOSURA",n:"Grupo Sura",sector:"Seguros e inversiones",price:37500,chg:-0.6},
+  {t:"GRUPOARGOS",n:"Grupo Argos",sector:"Seguros e inversiones",price:16900,chg:0.3},
+  {t:"CEMARGOS",n:"Cementos Argos",sector:"Construcción",price:9800,chg:-2.1},
+  {t:"GEB",n:"Grupo Energía Bogotá",sector:"Energía eléctrica",price:2700,chg:1.2},
+  {t:"CELSIA",n:"Celsia",sector:"Energía eléctrica",price:4100,chg:2.6},
+  {t:"PFDAVVNDA",n:"Davivienda",sector:"Bancos",price:22600,chg:-0.9},
+  {t:"MINEROS",n:"Mineros",sector:"Minería",price:8900,chg:2.8}
+];
+const SEED_PORTFOLIO = [["ECOPETROL",1200],["PFBCOLOM",60],["ISA",90],["GRUPOSURA",40]].map(([t,shares])=>({...POOL_EXPANDIDO.find(a=>a.t===t),shares}));
+const NEWS_DATABASE = [
+  {id:1,t:"ECOPETROL",direccion:"Negativo",magnitud:"Alta",titulo:"El petróleo baja de precio y Ecopetrol lo siente",fuente:"Resumen de mercado",dek:"El precio del petróleo es clave para Ecopetrol. Si baja, la empresa recibe menos por cada barril."},
+  {id:2,t:"ECOPETROL",direccion:"Positivo",magnitud:"Baja",titulo:"Ecopetrol produce un poco más de petróleo este mes",fuente:"Resumen de mercado",dek:"Producir más significa tener más petróleo disponible. El efecto es pequeño por ahora."},
+  {id:3,t:"PFBCOLOM",direccion:"Positivo",magnitud:"Media",titulo:"Bancolombia gana más por los préstamos que entrega",fuente:"Resumen de mercado",dek:"Cuando más personas piden préstamos y los pagan a tiempo, el banco gana más."},
+  {id:4,t:"PFDAVVNDA",direccion:"Negativo",magnitud:"Media",titulo:"Más clientes de Davivienda se atrasan en sus pagos",fuente:"Resumen de mercado",dek:"Si los clientes no pagan a tiempo, el banco debe guardar plata para cubrir esas pérdidas."},
+  {id:5,t:"ISA",direccion:"Positivo",magnitud:"Alta",titulo:"ISA gana un contrato para nuevas líneas de energía",fuente:"Resumen de mercado",dek:"Construir y operar líneas eléctricas le asegura ingresos durante muchos años."},
+  {id:6,t:"GEB",direccion:"Neutro",magnitud:"Baja",titulo:"El Grupo Energía Bogotá sigue con sus planes de obras",fuente:"Resumen de mercado",dek:"La empresa dijo que sus proyectos avanzan como estaban previstos. No hay cambios por ahora."},
+  {id:7,t:"CELSIA",direccion:"Positivo",magnitud:"Media",titulo:"Celsia genera más energía gracias a las lluvias",fuente:"Resumen de mercado",dek:"Con más agua en los embalses, sus plantas producen más energía y a menor costo."},
+  {id:8,t:"GRUPOSURA",direccion:"Neutro",magnitud:"Media",titulo:"Grupo Sura presenta resultados parecidos a los del año pasado",fuente:"Resumen de mercado",dek:"Sus seguros y sus inversiones dejaron ganancias similares. No hubo sorpresas."},
+  {id:9,t:"GRUPOARGOS",direccion:"Negativo",magnitud:"Baja",titulo:"A una de las empresas de Grupo Argos le va un poco peor",fuente:"Resumen de mercado",dek:"Grupo Argos es dueño de partes de otras empresas. Si a ellas les va peor, a él también."},
+  {id:10,t:"CEMARGOS",direccion:"Negativo",magnitud:"Alta",titulo:"Baja la demanda de cemento por menos obras",fuente:"Resumen de mercado",dek:"Cementos Argos recibe menos pedidos cuando se levantan menos casas y edificios en el país."},
+  {id:11,t:"MINEROS",direccion:"Positivo",magnitud:"Alta",titulo:"El oro sube de precio y Mineros recibe más por cada gramo",fuente:"Resumen de mercado",dek:"Mineros extrae oro. Cuando el precio sube, cada gramo que produce vale más."}
+];
+/* COLCAP sintético (datos de ejemplo) */
+const COLCAP = {valor:1812.4, chg:0.6, frase:'el termómetro de las acciones más grandes de Colombia'};
+/* Etiquetas visibles. Los valores internos (Positivo/Alta…) no cambian. */
+const LABELS = {
+  direccion:{Positivo:'Buena noticia',Negativo:'Mala noticia',Neutro:'Neutra'},
+  severidad:{Alta:'Impacto grande',Media:'Impacto mediano',Baja:'Impacto pequeño'}
+};
+const labelDir=v=>LABELS.direccion[v]||v;
+const labelSev=v=>LABELS.severidad[v]||v;
+const LOCAL_VIA='Cambia lo que la empresa gana o gasta';
+const LOCAL_METRIC='Cómo le va a la empresa';
+const assetName=t=>(POOL_EXPANDIDO.find(a=>a.t===t)||PORTFOLIO.find(a=>a.t===t)||{}).n||t;
+function applyLabels(){document.querySelectorAll('.radar-filter').forEach(b=>{const k=b.dataset.radarFilter;const t=LABELS.direccion[k]||LABELS.severidad[k];if(t)b.textContent=t})}
+let PORTFOLIO = loadPortfolio();
+let chartInstance = null;
+let userApiKey = localStorage.getItem('gemini_api_key') || '';
+let RADAR_RESULTS = [];
+let radarFilter = 'all';
+let activeSectorFilter = 'all';
+let currentUser = 'Invitado';
+
+function loadPortfolio(){try{const saved=JSON.parse(localStorage.getItem('trace_portfolio_v2')||'null');return Array.isArray(saved)&&saved.length?saved:[]}catch{return []}}
+function savePortfolio(){localStorage.setItem('trace_portfolio_v2',JSON.stringify(PORTFOLIO))}
+const COP_FMT=new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const NUM_FMT=new Intl.NumberFormat('es-CO',{maximumFractionDigits:1});
+function formatCOP(num){return COP_FMT.format(Number(num)||0)}
+function formatCompactCOP(num){const n=Number(num)||0;return n>=1e6?'$'+NUM_FMT.format(n/1e6)+' M':n>=1e3?'$'+Math.round(n/1e3)+' mil':formatCOP(n)}
+function fmtPct(n,d=1){n=Number(n)||0;return (n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(d).replace('.',',')+' %'}
+const pctTxt=x=>(x>0&&x<1?'Menos de 1':Math.round(x))+' %';
+const dots=n=>String(Math.round(Number(n)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const parseCOP=s=>Number(String(s??'').replace(/\D/g,''))||0;
+const chgTxt=c=>(c>=0?'▲ Subió ':'▼ Bajó ')+Math.abs(c).toFixed(1).replace('.',',')+' %';
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>el.classList.remove('show'),2800)}
+function escapeHTML(value){return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function parseMarkdown(text){if(!text)return '';let html=escapeHTML(text);html=html.replace(/^### (.*)$/gim,'<h4>$1</h4>').replace(/^## (.*)$/gim,'<h3>$1</h3>').replace(/^# (.*)$/gim,'<h2>$1</h2>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/^\s*[-*]\s+(.*)$/gim,'<li>$1</li>').replace(/\n/g,'<br>');return html}
+
+/* ======================= APP STATE / UI ======================= */
+function enterApp(user){currentUser=user||'Invitado';$('loginScreen').style.display='none';setAvatar(currentUser);updateApiStatus();if(!PORTFOLIO.length){startOnboarding();return}bootApp()}
+function bootApp(){$('appShell').classList.add('app-shell-active');refreshAll();startChat();switchView('today');showWelcome()}
+function showWelcome(){$('welcomeBanner').hidden=!!localStorage.getItem('trace_welcome_seen')}
+function dismissWelcome(){localStorage.setItem('trace_welcome_seen','1');$('welcomeBanner').hidden=true}
+/* ---- ONBOARDING ---- */
+const OB={step:1,picked:[],amount:5000000};
+function startOnboarding(){OB.step=1;OB.picked=[];OB.amount=5000000;$('appShell').classList.remove('app-shell-active');$('loginScreen').style.display='none';$('onboarding').classList.add('active');renderOnboarding()}
+function obSeedBtn(){return `<button class="btn-secondary" type="button" onclick="obUseSeed()">Usar un portafolio de ejemplo</button>`}
+function renderOnboarding(){
+  $('obDots').innerHTML=[1,2,3].map(i=>`<span class="ob-dot${i<=OB.step?' on':''}"></span>`).join('');$('obDots').setAttribute('aria-label','Paso '+OB.step+' de 3');
+  if(OB.step===1){
+    $('obBody').innerHTML=`<h1 class="ob-h" id="obTitle" tabindex="-1">Elige las acciones con las que quieres practicar</h1><p class="ob-p">Una acción es una parte de una empresa. Tu portafolio de práctica es el conjunto de acciones que eliges, sin dinero real.</p><p class="ob-count" id="obCount" aria-live="polite"></p><div class="ob-grid">${POOL_EXPANDIDO.map(a=>`<button type="button" class="ob-card" data-t="${escapeHTML(a.t)}" aria-pressed="false" onclick="obToggle('${escapeHTML(a.t)}')"><span class="ob-check" aria-hidden="true">✓</span><span class="ob-name">${escapeHTML(a.n)}</span><span class="ob-sector">${escapeHTML(a.sector)}</span><span class="ob-chg ${a.chg>=0?'positive':'negative'}">${chgTxt(a.chg)} hoy</span></button>`).join('')}</div>`;
+    $('obFoot').innerHTML=`<button class="btn-primary" type="button" id="obNext" onclick="obGo(2)">Seguir</button>${obSeedBtn()}`;obUpdate()
+  }else{
+    const n=OB.picked.length;
+    $('obBody').innerHTML=`<button class="btn-ghost ob-back" type="button" onclick="obGo(1)">← Volver</button><h1 class="ob-h" id="obTitle" tabindex="-1">¿Con cuánto quieres practicar?</h1><p class="ob-p">Es un monto de práctica, no dinero real. Se reparte en partes iguales entre tus ${n} ${n===1?'acción':'acciones'}.</p><div class="ob-quick">${[1000000,5000000,10000000].map(v=>`<button type="button" data-v="${v}" aria-pressed="false" onclick="obSetAmount(${v})">${formatCOP(v)}</button>`).join('')}</div><label class="field-label" for="obAmount">O escribe otro monto en pesos</label><input class="field-input" id="obAmount" inputmode="numeric" autocomplete="off" oninput="obAmountInput(this.value)"><p class="ob-split" id="obSplit" aria-live="polite"></p>`;
+    $('obFoot').innerHTML=`<button class="btn-primary" type="button" id="obNext" onclick="obFinish()">Crear mi portafolio de práctica</button>${obSeedBtn()}`;$('obAmount').value=dots(OB.amount);obAmountUI()
+  }
+  $('onboarding').scrollTop=0;$('obTitle').focus({preventScroll:true})
+}
+function obUpdate(){const n=OB.picked.length;document.querySelectorAll('.ob-card').forEach(b=>b.setAttribute('aria-pressed',String(OB.picked.includes(b.dataset.t))));$('obCount').textContent=n?`Elegiste ${n} de 5. Se sugieren 3.`:'Puedes elegir de 1 a 5. Se sugieren 3.';const b=$('obNext');b.disabled=!n;b.textContent=n?`Seguir con ${n} ${n===1?'acción':'acciones'}`:'Elige al menos 1 acción'}
+function obToggle(tk){const i=OB.picked.indexOf(tk);if(i>=0)OB.picked.splice(i,1);else if(OB.picked.length>=5){showToast('Puedes elegir hasta 5 acciones');return}else OB.picked.push(tk);obUpdate()}
+function obGo(s){if(s===2&&!OB.picked.length)return;OB.step=s;renderOnboarding()}
+function obSetAmount(n){OB.amount=n;$('obAmount').value=dots(n);obAmountUI()}
+function obAmountInput(v){OB.amount=parseCOP(v);$('obAmount').value=OB.amount?dots(OB.amount):'';obAmountUI()}
+function obAmountUI(){document.querySelectorAll('.ob-quick button').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.v)===OB.amount)));const n=OB.picked.length;$('obSplit').textContent=OB.amount>0?`Serían ${formatCOP(OB.amount/n)} en cada acción.`:'Escribe un monto mayor a $0.';$('obNext').disabled=OB.amount<=0}
+function obFinish(){const n=OB.picked.length;if(!n||OB.amount<=0)return;PORTFOLIO=OB.picked.map(tk=>{const a=POOL_EXPANDIDO.find(x=>x.t===tk);return{...a,shares:OB.amount/n/a.price}});obDone()}
+function obUseSeed(){PORTFOLIO=structuredClone(SEED_PORTFOLIO);obDone()}
+function obDone(){savePortfolio();$('onboarding').classList.remove('active');bootApp()}
+function setAvatar(value){const initials=(value==='Invitado'?'TR':String(value).split('@')[0].slice(0,2).toUpperCase());document.getElementById('avatarCircle').textContent=initials;renderAccount()}
+const $=id=>document.getElementById(id);
+const EXTRA_VIEWS=['insights','radar','market'];
+let currentView='today';
+function switchView(name){
+  if(!$('view-'+name))name='today';
+  currentView=name;const isExtra=EXTRA_VIEWS.includes(name);
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));
+  document.querySelectorAll('[data-view]').forEach(b=>{const on=b.dataset.view===name;b.classList.toggle('active',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  document.body.dataset.currentView=name;document.body.classList.toggle('in-extra',isExtra);
+  $('moreBtn').classList.toggle('active',isExtra);
+  $('extrasToggle').classList.toggle('has-active',isExtra);if(isExtra)toggleExtras(true);
+  closeMoreSheet(false);
+  try{window.scrollTo({top:0,behavior:'instant'})}catch{window.scrollTo(0,0)}
+  if(name==='portfolio'&&chartInstance)requestAnimationFrame(()=>chartInstance.resize());
+  if(name==='insights')renderInsights();
+  if(name==='radar'){updateRadarCoverage();if(!RADAR_RESULTS.length)renderRadar(localRadarResults(false))}
+  if(name==='chat'&&window.matchMedia('(min-width:761px)').matches)$('chatInput').focus();
+}
+/* Funcionalidades extra: bloque desplegable (escritorio) y bottom sheet "Más" (móvil) */
+function toggleExtras(force){const g=$('extrasGroup'),t=$('extrasToggle');const open=typeof force==='boolean'?force:g.hidden;g.hidden=!open;t.setAttribute('aria-expanded',String(open))}
+let moreReturnFocus=null;
+function sheetIsOpen(){return $('moreSheet').classList.contains('open')}
+function openMoreSheet(){if(sheetIsOpen())return;moreReturnFocus=document.activeElement;$('moreOverlay').classList.add('open');$('moreSheet').classList.add('open');document.body.classList.add('more-open');$('moreBtn').setAttribute('aria-expanded','true');setTimeout(()=>{const c=$('moreSheet').querySelector('.sheet-close');if(c)c.focus()},30)}
+function closeMoreSheet(restoreFocus=true){if(!sheetIsOpen())return;$('moreOverlay').classList.remove('open');$('moreSheet').classList.remove('open');document.body.classList.remove('more-open');$('moreBtn').setAttribute('aria-expanded','false');if(restoreFocus&&moreReturnFocus&&moreReturnFocus.focus)moreReturnFocus.focus();moreReturnFocus=null}
+function resetDemo(){closeMoreSheet(false);$('resetModal').classList.add('active')}
+function closeResetModal(){$('resetModal').classList.remove('active')}
+function doResetDemo(){closeResetModal();const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('trace_')&&k!=='gemini_api_key')ks.push(k)}ks.forEach(k=>localStorage.removeItem(k));PORTFOLIO=[];activeSectorFilter='all';RADAR_RESULTS=[];$('chatLog').innerHTML='';$('bellDot').classList.remove('show');setRadarFilter('all');closeAssetDrawer();closeAddModal();startOnboarding()}
+/* Búsqueda: en móvil se colapsa a un ícono */
+function openSearchMobile(){$('topbar').classList.add('search-open');$('searchToggle').setAttribute('aria-expanded','true');$('globalSearch').focus()}
+function refreshAll(){renderHoldings();renderMarket();renderInsights();updateRadarCoverage();updatePortfolioTime();renderToday();renderAds();renderChatContext()}
+function updatePortfolioTime(){const now=new Date();document.getElementById('portfolioUpdated').textContent='Actualizado '+now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}
+
+function calculatePortfolio(){let total=0,delta=0,sectorTotals={};PORTFOLIO.forEach(p=>{const v=p.shares*p.price,c=Number(p.chg)||0;total+=v;delta+=v-v/(1+c/100);sectorTotals[p.sector]=(sectorTotals[p.sector]||0)+v});const prev=total-delta;return{total,delta,sectorTotals,sectors:Object.entries(sectorTotals).sort((a,b)=>b[1]-a[1]),weightedChange:prev?delta/prev*100:0}}
+function portfolioWeight(t){const c=calculatePortfolio();const p=PORTFOLIO.find(x=>x.t===t);return p&&c.total?((p.shares*p.price/c.total)*100):0}
+function buildPortfolioContext(){const c=calculatePortfolio();return JSON.stringify({fecha:new Date().toISOString(),moneda:'COP (pesos colombianos)',tipo_portafolio:'De práctica (sin dinero real)',mercado:'Colombia',valor_estimado_cop:Math.round(c.total),cambio_ponderado_pct:Number(c.weightedChange.toFixed(2)),colcap:{que_es:COLCAP.frase,puntos:COLCAP.valor,variacion_pct:COLCAP.chg},acciones:PORTFOLIO.map(p=>({ticker:p.t,nombre:p.n,sector:p.sector,cantidad:p.shares,precio_cop:p.price,valor_cop:Math.round(p.shares*p.price),peso_portafolio_pct:Number(portfolioWeight(p.t).toFixed(1)),variacion_pct:Number(p.chg||0)})),sectores:c.sectors.map(([k,v])=>({sector:k,valor_cop:Math.round(v),peso_pct:c.total?Number((v/c.total*100).toFixed(1)):0}))},null,2)}
+
+function holdCard(p,i,c){const v=p.shares*p.price,w=c.total?v/c.total*100:0,up=p.chg>=0,nm=escapeHTML(p.n);return `<article class="hold-card"><div class="hold-top" role="button" tabindex="0" aria-label="Ver detalle de ${nm}" onclick="openAssetDrawer(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAssetDrawer(${i})}"><div class="asset-logo">${escapeHTML(p.n.slice(0,2).toUpperCase())}</div><div class="hold-id"><div class="asset-name">${nm}</div><div class="asset-sub">${escapeHTML(p.t)}</div></div><div class="hold-chg ${up?'positive':'negative'}">${chgTxt(p.chg)}</div></div><div class="hold-mid"><span class="sector-tag">${escapeHTML(p.sector)}</span><span><strong>${pctTxt(w)}</strong> de tu dinero</span></div><div class="weight-bar"><span style="width:${Math.min(w,100)}%"></span></div><div><label class="hold-lbl" for="amt-${i}">Cuánto tienes en esta acción (pesos)</label><div class="hold-inrow"><span class="hold-cur" aria-hidden="true">$</span><input id="amt-${i}" class="field-input" inputmode="numeric" autocomplete="off" value="${dots(v)}" onfocus="this.select()" onchange="updateShares(${i},this.value)"><button class="btn-secondary hold-rm" type="button" aria-label="Quitar ${nm}" onclick="removeAsset(${i})">Quitar</button></div></div></article>`}
+function renderConcNotice(c){const el=$('concNotice'),top=c.sectors[0],w=top&&c.total?top[1]/c.total*100:0;if(w<40){el.hidden=true;return}el.hidden=false;el.textContent=`${w>=55?'Más de la mitad':w>=45?'Casi la mitad':'Una parte grande'} de tu dinero (${Math.round(w)} %) está en ${top[0]}. Si a ese sector le va mal, tu portafolio lo sentirá más.`}
+function renderHoldings(){const c=calculatePortfolio();if(activeSectorFilter!=='all'&&!c.sectorTotals[activeSectorFilter])activeSectorFilter='all';
+  const top=c.sectors[0],topPct=top&&c.total?top[1]/c.total*100:0;
+  $('heroTotal').textContent=formatCOP(c.total);$('heroAssets').textContent=PORTFOLIO.length+(PORTFOLIO.length===1?' acción':' acciones');$('heroTopSector').textContent=top?top[0]+' · '+pctTxt(topPct):'—';
+  const up=c.delta>=0,ch=$('heroChange');ch.textContent=!c.total?'—':Math.round(c.delta)===0?'Sin cambios hoy':(up?'▲ Subió ':'▼ Bajó ')+formatCOP(Math.abs(c.delta))+' · '+fmtPct(c.weightedChange,2);ch.className='hero-stat-value '+(up?'positive':'negative');
+  $('colcapLine').textContent=`COLCAP ${NUM_FMT.format(COLCAP.valor)} · ${chgTxt(COLCAP.chg)} hoy — ${COLCAP.frase}.`;
+  renderConcNotice(c);
+  const list=PORTFOLIO.map((p,i)=>[p,i]).filter(([p])=>activeSectorFilter==='all'||p.sector===activeSectorFilter);
+  $('holdingsBody').innerHTML=list.map(([p,i])=>holdCard(p,i,c)).join('')||`<div class="empty-state"><div class="empty-icon">+</div><h3>Tu portafolio está vacío</h3><p>Agrega una acción para empezar a practicar.</p><button class="btn-primary" type="button" onclick="openAddModal()">Agregar acción</button></div>`;
+  renderSectorFilters(c);renderInteractiveChart(c)
+}
+function renderSectorFilters(c){const sectors=['all',...c.sectors.map(x=>x[0])];document.getElementById('sectorFilters').innerHTML=sectors.map(s=>`<button class="filter-chip ${activeSectorFilter===s?'active':''}" onclick="setSectorFilter('${escapeHTML(s)}')">${s==='all'?'Todos':escapeHTML(s)}</button>`).join('')}
+function setSectorFilter(sector){activeSectorFilter=sector;renderHoldings();showToast(sector==='all'?'Mostrando todo el portafolio':'Filtrado por '+sector)}
+function clearSectorFilter(){activeSectorFilter='all';renderHoldings()}
+function renderInteractiveChart(c){const labels=c.sectors.map(x=>x[0]);const values=c.sectors.map(x=>x[1]);const colors=['#b78b43','#536b86','#5f8b72','#8d7f6d','#a95a53','#8f99a5','#7b6b96','#758a5f','#a78b59'];const ctx=document.getElementById('portfolioChart').getContext('2d');if(chartInstance){chartInstance.destroy();chartInstance=null}if(typeof Chart!=='undefined')chartInstance=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors.slice(0,labels.length),borderWidth:3,borderColor:'#fff',hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{callbacks:{label:(context)=>{const v=context.raw||0;return `${context.label}: ${formatCompactCOP(v)} · ${pctTxt(c.total?v/c.total*100:0)} de tu dinero`}}}},onClick:(_,elements)=>{if(elements[0])setSectorFilter(labels[elements[0].index])}}});const sel=c.sectors.find(x=>x[0]===activeSectorFilter)||c.sectors[0];document.getElementById('chartCenterValue').textContent=sel&&c.total?pctTxt(sel[1]/c.total*100):'0 %';document.getElementById('chartCenterLabel').textContent=sel?'de tu dinero en '+sel[0]:'sin acciones';document.getElementById('sectorList').innerHTML=c.sectors.map(([s,v],i)=>`<button type="button" class="sector-item ${activeSectorFilter===s?'selected':''}" onclick="setSectorFilter('${escapeHTML(s)}')"><span class="sector-dot" style="background:${colors[i%colors.length]}"></span><span class="sector-name">${escapeHTML(s)}</span><span class="sector-pct">${pctTxt(c.total?v/c.total*100:0)}</span></button>`).join('')}
+function updateShares(index,val){const p=PORTFOLIO[index];if(!p)return;const m=parseCOP(val);if(m<=0){showToast('Escribe un monto mayor a $0, o usa Quitar');renderHoldings();return}p.shares=m/p.price;savePortfolio();refreshAll();showToast('Monto actualizado')}
+function removeAsset(index){const p=PORTFOLIO[index];if(!p)return;PORTFOLIO.splice(index,1);savePortfolio();refreshAll();showToast(p.n+' salió de tu portafolio')}
+function openAddModal(){const select=$('addTickerSelect');select.innerHTML=POOL_EXPANDIDO.map(a=>`<option value="${escapeHTML(a.t)}">${escapeHTML(a.n)} · ${escapeHTML(a.sector)}</option>`).join('');$('addAmountInput').value='';$('addModal').classList.add('active')}
+function closeAddModal(){document.getElementById('addModal').classList.remove('active')}
+function addAssetToPortfolio(){const tk=$('addTickerSelect').value,m=parseCOP($('addAmountInput').value);if(!tk||m<=0){showToast('Escribe un monto en pesos mayor a $0');return}const ex=PORTFOLIO.find(p=>p.t===tk);if(ex)ex.shares+=m/ex.price;else{const a=POOL_EXPANDIDO.find(x=>x.t===tk);if(a)PORTFOLIO.push({...a,shares:m/a.price})}savePortfolio();closeAddModal();refreshAll();showToast(assetName(tk)+' quedó en tu portafolio')}
+
+/* ======================= INSIGHTS ======================= */
+function renderInsights(){const c=calculatePortfolio();const top=c.sectors[0];const topPct=top&&c.total?(top[1]/c.total*100):0;
+  document.getElementById('insightAssets').textContent=PORTFOLIO.length;document.getElementById('insightSector').textContent=top?top[0]:'—';document.getElementById('insightDepends').textContent=top?topPct.toFixed(0)+'%':'—';
+  document.getElementById('insightHeadline').textContent=top?`Tu dinero depende más de ${top[0]}`:'Agrega acciones para ver tu lectura';
+  document.getElementById('insightSummary').textContent=top?`Cerca de ${topPct.toFixed(0)}% de tu dinero está en ese sector. Si le va mal, tu portafolio lo siente más.`:'Necesitamos al menos una acción para leer tu portafolio.';
+  const relevant=NEWS_DATABASE.filter(n=>PORTFOLIO.some(p=>p.t===n.t)).sort((a,b)=>portfolioWeight(b.t)-portfolioWeight(a.t));
+  document.getElementById('insightSignals').innerHTML=relevant.length?relevant.slice(0,4).map(n=>`<div class="impact-item" onclick="openNewsForAsset('${escapeHTML(n.t)}')"><div class="impact-row"><span class="impact-dir ${n.direccion==='Positivo'?'dir-pos':n.direccion==='Negativo'?'dir-neg':'dir-neu'}">${escapeHTML(labelDir(n.direccion))}</span><span class="impact-ticker">${escapeHTML(assetName(n.t))}</span><span class="pill" style="margin-left:auto;padding:4px 7px">${portfolioWeight(n.t).toFixed(1)}% de tu dinero</span></div><h4>${escapeHTML(n.titulo)}</h4><p>${escapeHTML(n.dek)}</p></div>`).join(''):`<div class="empty-state"><div class="empty-icon">◎</div><h3>Sin noticias por ahora</h3><p>Busca noticias de hoy para ver qué pasó con tus acciones.</p></div>`;
+  document.getElementById('exposureMap').innerHTML=c.sectors.slice(0,6).map(([s,v])=>`<div class="exposure-box"><div class="label">Sector</div><strong>${escapeHTML(s)}</strong><span>${(c.total?v/c.total*100:0).toFixed(1)}% de tu dinero</span></div>`).join('')||`<div class="empty-state" style="grid-column:1/-1">Aún no hay información para mostrar.</div>`}
+
+/* ======================= DRAWER ======================= */
+function openAssetDrawer(index){const p=PORTFOLIO[index];if(!p)return;const v=p.shares*p.price,w=portfolioWeight(p.t),up=p.chg>=0,news=NEWS_DATABASE.filter(n=>n.t===p.t);$('drawerTitle').textContent=p.n;$('drawerMeta').textContent=p.t+' · '+p.sector;$('drawerBody').innerHTML=`<div class="drawer-hero"><div class="drawer-ticker">${escapeHTML(p.t)}</div><div style="font-size:24px;font-weight:800;letter-spacing:-.03em;margin-top:3px">${formatCOP(v)}</div><div class="drawer-meta">Cuánto vale hoy en tu portafolio · ${pctTxt(w)} de tu dinero</div></div><div class="drawer-metric-grid"><div class="drawer-metric"><label>Precio</label><strong>${formatCOP(p.price)}</strong></div><div class="drawer-metric"><label>Hoy</label><strong class="${up?'positive':'negative'}">${chgTxt(p.chg)}</strong></div><div class="drawer-metric"><label>Sector</label><strong>${escapeHTML(p.sector)}</strong></div><div class="drawer-metric"><label>Qué parte de tu dinero</label><strong>${pctTxt(w)}</strong></div></div><div class="drawer-block"><h4>¿Qué mueve a esta acción?</h4><p>${escapeHTML(sensitivityFor(p))}</p></div><div class="drawer-block"><h4>Noticias sobre esta acción</h4>${news.length?news.map(n=>`<div class="drawer-news"><div class="drawer-news-title">${escapeHTML(labelDir(n.direccion))} · ${escapeHTML(n.titulo)}</div><div class="drawer-news-dek">${escapeHTML(n.dek)}</div></div>`).join(''):'<p>Por ahora no hay noticias sobre esta acción.</p>'}</div><button class="btn-primary drawer-ask" type="button" onclick="askAboutAsset('${escapeHTML(p.t)}')">Pregúntale a la IA sobre esta acción</button>`;$('drawerOverlay').classList.add('active');$('assetDrawer').classList.add('active');$('drawerBody').scrollTop=0}
+function closeAssetDrawer(){document.getElementById('drawerOverlay').classList.remove('active');document.getElementById('assetDrawer').classList.remove('active')}
+function sensitivityFor(p){const map={
+ECOPETROL:'La mueven el precio del petróleo, el dólar y cuánto petróleo produce. Si el dólar sube, su petróleo vale más en pesos.',
+PFBCOLOM:'Le importan lo que cuesta pedir prestado, cuánta gente pide préstamos y si los clientes pagan a tiempo.',
+ISA:'Dependen de sus contratos de líneas de energía, del dólar y de las reglas del gobierno. Como los contratos duran años, sus ingresos son estables.',
+GRUPOSURA:'Le afectan los seguros que ofrece y cómo les va a las empresas donde invierte. También pesa lo que cuesta pedir prestado.',
+GRUPOARGOS:'Depende de cómo les vaya a las empresas de las que es dueño, como las de cemento y energía.',
+CEMARGOS:'Se mueve con la construcción de casas y obras, el precio de los materiales y el dólar. Cuando se construye menos, recibe menos pedidos.',
+GEB:'Le importan sus contratos de transporte de energía y gas, las reglas del gobierno y el dólar. Casi todo su ingreso viene de contratos largos.',
+CELSIA:'La mueven las lluvias: con más agua produce más energía y más barata. También pesa el precio de la energía.',
+PFDAVVNDA:'Le afectan lo que cuesta pedir prestado, cuánta gente pide préstamos y si los clientes pagan. Una economía débil le complica el cobro.',
+MINEROS:'Depende del precio del oro, del dólar y de cuánto oro logra sacar. Si el oro sube, cada gramo que produce vale más.'};
+return map[p.t]||'Le afectan la economía del país, su sector y las decisiones de la empresa.'}
+function openNewsForAsset(t){openMarketAsset(t)}
+function askAboutAsset(t){closeAssetDrawer();switchView('chat');document.getElementById('chatInput').value=`¿Qué está pasando con ${assetName(t)} y cómo se relaciona con mi portafolio?`;sendChat()}
+
+/* ======================= MARKET ======================= */
+function renderMarket(){const list=[...PORTFOLIO,...POOL_EXPANDIDO.filter(x=>!PORTFOLIO.some(p=>p.t===x.t))].sort((a,b)=>Math.abs(b.chg||0)-Math.abs(a.chg||0));document.getElementById('marketCount').textContent=list.length+' acciones';document.getElementById('moversList').innerHTML=list.map(m=>`<div class="market-row" onclick="openMarketAsset('${escapeHTML(m.t)}')"><div class="asset-logo">${escapeHTML(m.n.slice(0,2).toUpperCase())}</div><div class="market-main"><span style="font-size:12px;font-weight:800">${escapeHTML(m.n)}</span><span class="market-name">${escapeHTML(m.t)}</span><div style="margin-top:4px"><span class="sector-tag">${escapeHTML(m.sector)}</span></div></div><div class="market-price">${formatCOP(m.price)}</div><div class="market-change ${m.chg>=0?'market-chg pos':'market-chg neg'}">${m.chg>0?'▲ Subió ':m.chg<0?'▼ Bajó ':'● Igual '}${Math.abs(m.chg).toFixed(1).replace('.',',')} %</div></div>`).join('');const heat=list.slice(0,9);document.getElementById('marketHeatmap').innerHTML=heat.map(m=>`<div class="heat ${m.chg>0?'pos':m.chg<0?'neg':'neu'}" onclick="openMarketAsset('${escapeHTML(m.t)}')"><span class="heat-ticker">${escapeHTML(m.n)}</span><span class="heat-val">${m.chg>0?'▲ Subió':m.chg<0?'▼ Bajó':'● Igual'} ${Math.abs(m.chg).toFixed(1).replace('.',',')} %</span></div>`).join('')}
+function openMarketAsset(t){const idx=PORTFOLIO.findIndex(x=>x.t===t);if(idx>=0){openAssetDrawer(idx);return}const a=POOL_EXPANDIDO.find(x=>x.t===t);if(a){document.getElementById('drawerTitle').textContent=a.n;document.getElementById('drawerMeta').textContent=a.t+' · '+a.sector;document.getElementById('drawerBody').innerHTML=`<div class="drawer-hero"><div class="drawer-ticker">Acción para practicar</div><div class="drawer-name">${escapeHTML(a.n)}</div><div class="drawer-meta">${escapeHTML(a.t)} · ${escapeHTML(a.sector)}</div></div><div class="drawer-metric-grid"><div class="drawer-metric"><label>Precio</label><strong>${formatCOP(a.price)}</strong></div><div class="drawer-metric"><label>Hoy</label><strong class="${a.chg>=0?'positive':'negative'}">${a.chg>=0?'Subió':'Bajó'} ${Math.abs(a.chg).toFixed(1).replace('.',',')} %</strong></div></div><p class="section-sub">Aún no la tienes en tu portafolio de práctica. Agrégala para que las noticias y la IA la tengan en cuenta.</p><button class="btn-primary" onclick="document.getElementById('assetDrawer').classList.remove('active');document.getElementById('drawerOverlay').classList.remove('active');openAddModal();document.getElementById('addTickerSelect').value='${escapeHTML(a.t)}'">Agregar a mi portafolio</button>`;document.getElementById('drawerOverlay').classList.add('active');document.getElementById('assetDrawer').classList.add('active')}}
+
+/* ======================= SEARCH ======================= */
+function handleGlobalSearch(query){const overlay=document.getElementById('searchOverlay');const q=query.trim().toLowerCase();if(!q){overlay.classList.remove('open');return}const assets=[...PORTFOLIO,...POOL_EXPANDIDO].filter((a,i,self)=>self.findIndex(x=>x.t===a.t)===i).filter(a=>a.t.toLowerCase().includes(q)||a.n.toLowerCase().includes(q)||a.sector.toLowerCase().includes(q));const news=NEWS_DATABASE.filter(n=>n.titulo.toLowerCase().includes(q)||n.t.toLowerCase().includes(q));let html='';if(assets.length)html+='<div class="search-section-label">ACCIONES</div>'+assets.slice(0,6).map(a=>`<div class="search-item" onclick="openMarketAsset('${escapeHTML(a.t)}');closeSearch()"><div><strong>${escapeHTML(a.n)}</strong><div style="font-size:10.5px;color:var(--muted)">${escapeHTML(a.t)}</div></div><div class="search-item-sub">${escapeHTML(a.sector)}<br>${formatCOP(a.price)}</div></div>`).join('');if(news.length)html+='<div class="search-section-label">NOTICIAS</div>'+news.slice(0,5).map(n=>`<div class="search-item" onclick="openMarketAsset('${escapeHTML(n.t)}');closeSearch()"><div style="font-size:10.5px;font-weight:600">${escapeHTML(n.titulo)}</div><div class="search-item-sub">${escapeHTML(n.t)}</div></div>`).join('');overlay.innerHTML=html||'<div style="padding:14px;font-size:11px;color:var(--muted)">No encontramos coincidencias.</div>';overlay.classList.add('open')}
+function closeSearch(){$('searchOverlay').classList.remove('open');$('globalSearch').value='';$('topbar').classList.remove('search-open');$('searchToggle').setAttribute('aria-expanded','false')}
+document.addEventListener('click',e=>{if(!e.target.closest('.topbar-search-wrap,.search-toggle'))closeSearch()});
+
+/* ======================= GEMINI ======================= */
+function saveApiKey(key){userApiKey=key.trim();if(userApiKey)localStorage.setItem('gemini_api_key',userApiKey);else localStorage.removeItem('gemini_api_key');updateApiStatus()}
+function openApiModal(){document.getElementById('geminiApiKey').value=userApiKey;document.getElementById('apiModal').classList.add('active')}
+function closeApiModal(){document.getElementById('apiModal').classList.remove('active')}
+function saveApiKeyFromModal(){saveApiKey(document.getElementById('geminiApiKey').value);closeApiModal();showToast(userApiKey?'Gemini conectado':'Gemini desconectado')}
+function clearApiKey(){saveApiKey('');document.getElementById('geminiApiKey').value='';closeApiModal();showToast('Gemini desconectado')}
+function updateApiStatus(){const dot=document.getElementById('miniStatusDot'),txt=document.getElementById('miniStatusText'),sub=document.getElementById('miniStatusSub');if(userApiKey){dot.className='status-dot ok';txt.textContent='Gemini conectado';sub.textContent='IA activa: análisis y búsqueda web disponibles.'}else{dot.className='status-dot';txt.textContent='IA local';sub.textContent='Agrega una Gemini API key para activar el modo en vivo.'}}
+async function callGeminiAPI(prompt,{googleSearch=false,schema=null}={}){
+  if(!userApiKey)return {text:'',error:'NO_KEY',grounding:[]};
+  const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
+  const payload={contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:.25,maxOutputTokens:2200}};
+  if(googleSearch)payload.tools=[{google_search:{}}];
+  if(schema){payload.generationConfig.responseMimeType='application/json';payload.generationConfig.responseSchema=schema}
+  try{const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':userApiKey},body:JSON.stringify(payload)});const data=await response.json();if(!response.ok||data.error)return{text:'',error:data?.error?.message||'Error de Gemini',grounding:[]};const candidate=data.candidates?.[0];return{text:candidate?.content?.parts?.map(p=>p.text||'').join('')||'',error:null,grounding:candidate?.groundingMetadata||data?.candidates?.[0]?.groundingMetadata||[]}}
+  catch(err){return{text:'',error:err.message||'Error de conexión',grounding:[]}}
+}
+const AI_RULES=`REGLAS (valen para toda tu respuesta):
+- Mercado: solo Colombia. Todos los montos van en pesos colombianos (COP), por ejemplo "$1,2 M" o "$350.000". Nunca uses dólares.
+- Cero jerga: explica como a alguien que nunca ha invertido. Respuestas cortas y frases simples (máximo 20 palabras). Si usas un término técnico, explícalo en la misma frase.
+- Nombra primero la empresa; el ticker solo si hace falta.
+- Informa, no recomiendes: nunca sugieras comprar, vender ni mantener una acción. No uses verbos como "compra", "vende", "aprovecha" ni "deberías".
+- Si la persona pregunta si debe comprar, vender o mantener, dile con amabilidad que The Trace no recomienda y explica qué factores influyen en esa acción. La decisión es suya.
+- El COLCAP es el termómetro de las acciones más grandes de Colombia.`;
+function portfolioPrompt(question){return `Eres Trace AI, una guía que explica, en palabras simples, qué pasó con las acciones de una persona en Colombia y por qué. Responde en español de Colombia, tuteando, claro y sin jerga. Usa SOLO el portafolio siguiente como contexto personal (es un portafolio de práctica, sin dinero real); no inventes cantidades ni porcentajes. Distingue hechos de interpretación y evita presentar una predicción como certeza.\n\n${AI_RULES}\n\nPORTAFOLIO ACTUAL:\n${buildPortfolioContext()}\n\nPREGUNTA DEL USUARIO:\n${question}\n\nCuando sea útil, explica: qué pasa, por qué puede afectar, qué parte de tu dinero está en juego y qué conviene mirar.`}
+async function runPortfolioAI(question){switchView('insights');document.getElementById('insightSummary').textContent='Leyendo tu portafolio…';if(!userApiKey){document.getElementById('insightHeadline').textContent='Tu portafolio, en corto';document.getElementById('insightSummary').textContent=localPortfolioInsight();document.getElementById('portfolioAiMini').textContent='Esta lectura usa tus acciones y qué parte de tu dinero es cada una.';showToast('Conecta la IA para una lectura más completa');return}
+  const res=await callGeminiAPI(portfolioPrompt(question));if(res.error){showToast('No fue posible conectar con la IA: '+res.error);document.getElementById('insightSummary').textContent=localPortfolioInsight();return}document.getElementById('insightHeadline').textContent='Lectura generada por IA';document.getElementById('insightSummary').innerHTML=parseMarkdown(res.text);document.getElementById('portfolioAiMini').textContent='Última lectura, hecha con las acciones que tienes hoy.'}
+function localPortfolioInsight(){
+  const c=calculatePortfolio();if(!PORTFOLIO.length)return'Agrega acciones para ver tu lectura.';
+  const top=c.sectors[0],tw=c.total?top[1]/c.total*100:0,mv=c.weightedChange,n=PORTFOLIO.length;
+  const s=[`Tu portafolio de práctica tiene ${n} ${n===1?'acción':'acciones'} y hoy vale ${formatCOP(c.total)}.`];
+  s.push(Math.abs(mv)<0.05?'Hoy casi no cambió.':`Hoy ${mv>0?'subió':'bajó'} ${t4pct(mv)} %.`);
+  s.push(tw>=40?`Donde más tienes tu dinero es ${top[0]}: ${Math.round(tw)} % del total. Si a ese sector le va mal, tu portafolio lo siente más.`:'Tu dinero está repartido entre varios sectores, así que ninguno pesa demasiado.');
+  s.push('En «Noticias que te afectan» ves qué está pasando. Esto explica, no recomienda.');
+  return s.join(' ')}
+
+/* ======================= RADAR ======================= */
+const RADAR_SCHEMA={type:'OBJECT',properties:{events:{type:'ARRAY',items:{type:'OBJECT',properties:{ticker:{type:'STRING'},title:{type:'STRING'},direction:{type:'STRING'},severity:{type:'STRING'},why:{type:'STRING'},transmission:{type:'STRING'},metric:{type:'STRING'},time:{type:'STRING'},sourceHint:{type:'STRING'}},required:['ticker','title','direction','severity','why','transmission','metric','time','sourceHint']}}},required:['events']};
+/* Respaldo local del radar: explicación en cero jerga para cada noticia del catálogo (por id). */
+const LOCAL_RADAR={
+  1:{via:'Si el petróleo baja, Ecopetrol recibe menos plata por cada barril que vende.',metric:'El precio del petróleo.'},
+  2:{via:'Con más petróleo para vender, la empresa puede recibir más plata.',metric:'Cuánto petróleo produce cada mes.'},
+  3:{via:'Cuando entrega más préstamos y se los pagan, el banco gana más.',metric:'Cuántos préstamos entrega y cuántos le pagan a tiempo.'},
+  4:{via:'Si los clientes se atrasan, el banco guarda plata para cubrir la pérdida y gana menos.',metric:'Cuántos clientes se atrasan en sus pagos.'},
+  5:{via:'Los contratos de energía le aseguran ingresos durante muchos años.',metric:'Cómo avanzan las obras de esas líneas.'},
+  6:{via:'Por ahora no cambia lo que la empresa espera ganar.',metric:'Si las obras siguen avanzando como estaban previstas.'},
+  7:{via:'Con más agua en los embalses, produce más energía y le cuesta menos.',metric:'Cuánta lluvia cae y qué tan llenos están los embalses.'},
+  8:{via:'Sus ganancias son parecidas a las del año pasado, sin sorpresas.',metric:'Cuánto ganan sus seguros y sus inversiones.'},
+  9:{via:'Si a las empresas de las que es dueño les va peor, a Grupo Argos también.',metric:'Cómo les va a las empresas de las que es dueño.'},
+  10:{via:'Con menos obras, la empresa recibe menos pedidos de cemento.',metric:'Cuántas casas y edificios se están construyendo.'},
+  11:{via:'Si el oro sube, cada gramo que Mineros produce vale más.',metric:'El precio del oro.'}
+};
+function localRadarResults(onlyMine){return NEWS_DATABASE.filter(n=>!onlyMine||PORTFOLIO.some(p=>p.t===n.t)).map(n=>{const r=LOCAL_RADAR[n.id]||{};return{...n,impactWhy:n.dek,via:r.via||LOCAL_VIA,metric:r.metric||LOCAL_METRIC,exposure:portfolioWeight(n.t),time:'Hoy',sourceHint:n.fuente}})}
+async function runLiveRadarAnalysis(){const btn=document.getElementById('analyzeBtn');btn.disabled=true;btn.textContent='Buscando noticias…';document.getElementById('radarLiveDot').classList.add('searching');document.getElementById('radarStatusText').textContent='Buscando noticias sobre tus acciones…';document.getElementById('briefList').innerHTML=`<div class="card-pad"><div class="skeleton line w80"></div><div class="skeleton line w55" style="margin-top:9px"></div><div class="skeleton box" style="margin-top:15px"></div><div class="skeleton box" style="margin-top:10px"></div></div>`;
+  if(!userApiKey){RADAR_RESULTS=localRadarResults(true);renderRadar(RADAR_RESULTS);document.getElementById('radarStatusText').textContent='Resumen del día';document.getElementById('radarLiveDot').classList.remove('searching');btn.disabled=false;btn.textContent='Buscar noticias de hoy';showToast('Listo: estas son las noticias sobre tus acciones.');return}
+  const tickers=PORTFOLIO.map(p=>p.t).join(', ');const prompt=`Busca en Google Search noticias, comunicados, regulaciones, resultados o eventos RECIENTES (idealmente de las últimas 48 horas) que puedan afectar DIRECTAMENTE estas acciones del portafolio de práctica de una persona en Colombia: ${tickers}. Prioriza fuentes y noticias colombianas (prensa económica del país, la Bolsa de Valores de Colombia, comunicados de las empresas) cuando existan. Usa el contexto de portafolio que incluyo debajo para priorizar eventos por relevancia y por qué parte de su dinero es cada acción. No inventes noticias. Si no hay evidencia reciente para una acción, no la inventes ni la rellenes. Para cada evento devuelve: ticker, título, direction (Positivo, Negativo o Neutro), severity (Alta, Media o Baja), why (por qué afecta a la acción), transmission (por qué le afecta a la persona: precio, ingresos, costos, reglas del gobierno, demanda, dólar, etc.), metric (qué conviene mirar), tiempo relativo y una pista de la fuente principal. Redacta why, transmission y metric en una o dos frases cortas, en español de Colombia, en cero jerga: explica como a alguien que nunca ha invertido y aclara en la misma frase cualquier término técnico. Cuenta qué pasó y por qué afecta; nunca recomiendes comprar, vender ni mantener. Si das montos, van en pesos colombianos.\n\nPORTAFOLIO:\n${buildPortfolioContext()}`;
+  const res=await callGeminiAPI(prompt,{googleSearch:true,schema:RADAR_SCHEMA});
+  document.getElementById('radarLiveDot').classList.remove('searching');btn.disabled=false;btn.textContent='Buscar noticias de hoy';
+  if(res.error){document.getElementById('radarStatusText').textContent='No pudimos buscar ahora';showToast('No pudimos buscar noticias: '+res.error);RADAR_RESULTS=localRadarResults(true);renderRadar(RADAR_RESULTS);return}
+  let parsed;try{parsed=JSON.parse(res.text)}catch{const raw=res.text.match(/\{[\s\S]*\}/);try{parsed=JSON.parse(raw?.[0]||'')}catch{parsed={events:[]}}}
+  RADAR_RESULTS=(parsed.events||[]).filter(e=>PORTFOLIO.some(p=>p.t===e.ticker)).map((e,i)=>({...e,id:'live-'+i,t:e.ticker,titulo:e.title,direccion:e.direction,magnitud:e.severity,impactWhy:e.why,via:e.transmission,metric:e.metric,time:e.time,sourceHint:e.sourceHint,grounding:res.grounding}));
+  renderRadar(RADAR_RESULTS);document.getElementById('radarStatusText').textContent='Noticias actualizadas';document.getElementById('bellDot').classList.add('show');showToast(RADAR_RESULTS.length?`${RADAR_RESULTS.length} noticias encontradas`:'No hay noticias recientes que te afecten claramente');}
+function setRadarFilter(filter){radarFilter=filter;document.querySelectorAll('.radar-filter').forEach(b=>b.classList.toggle('active',b.dataset.radarFilter===filter));renderRadar(RADAR_RESULTS)}
+function renderRadar(items){const filtered=(items||[]).filter(item=>radarFilter==='all'||item.direccion===radarFilter||item.magnitud===radarFilter);document.getElementById('radarResultCount').textContent=filtered.length?`${filtered.length} noticia(s) · primero las que más te afectan`:'Sin noticias con este filtro';if(!filtered.length){document.getElementById('briefList').innerHTML=`<div class="empty-state"><div class="empty-icon">⌁</div><h3>No hay noticias con este filtro</h3><p>Prueba otro filtro o busca noticias de hoy.</p></div>`;return}document.getElementById('briefList').innerHTML=`<div class="radar-list" style="padding:0 17px 17px">${filtered.map(n=>newsCardHTML(n)).join('')}</div>${sourcePanel(filtered)}`}
+function newsCardHTML(n){const sev={Alta:'high',Media:'medium',Baja:'low'}[n.magnitud]||'medium';const dir=n.direccion||'Neutro';const mag=n.magnitud||'Media';const weight=Number(n.exposure ?? portfolioWeight(n.t));const tk=n.t||n.ticker;return `<article class="news-card"><div class="news-meta"><span class="severity ${sev}">${dir==='Positivo'?'▲':dir==='Negativo'?'▼':'●'} ${escapeHTML(labelSev(mag))} · ${escapeHTML(labelDir(dir))}</span><span class="source">${escapeHTML(n.sourceHint||n.fuente||'Resumen de mercado')}</span><span class="time">${escapeHTML(n.time||'Reciente')}</span></div><h3>${escapeHTML(n.titulo||n.title||'Noticia para ti')}</h3><p class="news-why">${escapeHTML(n.impactWhy||n.why||n.dek||'Esta noticia puede afectar tu acción.')}</p><div class="news-grid"><div class="news-mini"><div class="news-mini-label">Por qué te afecta</div><div class="news-mini-value">${escapeHTML(n.via||'—')}</div></div><div class="news-mini"><div class="news-mini-label">Qué conviene mirar</div><div class="news-mini-value">${escapeHTML(n.metric||'—')}</div></div><div class="news-mini"><div class="news-mini-label">Qué parte de tu dinero</div><div class="news-mini-value">${weight.toFixed(1)}%</div></div></div><div class="affected-tags"><span class="affected-tag">${escapeHTML(assetName(tk))}</span><span class="affected-tag">${escapeHTML(labelDir(dir))}</span><span class="affected-tag">${escapeHTML(labelSev(mag))}</span></div><div class="news-footer"><span class="source-note">La IA explica lo ocurrido y cómo se relaciona con tus acciones. <strong>No es una recomendación.</strong></span><button class="btn-ghost" onclick="openNewsForAsset('${escapeHTML(tk)}')">Ver acción →</button></div></article>`}
+function sourcePanel(items){const chunks=[];items.forEach(i=>(i.grounding?.groundingChunks||i.grounding?.grounding_chunks||[]).forEach(c=>{const web=c.web||c?.web; if(web?.uri&&!chunks.some(x=>x.uri===web.uri))chunks.push({uri:web.uri,title:web.title||new URL(web.uri).hostname})}));if(!chunks.length)return'';return `<div class="card-pad" style="border-top:1px solid var(--line);background:var(--surface-2)"><div class="section-title" style="font-size:11px">Fuentes web consultadas</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">${chunks.slice(0,8).map(c=>`<a class="pill" href="${escapeHTML(c.uri)}" target="_blank" rel="noopener" style="text-decoration:none">${escapeHTML(c.title)} ↗</a>`).join('')}</div></div>`}
+function updateRadarCoverage(){document.getElementById('radarCoverage').textContent=`${PORTFOLIO.length} acción(es) · ${Object.keys(calculatePortfolio().sectorTotals).length} sector(es)`}
+
+/* ======================= CHAT ======================= */
+function startChat(){const log=document.getElementById('chatLog');if(log.children.length)return;pushMsg('bot',`Hola, soy **Trace AI**. Puedo explicarte qué pasó con las **${PORTFOLIO.length} acciones** de tu portafolio de práctica y por qué. Elige una pregunta rápida o escribe la tuya. Explico lo ocurrido; no recomiendo comprar ni vender.`)}
+function renderChatContext(){const el=$('chatContext');if(!el)return;const c=calculatePortfolio(),top=c.sectors[0],mv=c.weightedChange;const rows=[['Portafolio','De práctica'],['Tus acciones',String(PORTFOLIO.length)],['Cuánto vale hoy',formatCOP(c.total)],['Hoy',PORTFOLIO.length?(Math.abs(mv)<0.05?'Casi igual':`${mv>0?'Subió':'Bajó'} ${t4pct(mv)} %`):'—'],['Donde más tienes tu dinero',top?top[0]:'—']];el.innerHTML=rows.map(([a,b])=>`<div class="context-stat"><span>${escapeHTML(a)}</span><span>${escapeHTML(b)}</span></div>`).join('')}
+async function sendChat(){const input=document.getElementById('chatInput');const text=input.value.trim();if(!text)return;pushMsg('user',text);input.value='';const typing=pushTyping();if(!userApiKey){typing.remove();pushMsg('bot',localChatFallback(text));return}const res=await callGeminiAPI(portfolioPrompt(text));typing.remove();if(res.error){pushMsg('bot','No fue posible conectar con la IA en este momento ('+res.error+'). Te mostramos una respuesta basada en tu portafolio:');pushMsg('bot',localChatFallback(text));return}pushMsg('bot',res.text)}
+const noAcc=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function chatAssetIn(q){return [...PORTFOLIO,...POOL_EXPANDIDO].find(a=>new RegExp('\\b('+noAcc(a.n)+'|'+noAcc(a.t)+')\\b').test(q))}
+function localChatFallback(text){
+  if(!PORTFOLIO.length)return'Tu portafolio de práctica está vacío. Agrega una acción y te cuento qué pasó con ella.';
+  const c=calculatePortfolio(),q=noAcc(text),asset=chatAssetIn(q),top=c.sectors[0],tw=c.total&&top?top[1]/c.total*100:0;
+  const heavy=[...PORTFOLIO].sort((a,b)=>b.shares*b.price-a.shares*a.price);
+  const pfx=x=>pctTxt(x).replace('Menos','menos');
+  const why=a=>`• **${a.n}**: ${sensitivityFor(a)}`;
+  if(/\b(comprar|compro|vender|vendo|mantener|mantengo|debo|deberia|recomiend\w*)\b/.test(q)){
+    const list=asset?[asset]:heavy.slice(0,3);
+    return`The Trace no recomienda comprar, vender ni mantener acciones: explica lo que pasó, y la decisión es tuya. Lo que sí te cuento es qué influye en ${asset?'esta acción':'tus acciones'}:\n${list.map(why).join('\n')}`}
+  if(asset){const p=PORTFOLIO.find(x=>x.t===asset.t),chg=Number(asset.chg)||0,n=NEWS_DATABASE.filter(x=>x.t===asset.t)[0];
+    let s=`**${asset.n}** ${chg>0?'subió':chg<0?'bajó':'no cambió'}${chg?' '+t4pct(chg)+' %':''} hoy y su precio es ${formatCOP(asset.price)}. ${p?`Es ${pfx(portfolioWeight(p.t))} de tu dinero.`:'Todavía no la tienes en tu portafolio de práctica.'}\n${sensitivityFor(asset)}`;
+    if(n)s+=`\n${labelDir(n.direccion)}: ${n.titulo}. ${n.dek}`;
+    return s}
+  if(/\b(noticia\w*|afecta\w*|pasando|novedad\w*|aviso\w*)\b/.test(q)){
+    const rel=NEWS_DATABASE.filter(n=>PORTFOLIO.some(p=>p.t===n.t)).sort((a,b)=>portfolioWeight(b.t)-portfolioWeight(a.t)).slice(0,3);
+    if(!rel.length)return'Por ahora no hay noticias claras sobre tus acciones. Busca noticias de hoy en «Noticias que te afectan».';
+    return`Estas son las noticias que más te afectan, empezando por la acción que pesa más en tu dinero:\n${rel.map(n=>`• **${assetName(n.t)}** (${labelDir(n.direccion)}, ${labelSev(n.magnitud).toLowerCase()}): ${n.titulo}. ${n.dek}`).join('\n')}\nSe explican los hechos; no se indica qué hacer.`}
+  if(/(depende|sector|concentr|repartid|donde tengo)/.test(q)){
+    const names=top?PORTFOLIO.filter(p=>p.sector===top[0]).map(p=>p.n).join(', '):'';
+    return`Tu dinero depende más de **${top?top[0]:'—'}**: ahí está **${tw.toFixed(1).replace('.',',')} %** de tu portafolio (${names}). ${tw>=40?'Si a ese sector le va mal, tu portafolio lo siente más.':'Es la parte más grande, pero tu dinero está bastante repartido.'} Esto explica cómo está repartido tu dinero; no es una recomendación.`}
+  if(/(primera vez|resumen|de que esta hecho|explicame (mi|el) portafolio|que tengo)/.test(q)){
+    return`Tu portafolio de práctica es el conjunto de acciones que practicas, sin dinero real. Tiene **${PORTFOLIO.length} ${PORTFOLIO.length===1?'acción':'acciones'}** y hoy vale **${formatCOP(c.total)}**. Una acción es una parte de una empresa: si a la empresa le va mejor o peor, su precio sube o baja.\nAsí está repartido tu dinero:\n${heavy.slice(0,4).map(p=>`• **${p.n}**: ${pfx(portfolioWeight(p.t))}`).join('\n')}\nPregúntame qué pasó hoy o qué noticias te afectan.`}
+  if(/(hoy|paso|subio|bajo|cambio|como (me )?(fue|va))/.test(q)){
+    const m=todayModel(),amt=t4amt(m.delta);
+    return`Hoy tu portafolio de práctica ${todayPortMove(m)}${amt?', '+amt:''}. ${todayLead(m).join(' ')} ${colcapLine(m)}\nEsto explica lo que pasó. No dice qué va a pasar ni qué hacer.`}
+  if(/(mover|mueve|movimiento|factor|influye|que puede)/.test(q))
+    return`Tus acciones se mueven por cosas distintas. Las que más pesan en tu dinero:\n${heavy.slice(0,3).map(why).join('\n')}`;
+  return`Tu portafolio de práctica tiene **${PORTFOLIO.length} ${PORTFOLIO.length===1?'acción':'acciones'}** y hoy vale **${formatCOP(c.total)}**. Puedo contarte qué pasó hoy, de qué depende tu dinero o qué noticias te afectan. Si conectas la IA, respondo cualquier otra pregunta.`}
+function pushMsg(who,text,raw=false){const log=document.getElementById('chatLog');const div=document.createElement('div');div.className='msg '+who;div.innerHTML=who==='bot'&&!raw?parseMarkdown(text):escapeHTML(text);log.appendChild(div);log.scrollTop=log.scrollHeight;return div}
+function pushTyping(){const log=document.getElementById('chatLog');const div=document.createElement('div');div.className='msg bot';div.innerHTML='<span class="typing"><span></span><span></span><span></span></span>';log.appendChild(div);log.scrollTop=log.scrollHeight;return div}
+function fillChat(text){switchView('chat');document.getElementById('chatInput').value=text;document.getElementById('chatInput').focus()}
+
+/* ======================= PARTE 4: HOY, PUBLICIDAD Y PLAN DE PAGO ======================= */
+/* Causa en palabras simples para cada noticia del catálogo (se usa solo si coincide con lo que hizo la acción). */
+const TODAY_CAUSE={1:'el precio del petróleo bajó',2:'la empresa produce un poco más de petróleo',3:'el banco gana más por los préstamos que entrega',4:'más clientes se atrasan en sus pagos',5:'ganó un contrato para nuevas líneas de energía',7:'las lluvias le dan más energía para producir',9:'a una de las empresas de las que es dueño le va un poco peor',10:'se levantan menos casas y edificios',11:'el precio del oro subió'};
+const T4_SC={Alta:3,Media:2,Baja:1};
+const t4pct=x=>Math.abs(Number(x)||0).toFixed(1).replace('.',',');
+const t4chgTxt=c=>Number(c)===0?'● Sin cambios':chgTxt(c);
+function t4amt(d){const n=Math.abs(Number(d)||0);if(Math.round(n)<1)return'';return 'unos '+formatCOP(n<1000?Math.round(n/10)*10:Math.round(n/100)*100)+(d>0?' más':' menos')}
+function todayModel(){
+  const c=calculatePortfolio();
+  const rows=PORTFOLIO.map(p=>{const v=p.shares*p.price,chg=Number(p.chg)||0;return{p,chg,d:v-v/(1+chg/100),w:c.total?v/c.total*100:0}});
+  const sorted=[...rows].sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+  return{c,rows,sorted,top:sorted[0],pct:c.weightedChange,delta:c.delta,dir:Math.abs(c.weightedChange)<0.05?'flat':(c.delta>0?'up':'down')}
+}
+function todayCause(p,chg){if(!chg)return null;const want=chg>0?'Positivo':'Negativo';const n=NEWS_DATABASE.filter(x=>x.t===p.t&&x.direccion===want&&TODAY_CAUSE[x.id]).sort((a,b)=>T4_SC[b.magnitud]-T4_SC[a.magnitud])[0];return n?{news:n,text:TODAY_CAUSE[n.id]}:null}
+function todayHead(m){if(m.dir==='flat')return 'Hoy tu portafolio <span class="t4-num flat">casi no cambió</span>';const up=m.dir==='up';return `Hoy tu portafolio <span class="t4-num ${m.dir}">${up?'subió':'bajó'} ${t4pct(m.pct)} %</span>, ${t4amt(m.delta)||'sin mucho cambio en pesos'}`}
+function todayLead(m){
+  const t=m.top,nm=t.p.n;
+  if(!t.chg)return['Ninguna de tus acciones se movió hoy.'];
+  const up=t.chg>0,verb=up?'subió':'bajó',cz=todayCause(t.p,t.chg),s=[];
+  const sameSign=m.dir!=='flat'&&(t.d>0)===(m.delta>0);
+  const lead=m.dir==='flat'?'La que más se movió fue':'La que más pesó fue';
+  if(cz&&sameSign)s.push(`La mayor causa fue ${nm}, porque ${cz.text}.`);
+  else if(cz)s.push(`${lead} ${nm}, que ${verb} porque ${cz.text}.`);
+  else s.push(`${lead} ${nm}, que ${verb} ${t4pct(t.chg)} %. Hoy no hay una noticia clara que lo explique.`);
+  const amt=t4amt(t.d);
+  s.push(`Representa ${pctTxt(t.w).replace('Menos','menos')} de tu dinero${amt?`, así que su ${up?'subida':'bajada'} movió tu portafolio ${amt}`:''}.`);
+  const comp=m.sorted.find(r=>r!==t&&r.d*t.d<0);
+  if(comp)s.push(`Del otro lado, ${comp.p.n} ${comp.chg>0?'subió':'bajó'} ${t4pct(comp.chg)} % y compensó una parte.`);
+  else if(m.rows.length>1&&m.rows.every(r=>r.d*t.d>=0))s.push('Todas tus acciones se movieron hacia el mismo lado.');
+  return s
+}
+function todayPortMove(m){return m.dir==='flat'?'casi no cambió':`${m.dir==='up'?'subió':'bajó'} ${t4pct(m.pct)} %`}
+function colcapLine(m){
+  const c=COLCAP.chg,a=Math.abs(c);
+  const mag=a<0.3?'casi no se movieron':a<1?(c>0?'subieron un poco':'bajaron un poco'):(c>0?'subieron bastante':'bajaron bastante');
+  let cmp='';if(m){const d=m.pct-c;cmp=Math.abs(d)<0.3?' Tu portafolio se movió parecido.':d>0?' A tu portafolio le fue mejor.':' A tu portafolio le fue peor.'}
+  return `Hoy las acciones más grandes del país ${mag}.${cmp}`
+}
+function todayExtended(m){
+  const items=m.sorted.map(r=>{const cz=todayCause(r.p,r.chg),amt=t4amt(r.d);const k=r.chg>0?'up':r.chg<0?'down':'flat';
+    return `<li><span><span class="t4-xn">${escapeHTML(r.p.n)}</span><span class="t4-tk">${escapeHTML(r.p.t)}</span> <span class="t4-chg ${k}">${t4chgTxt(r.chg)}</span></span><span>${pctTxt(r.w)} de tu dinero${amt?` · movió tu portafolio ${escapeHTML(amt)}`:''}.${cz?` Por qué: ${escapeHTML(cz.text)}.`:''}</span></li>`}).join('');
+  const cc=COLCAP.chg,dd=m.pct-cc;
+  const cmp=Math.abs(dd)<0.3?'Se movió parecido al mercado.':dd>0?'Hoy le fue mejor que al COLCAP.':'Hoy le fue peor que al COLCAP.';
+  const top=m.c.sectors[0],tw=top&&m.c.total?top[1]/m.c.total*100:0;
+  const sec=tw>=40?`<h3 class="t4-xh">Dónde está tu dinero</h3><p>${pctTxt(tw)} de tu dinero está en ${escapeHTML(top[0])}. Por eso lo que le pase a ese sector se nota más en tu portafolio.</p>`:'';
+  return `<h3 class="t4-xh">Acción por acción</h3><ul class="t4-xl">${items}</ul><h3 class="t4-xh">Frente al COLCAP</h3><p>El COLCAP, ${COLCAP.frase}, ${cc>=0?'subió':'bajó'} ${t4pct(cc)} %. Tu portafolio ${todayPortMove(m)}. ${cmp}</p>${sec}<p class="t4-xfoot">Esto explica lo que pasó. No dice qué va a pasar ni qué hacer.</p>`
+}
+function todayPrompt(m){
+  const t=m.top,cz=todayCause(t.p,t.chg);
+  const rel=NEWS_DATABASE.filter(n=>PORTFOLIO.some(p=>p.t===n.t)).sort((a,b)=>portfolioWeight(b.t)-portfolioWeight(a.t)).map(n=>({accion:assetName(n.t),ticker:n.t,tipo:labelDir(n.direccion),impacto:labelSev(n.magnitud),titulo:n.titulo,detalle:n.dek}));
+  const hoy={portafolio_cambio_pct:Number(m.pct.toFixed(2)),portafolio_cambio_cop:Math.round(m.delta),accion_que_mas_peso:{nombre:t.p.n,ticker:t.p.t,variacion_pct:Number((Number(t.chg)||0).toFixed(2)),efecto_en_portafolio_cop:Math.round(t.d),parte_de_tu_dinero_pct:Number(t.w.toFixed(1)),causa_segun_catalogo:cz?cz.text:null}};
+  return `Eres Trace AI, una guía que explica, en palabras simples, qué pasó con las acciones de una persona en Colombia y por qué. Escribe entre 3 y 5 frases, en un solo párrafo, que respondan «¿qué pasó hoy con mi portafolio y por qué?». Usa SOLO los datos de abajo (es un portafolio de práctica, sin dinero real): no inventes cifras ni causas. Si las noticias no explican un movimiento, dilo con sinceridad. No recomiendes ni predigas: cuenta lo que pasó, no lo que va a pasar. Sin listas ni títulos.\n\n${AI_RULES}\n\nPORTAFOLIO:\n${buildPortfolioContext()}\n\nQUÉ PASÓ HOY:\n${JSON.stringify(hoy,null,2)}\n\nNOTICIAS RELACIONADAS DEL CATÁLOGO:\n${JSON.stringify(rel,null,2)}`}
+async function explainTodayWithAI(){
+  if(!PORTFOLIO.length)return;
+  let out=$('todayExplainOut'),b=$('todayExplainBtn');if(b.disabled)return;
+  if(!out.hidden){out.hidden=true;out.removeAttribute('aria-busy');b.setAttribute('aria-expanded','false');b.textContent='Explicación con IA';return}
+  const m=todayModel();
+  const show=html=>{out=$('todayExplainOut');b=$('todayExplainBtn');if(!out||!b)return;out.innerHTML=html;out.hidden=false;out.removeAttribute('aria-busy');b.disabled=false;b.setAttribute('aria-expanded','true');b.textContent='Ocultar la explicación';out.focus()};
+  if(!userApiKey){show(todayExtended(m));return}
+  b.disabled=true;b.textContent='Generando explicación…';b.setAttribute('aria-expanded','true');out.setAttribute('aria-busy','true');
+  out.innerHTML='<div class="skeleton line w80"></div><div class="skeleton line w55" style="margin-top:9px"></div><div class="skeleton line w80" style="margin-top:9px"></div>';out.hidden=false;
+  const res=await callGeminiAPI(todayPrompt(m));
+  const txt=(res.text||'').trim();
+  if(res.error||!txt){showToast('No fue posible conectar con la IA. Te mostramos la explicación básica.');show(todayExtended(m));return}
+  show(`<div class="t4-xai">${parseMarkdown(txt)}</div><p class="t4-xfoot">Explicación hecha con IA a partir de tus datos. Cuenta lo que pasó; no dice qué va a pasar ni qué hacer.</p>`)
+}
+function renderTodayMain(m){
+  const el=$('todayMain');
+  if(!m){el.className='card t4-main';el.innerHTML=`<h2 class="t4-kicker" id="t4MainTitle">Qué pasó hoy con tu portafolio</h2><div class="empty-state"><div class="empty-icon">+</div><h3>Tu portafolio está vacío</h3><p>Agrega una acción de práctica y aquí te explicamos qué pasó con ella.</p><button class="btn-primary" type="button" onclick="openAddModal()">Agregar acción</button></div>`;return}
+  const t=m.top,k=t.chg>0?'up':t.chg<0?'down':'flat',amt=t4amt(t.d);
+  el.className='card t4-main '+m.dir;
+  el.innerHTML=`<div class="t4-main-top"><h2 class="t4-kicker" id="t4MainTitle">Qué pasó hoy con tu portafolio</h2><span class="practice-tag">De práctica · sin dinero real</span></div>
+<div class="t4-dirchip ${m.dir}">${{up:'▲ Subió',down:'▼ Bajó',flat:'● Casi sin cambios'}[m.dir]}</div>
+<h3 class="t4-head">${todayHead(m)}</h3>
+<p class="t4-lead">${todayLead(m).map(escapeHTML).join(' ')}</p>
+<div class="t4-top"><div class="t4-tl"><span class="t4-lbl">La acción que más pesó</span><span class="t4-tn">${escapeHTML(t.p.n)}<span class="t4-tk">${escapeHTML(t.p.t)}</span></span></div><div class="t4-tr"><span class="t4-chg ${k}">${t4chgTxt(t.chg)}</span>${amt?`<span class="t4-lbl">${escapeHTML(amt)} en tu portafolio</span>`:''}</div></div>
+<p class="t4-banner">The Trace explica lo que pasó. No te dice qué comprar ni vender.</p>
+<button class="btn-primary t4-explain" id="todayExplainBtn" type="button" aria-expanded="false" aria-controls="todayExplainOut" onclick="explainTodayWithAI()">Explicación con IA</button>
+<div class="t4-x" id="todayExplainOut" tabindex="-1" hidden></div>`
+}
+function renderTodayColcap(m){const c=COLCAP.chg,k=c>0?'up':c<0?'down':'flat';$('todayColcap').innerHTML=`<h2 class="t4-kicker">COLCAP hoy</h2><div class="t4-cc-row"><span class="t4-cc-val">${NUM_FMT.format(COLCAP.valor)}</span><span class="t4-chg ${k}">${t4chgTxt(c)}</span></div><p class="t4-sub">El COLCAP es ${COLCAP.frase}.</p><p class="t4-cc-line">${escapeHTML(colcapLine(m))}</p>`}
+/* Noticias de Hoy: misma lógica y misma tarjeta que el radar (newsCardHTML), en contenedores propios (#todayNewsList). */
+function todayNewsItems(){
+  const src=RADAR_RESULTS.length?RADAR_RESULTS:NEWS_DATABASE.map(n=>({...n,impactWhy:n.dek,via:LOCAL_VIA,metric:LOCAL_METRIC,exposure:portfolioWeight(n.t),time:'Hoy',sourceHint:n.fuente}));
+  return src.filter(n=>PORTFOLIO.some(p=>p.t===(n.t||n.ticker))).map(n=>({n,s:(T4_SC[n.magnitud]||2)*(Number(n.exposure??portfolioWeight(n.t||n.ticker))+1)})).sort((a,b)=>b.s-a.s).slice(0,3).map(x=>x.n)
+}
+function todayNewsCard(n){const dir=n.direccion||'Neutro',mag=n.magnitud||'Media',k=dir==='Positivo'?'up':dir==='Negativo'?'down':'flat',ic=k==='up'?'▲':k==='down'?'▼':'●';return `<div class="t4-nw"><div class="t4-nwdir ${k}"><span aria-hidden="true">${ic}</span>${escapeHTML(labelDir(dir))} · ${escapeHTML(labelSev(mag))}</div>${newsCardHTML(n)}</div>`}
+function renderTodayNews(){const list=todayNewsItems();$('todayNewsList').innerHTML=list.length?list.map(todayNewsCard).join(''):'<p class="t4-sub" style="padding:0 4px;margin-top:12px">Hoy no hay noticias claras sobre tus acciones.</p>'}
+async function runLiveRadarFromToday(){
+  const b=$('todayNewsBtn');b.disabled=true;b.textContent='Buscando noticias…';
+  try{await runLiveRadarAnalysis()}finally{b.disabled=false;b.textContent='Buscar noticias recientes con IA';renderTodayNews();$('todayNewsStatus').textContent='Noticias actualizadas'}
+}
+/* Aviso diario: solo guarda la preferencia en localStorage ('trace_daily_alert'). No hay backend, así que todavía no envía nada. */
+function renderDailyAlert(){const s=$('dailyAlertSwitch');if(!s)return;const on=localStorage.getItem('trace_daily_alert')==='1';s.setAttribute('aria-checked',String(on));$('dailyAlertState').textContent=on?'Activado':'Desactivado'}
+function toggleDailyAlert(){const on=localStorage.getItem('trace_daily_alert')!=='1';localStorage.setItem('trace_daily_alert',on?'1':'0');renderDailyAlert();showToast(on?'Preferencia guardada: resumen diario activado':'Resumen diario desactivado')}
+function renderToday(){if(!$('todayMain'))return;const m=PORTFOLIO.length?todayModel():null;renderTodayMain(m);renderTodayColcap(m);renderTodayNews();renderDailyAlert()}
+/* Publicidad (plan gratuito). Anuncios FICTICIOS y no financieros. Se elige por día: el portafolio del usuario NO interviene.
+   Solo se pintan en #adSlotToday y #adSlotPortfolio; nunca en el chat, el onboarding ni junto a texto de IA. */
+const ADS=[
+  {b:'Panadería Hornilla Dorada',l:'Pan recién horneado y almojábanas calientes, todas las mañanas.',i:'PH',c:'#e2c48a'},
+  {b:'Cuadernos Mariposa Verde',l:'Cuadernos de papel reciclado para tus apuntes, listas y dibujos.',i:'CM',c:'#a9cdb8'},
+  {b:'Bicicletas Cóndor Azul',l:'Alquiler de bicicletas por horas para recorrer la ciudad el fin de semana.',i:'BC',c:'#a9c2e0'}];
+function adHTML(off){const d=new Date(),day=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),a=ADS[(day+off)%ADS.length];return `<aside class="t4-ad" aria-label="Publicidad"><div class="t4-ad-top"><span class="t4-ad-tag">Publicidad</span><button class="btn-ghost t4-ad-off" type="button" onclick="openPlanSheet()">Quitar anuncios</button></div><div class="t4-ad-body"><div class="t4-ad-logo" style="background:${a.c}" aria-hidden="true">${a.i}</div><div><div class="t4-ad-brand">${escapeHTML(a.b)}</div><p class="t4-ad-line">${escapeHTML(a.l)}</p></div></div><p class="t4-ad-note">Los anuncios no usan tu portafolio.</p></aside>`}
+function renderAds(){const a=$('adSlotToday'),b=$('adSlotPortfolio');if(a)a.innerHTML=adHTML(0);if(b)b.innerHTML=adHTML(1)}
+/* Plan de pago Trace+ (bottom sheet). Sin pagos: el botón solo muestra un toast. */
+let planReturnFocus=null;
+const planIsOpen=()=>$('planSheet').classList.contains('open');
+function openPlanSheet(){if(planIsOpen())return;planReturnFocus=document.activeElement;$('planOverlay').classList.add('open');$('planSheet').classList.add('open');document.body.classList.add('plan-open');setTimeout(()=>$('planClose').focus(),30)}
+function closePlanSheet(restore=true){if(!planIsOpen())return;$('planOverlay').classList.remove('open');$('planSheet').classList.remove('open');document.body.classList.remove('plan-open');if(restore&&planReturnFocus&&planReturnFocus.focus)planReturnFocus.focus();planReturnFocus=null}
+function planNotify(){closePlanSheet();showToast('Listo: te avisaremos cuando Trace+ esté disponible')}
+document.addEventListener('keydown',e=>{
+  if(!planIsOpen())return;
+  if(e.key==='Escape'){closePlanSheet();return}
+  if(e.key==='Tab'){const f=[...$('planSheet').querySelectorAll('button')],first=f[0],last=f[f.length-1],a=document.activeElement;
+    if(!$('planSheet').contains(a)){e.preventDefault();first.focus()}else if(e.shiftKey&&a===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}}
+});
+
+/* close modals with escape */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(sheetIsOpen()){closeMoreSheet();return}
+    closeAddModal();closeResetModal();closeAssetDrawer();
+    const tb=$('topbar'),wasOpen=tb.classList.contains('search-open');
+    if(wasOpen||$('searchOverlay').classList.contains('open')){closeSearch();if(wasOpen)$('searchToggle').focus()}
+  }else if(e.key==='Tab'&&sheetIsOpen()){
+    const f=[...$('moreSheet').querySelectorAll('button')],first=f[0],last=f[f.length-1],a=document.activeElement;
+    if(!$('moreSheet').contains(a)){e.preventDefault();first.focus()}
+    else if(e.shiftKey&&a===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}
+  }
+});
+/* Si la pantalla pasa a escritorio, se cierran los elementos solo móviles */
+window.matchMedia('(max-width:760px)').addEventListener('change',e=>{if(!e.matches){closeMoreSheet(false);$('topbar').classList.remove('search-open');$('searchToggle').setAttribute('aria-expanded','false')}});
+
+
+/* Cuenta: menú del avatar */
+function renderAccount(){const n=$('acctName'),sub=$('acctSub');if(!n)return;const guest=currentUser==='Invitado';n.textContent=guest?'Invitado':currentUser;sub.textContent=guest?'Sin correo · portafolio de práctica':'Portafolio de práctica'}
+function accountOpen(){const m=$('accountMenu');return m&&!m.hidden}
+function toggleAccountMenu(e){if(e)e.stopPropagation();const m=$('accountMenu');if(accountOpen()){closeAccountMenu(true);return}closeSearch();closeMoreSheet(false);renderAccount();m.hidden=false;$('avatarCircle').setAttribute('aria-expanded','true');const f=m.querySelector('.acct-item');if(f)f.focus()}
+function closeAccountMenu(restore){const m=$('accountMenu');if(!m||m.hidden)return;m.hidden=true;$('avatarCircle').setAttribute('aria-expanded','false');if(restore)$('avatarCircle').focus()}
+function accountGo(v){closeAccountMenu(false);switchView(v)}
+function accountPlan(){closeAccountMenu(false);openPlanSheet()}
+function accountReset(){closeAccountMenu(false);resetDemo()}
+function logout(){closeAccountMenu(false);closeMoreSheet(false);closePlanSheet(false);closeAssetDrawer();closeAddModal();closeApiModal();closeResetModal();closeSearch();
+  currentUser='Invitado';setAvatar('Invitado');$('chatLog').innerHTML='';$('todayExplainOut')&&($('todayExplainOut').hidden=true);
+  $('appShell').classList.remove('app-shell-active');$('onboarding').classList.remove('active');$('emailInput').value='';$('loginScreen').style.display='flex';
+  try{window.scrollTo(0,0)}catch{}showToast('Cerraste sesión. Tu portafolio de práctica sigue guardado en este navegador.')}
+document.addEventListener('click',e=>{if(!e.target.closest('.acct-wrap'))closeAccountMenu(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAccountMenu(true)});
+document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();enterApp(document.getElementById('emailInput').value||'Invitado')});
+
+window.addEventListener('chartready',()=>{if(PORTFOLIO.length&&$('appShell').classList.contains('app-shell-active'))renderHoldings()});
+/* initial safe init */
+applyLabels();
+updateApiStatus();
+</script>
+</body>
+</html>
