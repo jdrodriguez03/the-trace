@@ -4,8 +4,8 @@ App mobile-first para que principiantes en Colombia practiquen con un portafolio
 
 ## Antes de tocar nada
 
-1. Lee la **guía rápida del repositorio (LEER PRIMERO)**: estructura, dueños, reglas, comandos y primer arranque.
-2. Busca tu día en la **guía día por día**.
+1. Lee la [guía rápida del repositorio (LEER PRIMERO)](docs/guias/guia-rapida.md): estructura, dueños, reglas, comandos y primer arranque.
+2. Busca tu día en la [guía día por día](docs/guias/guia-dia-a-dia.md).
 
 ## Arranque
 
