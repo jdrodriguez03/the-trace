@@ -4,6 +4,7 @@ import os
 
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["SUPABASE_URL"] = "https://pruebas.supabase.co"
+os.environ["WEB_ORIGIN"] = "https://trace-web-pruebas.onrender.com"
 
 
 # ---- Ayudas para probar las rutas con sesión ----
@@ -49,3 +50,14 @@ def entrar() -> dict[str, str]:
               "iss": "https://pruebas.supabase.co/auth/v1", "exp": int(time.time()) + 3600,
               "is_anonymous": True}
     return {"Authorization": f"Bearer {jwt.encode(claims, _LLAVE, algorithm='ES256')}"}
+
+
+@pytest.fixture(autouse=True)
+def _sin_limite_de_peticiones():
+    """El límite de 60 por minuto se apaga en las pruebas; solo su propia prueba lo enciende."""
+    from app.limits import limiter
+
+    limiter.enabled = False
+    yield
+    limiter.enabled = False
+    limiter.reset()
