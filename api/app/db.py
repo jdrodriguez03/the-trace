@@ -1,6 +1,8 @@
-# Dueño: Julian · Conexión a la base. Las rutas piden una sesión con Depends(get_session).
+# Dueño: Julian · Conexión a la base. Las rutas piden una sesión con SessionDep.
 from collections.abc import Iterator
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, create_engine
 
@@ -23,3 +25,7 @@ def get_session() -> Iterator[Session]:
     """Abre una sesión por petición y la cierra al terminar, aunque haya un error."""
     with Session(engine) as session:
         yield session
+
+
+# Las rutas escriben `session: SessionDep` y FastAPI les entrega la sesión.
+SessionDep = Annotated[Session, Depends(get_session)]
