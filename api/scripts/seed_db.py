@@ -1,20 +1,15 @@
 # Dueño: Julian · Carga las 10 acciones, sus precios de hoy y el COLCAP.
 # Se puede correr varias veces sin duplicar nada.
 # Uso (desde api/):  uv run python -m scripts.seed_db
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import date
 from decimal import Decimal
 
 from sqlmodel import Session, select
 
+from app.clock import hoy
 from app.db import engine
 from app.models import Asset, IndexSnapshot, PriceSnapshot, ahora
 from scripts.provisional_catalog import ASSETS, COLCAP
-
-COLOMBIA = timezone(timedelta(hours=-5))  # Colombia no cambia de hora en el año
-
-
-def hoy() -> date:
-    return datetime.now(UTC).astimezone(COLOMBIA).date()
 
 
 def seed(session: Session, day: date | None = None) -> dict[str, int]:

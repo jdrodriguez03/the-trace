@@ -5,12 +5,14 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.db import SessionDep
-from app.routes import me
+from app.routes import market, me, portfolio
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="The Trace API", version="0.1.0")
 app.include_router(me.router)
+app.include_router(market.router)
+app.include_router(portfolio.router)
 
 
 @app.get("/health")
