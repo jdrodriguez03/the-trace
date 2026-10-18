@@ -1,18 +1,16 @@
 # Dueño: Julian · Crea la API y registra las rutas.
 import logging
-from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from sqlalchemy import text
-from sqlmodel import Session
 
-from app.db import get_session
+from app.db import SessionDep
+from app.routes import me
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="The Trace API", version="0.1.0")
-
-SessionDep = Annotated[Session, Depends(get_session)]
+app.include_router(me.router)
 
 
 @app.get("/health")
