@@ -1,6 +1,7 @@
 # Dueño: Julian · Tu portafolio de práctica: compras, ventas y lo que te queda de cada acción.
 # El portafolio no se guarda: se calcula sumando tus movimientos (compras menos ventas).
 from collections import defaultdict
+from dataclasses import asdict
 from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 
 from fastapi import APIRouter, HTTPException
@@ -8,9 +9,19 @@ from sqlmodel import select
 
 from app.auth import CurrentUser
 from app.clock import hoy
+from app.core.portfolio import Movimiento, Precio, calculate_portfolio
+from app.core.prices import latest_prices
 from app.db import SessionDep
 from app.models import Asset, PriceSnapshot, Transaction
-from app.schemas import HoldingOut, PortfolioOut, TransactionIn, TransactionOut
+from app.schemas import (
+    HoldingOut,
+    PortfolioOut,
+    PortfolioSummaryOut,
+    PositionOut,
+    SectorOut,
+    TransactionIn,
+    TransactionOut,
+)
 
 router = APIRouter(prefix="/v1/portfolio", tags=["portfolio"])
 
@@ -48,17 +59,31 @@ def _a_salida(t: Transaction) -> TransactionOut:
 
 @router.get("", response_model=PortfolioOut)
 def portafolio(user: CurrentUser, session: SessionDep) -> PortfolioOut:
-    """Cuántas acciones tienes de cada empresa (compras menos ventas). Las que quedan en 0 no salen."""
-    cantidades: dict[str, Decimal] = defaultdict(Decimal)
-    for m in _movimientos(session, user.id):
-        cantidades[m.ticker] += _signo(m)
-    nombres = {a.ticker: a.name for a in session.exec(select(Asset))}
+    """Tu portafolio: cada acción con costo promedio y ganancia o pérdida, y el resumen total."""
+    movimientos = [
+        Movimiento(ticker=m.ticker, kind=m.kind, quantity=m.quantity, price=m.price, day=m.day,
+                   id=m.id)
+        for m in _movimientos(session, user.id)
+    ]
+    filas = latest_prices(session)
+    precios = {a.ticker: Precio(price=p.price, change_pct=p.change_pct) for a, p in filas}
+    activos = {a.ticker: (a.name, a.sector) for a, _ in filas}
+    r = calculate_portfolio(movimientos, precios, activos)
+
     return PortfolioOut(
+        # holdings se mantiene igual que antes para no romper la web (regla 3 del CLAUDE.md)
         holdings=[
-            HoldingOut(ticker=t, name=nombres.get(t, t), quantity=q)
-            for t, q in sorted(cantidades.items())
-            if q > 0
-        ]
+            HoldingOut(ticker=p.ticker, name=p.name, quantity=p.quantity)
+            for p in sorted(r.positions, key=lambda p: p.ticker)
+        ],
+        positions=[PositionOut(**asdict(p)) for p in r.positions],
+        summary=PortfolioSummaryOut(
+            total_value=r.total_value, invested=r.invested, gain=r.gain, gain_pct=r.gain_pct,
+            realized_gain=r.realized_gain, day_change=r.day_change,
+            day_change_pct=r.day_change_pct, top_sector=r.top_sector,
+            top_sector_pct=r.top_sector_pct, positions_count=len(r.positions),
+            sectors=[SectorOut(**asdict(s)) for s in r.sectors],
+        ),
     )
 
 
