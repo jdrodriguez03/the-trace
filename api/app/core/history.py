@@ -24,7 +24,7 @@ class PuntoHistorial:
 
 def portfolio_history(movimientos: list[Movimiento], cierres: dict[str, list[Cierre]],
                       desde: date, hasta: date) -> list[PuntoHistorial]:
-    """Un punto por cada día con precios entre desde y hasta, a partir de tu primera compra.
+    """Un punto por cada día con precios entre desde y hasta (y por hoy), desde tu primera compra.
 
     - El valor usa el cierre de ese día. Si una acción no tuvo precio ese día (festivo, dato que
       falta), se usa su último cierre conocido; si nunca tuvo, el precio al que la compraste.
@@ -34,7 +34,12 @@ def portfolio_history(movimientos: list[Movimiento], cierres: dict[str, list[Cie
     movs = en_orden(movimientos)
     if not movs:
         return []
-    dias = sorted({c.day for serie in cierres.values() for c in serie if desde <= c.day <= hasta})
+    dias = {c.day for serie in cierres.values() for c in serie if desde <= c.day <= hasta}
+    # Hoy siempre tiene su punto (con el último precio conocido). Así, quien compra un fin de
+    # semana o un festivo ve su gráfica desde ya, y no vacía hasta el siguiente día de Bolsa.
+    if movs[0].day <= hasta:
+        dias.add(hasta)
+    dias = sorted(dias)
     series = {t: sorted(s, key=lambda c: c.day) for t, s in cierres.items()}
 
     cantidad: dict[str, Decimal] = defaultdict(Decimal)
