@@ -5,7 +5,7 @@ from dataclasses import asdict
 from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 
 from fastapi import APIRouter, HTTPException
-from sqlmodel import select
+from sqlmodel import delete, select
 
 from app.auth import CurrentUser
 from app.clock import hoy
@@ -153,4 +153,14 @@ def borrar(transaction_id: int, user: CurrentUser, session: SessionDep) -> None:
             detail="No puedes borrar esta compra: después vendiste acciones que dependen de ella.",
         )
     session.delete(mov)
+    session.commit()
+
+
+@router.post("/reset", status_code=204)
+def empezar_de_nuevo(user: CurrentUser, session: SessionDep) -> None:
+    """«Empezar de nuevo»: borra TODOS tus movimientos. Tu portafolio queda vacío.
+
+    Solo borra lo tuyo: el filtro por user_id sale del token, nunca de lo que mande la web.
+    """
+    session.exec(delete(Transaction).where(Transaction.user_id == user.id))
     session.commit()
