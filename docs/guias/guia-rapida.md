@@ -113,6 +113,7 @@ Cada carpeta tiene una regla de qué entra y qué no; si algo no encaja en ningu
 | `web/src/index.css` | Cómo se ve todo | Colores, tipografías y radios del prototipo como variables de Tailwind y shadcn | Estilos de una sola pantalla | Isabela |
 | `docs/` | Documentos del proyecto | Guías del equipo (`guias/`), decisiones, revisiones, notas de la prueba con personas, prototipo | Código, documentos internos de producto | Según la carpeta |
 | `.github/` | Reglas automáticas | CI, copia de seguridad, CODEOWNERS, plantillas | Secretos | Julian (Isabela en `ISSUE_TEMPLATE/`) |
+| `sandbox/` | Herramientas para probar en local | El visor de la API (`sandbox/visor/`): una página que muestra lo que responde la API mientras la web se construye | Código de la app, claves | Julian |
 
 ### Lo que pueden ignorar por ahora
 
@@ -209,6 +210,7 @@ Las claves viven en dos archivos que nunca se suben: `api/.env` y `web/.env.loca
 | `WEB_ORIGIN` | `api/.env` | Desde qué dirección puede llamar la web (CORS) |
 | `SENTRY_DSN` | `api/.env` | Reportar errores de la API |
 | `PRICE_REFRESH_MINUTES` | `api/.env` | Cada cuántos minutos se piden precios nuevos a Yahoo Finance (15). Yahoo no pide clave |
+| `PRICE_PROVIDER` | `api/.env` | `yahoo` (pide precios nuevos en horario de mercado) u `off` (nunca los pide; las pruebas lo usan así) |
 | `VITE_API_URL`, `VITE_USE_MOCKS` | `web/.env.local` | A qué API llamar y si usar mocks |
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | `web/.env.local` | Iniciar sesión. La llave publicable es pública por diseño (en Supabase puede aparecer como *anon key*) |
 | `VITE_POSTHOG_KEY`, `VITE_SENTRY_DSN` | `web/.env.local` | Medición y errores de la web |

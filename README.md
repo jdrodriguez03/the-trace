@@ -68,6 +68,7 @@ the-trace/
 │  ├─ adr/        decisiones de arquitectura
 │  ├─ qa/         revisiones y prueba con personas
 │  └─ prototype/  prototipo de referencia
+├─ sandbox/    visor para probar la API en local (no es parte de la app)
 └─ .github/    CI, dueños por carpeta y plantilla de PR
 ```
 

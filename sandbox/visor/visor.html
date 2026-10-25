@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visor de la API · The Trace</title>
+<style>
+  :root{--bg:#f6f6f1;--ink:#12151b;--muted:#5d6370;--card:#fff;--line:#e4e2d8;--gold:#b78b43;--up:#20724c;--down:#a35a3c;--side:#11151c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+  header{background:var(--side);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header b{font-size:18px} header b span{color:var(--gold)}
+  header small{color:#b8bcc6}
+  main{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+  h2{margin:0 0 10px;font-size:17px} h3{margin:14px 0 6px;font-size:14px;color:var(--muted)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;min-width:0;flex:1 1 220px;background:#fff}
+  button{font:inherit;font-weight:600;padding:9px 14px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;min-height:40px}
+  button.ghost{background:#fff;color:var(--ink)} button.on{background:var(--gold);border-color:var(--gold)}
+  button:disabled{opacity:.5;cursor:wait}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px} @media(max-width:800px){.grid2{grid-template-columns:1fr}}
+  .hero{background:var(--side);color:#fff;border-radius:14px;padding:16px}
+  .hero .big{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .up{color:var(--up)} .down{color:var(--down)} .hero .up{color:#7fd3a6} .hero .down{color:#f0b49a}
+  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#f1ece0;color:#6b5428}
+  table{width:100%;border-collapse:collapse;font-size:14px} th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)} th{color:var(--muted);font-weight:600}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  tr.click{cursor:pointer} tr.click:hover{background:#faf8f2}
+  .news{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}
+  .muted{color:var(--muted);font-size:13px}
+  .bar{height:8px;background:#efece3;border-radius:99px;overflow:hidden} .bar i{display:block;height:100%;background:var(--gold)}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .card{min-width:0} main>*{min-width:0}
+  @media(max-width:600px){main{padding:10px}.card{padding:14px}.solo-ancho{display:none}input{flex-basis:100%}}
+  #log{word-break:break-all;font:12px/1.4 ui-monospace,Consolas,monospace;color:var(--muted);white-space:pre-wrap;max-height:120px;overflow:auto}
+  svg{width:100%;height:220px;display:block} .chart-wrap{position:relative} .tip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:12px;padding:4px 8px;border-radius:8px;display:none}
+  .err{color:var(--down);font-weight:600}
+</style>
+</head>
+<body>
+<header><b>The Trace<span>.</span></b><small>Visor de la API · solo para el equipo · De práctica, sin dinero real</small></header>
+<main>
+
+<section class="card">
+  <h2>1. Conexión</h2>
+  <div class="row">
+    <input id="api" placeholder="Dirección de la API" value="http://localhost:8000">
+    <input id="sbUrl" placeholder="SUPABASE_URL (https://xxxx.supabase.co)">
+    <input id="sbKey" placeholder="Llave Publishable (sb_publishable_…)">
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button id="bLogin">Probar sin correo (entrar como invitado)</button>
+    <button class="ghost" id="bEjemplo">Usar portafolio de ejemplo</button>
+    <button class="ghost" id="bReset">Empezar de nuevo</button>
+    <button class="ghost" id="bRecargar">Recargar todo</button>
+  </div>
+  <p class="muted" id="estado">Sin sesión.</p>
+  <div id="log"></div>
+</section>
+
+<section class="card" id="secHoy"><h2>Hoy</h2><div id="hoy" class="muted">Entra como invitado y arma un portafolio.</div></section>
+
+<div class="grid2">
+  <section class="card"><h2>Mi portafolio</h2><div id="porta" class="muted">—</div></section>
+  <section class="card">
+    <h2>Cómo ha ido tu portafolio</h2>
+    <div class="row" id="rangosP"></div>
+    <div class="chart-wrap"><svg id="chartP"></svg><div class="tip"></div></div>
+    <p class="muted"><span style="color:var(--gold)">━</span> valor · <span style="color:#9aa0aa">┅</span> lo invertido</p>
+  </section>
+</div>
+
+<div class="grid2">
+  <section class="card"><h2>Mercado colombiano</h2><p class="muted" id="frescura"></p><div id="mercado">—</div></section>
+  <section class="card">
+    <h2>Detalle: <span id="accionSel">ECOPETROL</span></h2>
+    <div class="row" id="rangosA"></div>
+    <div class="chart-wrap"><svg id="chartA"></svg><div class="tip"></div></div>
+    <p class="muted" id="drivers"></p>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Noticias que te afectan</h2>
+  <div class="row">
+    <select id="fImpacto"><option value="">Todo impacto</option><option value="Alta">Impacto grande</option><option value="Media">Impacto mediano</option><option value="Baja">Impacto pequeño</option></select>
+    <select id="fTipo"><option value="">Todo tipo</option><option value="Positivo">Buena noticia</option><option value="Negativo">Mala noticia</option><option value="Neutro">Neutra</option></select>
+  </div>
+  <div id="noticias" class="muted">—</div>
+</section>
+
+</main>
+<script>
+/* Visor local de la API. No es parte del producto: solo muestra lo que responde la API. */
+const $ = id => document.getElementById(id);
+const S = { token: null, rangoP: "1m", rangoA: "1m", accion: "ECOPETROL", mercado: [] };
+const guardar = (k, v) => { try { localStorage.setItem("visor_" + k, v) } catch (e) {} };
+const leer = k => { try { return localStorage.getItem("visor_" + k) } catch (e) { return null } };
+["api", "sbUrl", "sbKey"].forEach(k => { const v = leer(k); if (v) $(k).value = v; $(k).addEventListener("change", () => guardar(k, $(k).value.trim())) });
+S.token = leer("token");
+
+/* Formatos como en web/src/lib/format.ts: $8.586.000 · +1,4 % · 32,8 % */
+const cop = n => (n < 0 ? "−" : "") + "$" + Math.round(Math.abs(n)).toLocaleString("es-CO");
+const pct = (n, signo = true) => { const r = Math.round(n * 10) / 10; const t = Math.abs(r).toFixed(1).replace(".", ",") + " %"; return r === 0 ? t : r < 0 ? "−" + t : (signo ? "+" : "") + t };
+const chip = c => c > 0 ? `<span class="up">▲ Subió ${pct(c, false)}</span>` : c < 0 ? `<span class="down">▼ Bajó ${pct(-c, false)}</span>` : `<span>● Igual</span>`;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const impacto = { Alta: "Impacto grande", Media: "Impacto mediano", Baja: "Impacto pequeño" };
+const tipo = { Positivo: "Buena noticia", Negativo: "Mala noticia", Neutro: "Neutra" };
+const log = m => { $("log").textContent = new Date().toLocaleTimeString("es-CO") + "  " + m + "\n" + $("log").textContent };
+
+async function api(ruta, opciones = {}) {
+  const base = $("api").value.trim().replace(/\/$/, "");
+  const h = { "Content-Type": "application/json" };
+  if (S.token) h.Authorization = "Bearer " + S.token;
+  const r = await fetch(base + ruta, { ...opciones, headers: h });
+  log(`${opciones.method || "GET"} ${ruta} → ${r.status}`);
+  if (r.status === 401) { S.token = null; guardar("token", ""); $("estado").innerHTML = '<span class="err">La sesión venció o no existe: vuelve a «Probar sin correo».</span>'; throw new Error("401") }
+  if (!r.ok && r.status !== 204) throw new Error((await r.text()).slice(0, 200));
+  return r.status === 204 ? null : r.json();
+}
+
+async function entrar() {
+  const url = $("sbUrl").value.trim().replace(/\/$/, ""), key = $("sbKey").value.trim();
+  if (!url || !key) { $("estado").innerHTML = '<span class="err">Pega tu SUPABASE_URL y la llave Publishable.</span>'; return }
+  const r = await fetch(url + "/auth/v1/signup", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: "{}" });
+  const j = await r.json();
+  if (!j.access_token) { $("estado").innerHTML = `<span class="err">Supabase respondió: ${esc(j.msg || j.message || r.status)}</span>`; return }
+  S.token = j.access_token; guardar("token", S.token);
+  $("estado").textContent = "Sesión de invitado activa (dura 1 hora).";
+  await todo();
+}
+
+async function ejemplo() {
+  for (const [ticker, quantity] of [["ECOPETROL", 1200], ["PFBCOLOM", 60], ["ISA", 90], ["GRUPOSURA", 40]])
+    await api("/v1/portfolio/transactions", { method: "POST", body: JSON.stringify({ ticker, kind: "buy", quantity }) });
+  await todo();
+}
+
+async function reset() { await api("/v1/portfolio/reset", { method: "POST" }); await todo() }
+
+function pintarHoy(h) {
+  if (!h.has_portfolio) { $("hoy").innerHTML = `<p>Todavía no tienes acciones. Usa «Usar portafolio de ejemplo».</p>${h.colcap ? `<p class="muted">${esc(h.colcap.line)}</p>` : ""}`; return }
+  const t = h.top_asset, c = h.colcap;
+  $("hoy").innerHTML = `
+    <span class="tag">De práctica · sin dinero real</span>
+    <div class="hero" style="margin-top:8px"><div class="big">${esc(h.headline)}</div>
+      <p style="margin:8px 0 0">${h.explanation.map(esc).join(" ")}</p></div>
+    <div class="grid2" style="margin-top:12px">
+      <div><h3>La acción que más pesó</h3><b>${esc(t.name)}</b> ${chip(t.change_pct)}<br>
+        <span class="muted">Movió tu portafolio ${cop(t.effect)} · ${pct(t.weight_pct, false)} de tu dinero${t.cause ? " · " + esc(t.cause) : ""}</span></div>
+      <div><h3>COLCAP hoy</h3>${c ? `${chip(c.change_pct)} ${c.proxy ? '<span class="muted">(según el fondo que lo replica)</span>' : `· ${Number(c.points).toLocaleString("es-CO")} puntos`}<br><span class="muted">${esc(c.line)}</span>` : "—"}</div>
+    </div>
+    <h3>Noticias de tus acciones</h3>${h.news.map(noticia).join("")}
+    <details><summary><b>Explicación con IA</b> <span class="muted">(por ahora, la explicación de respaldo)</span></summary>
+      <ul>${h.fallback.by_asset.map(a => `<li><b>${esc(a.name)}</b> ${chip(a.change_pct)} — ${esc(a.text)}</li>`).join("")}</ul>
+      <p>${esc(h.fallback.vs_colcap || "")}</p>${h.fallback.concentration ? `<p>${esc(h.fallback.concentration)}</p>` : ""}
+      <p class="muted">${esc(h.fallback.footer)}</p></details>
+    <p class="muted">Banner: The Trace explica lo que pasó. No te dice qué comprar ni vender. · Precio actualizado: ${h.updated_at ? new Date(h.updated_at).toLocaleString("es-CO") : "—"}</p>`;
+}
+
+function noticia(n) {
+  return `<div class="news"><span class="tag">${tipo[n.direction]} · ${impacto[n.magnitude]}</span> <b>${esc(n.title)}</b>
+    <div class="muted">${esc(n.asset_name)} · ${pct(n.weight_pct, false)} de tu dinero</div>
+    <div><b>Por qué te afecta:</b> ${esc(n.why || n.summary)}</div><div><b>Qué conviene mirar:</b> ${esc(n.watch)}</div>
+    <div class="muted">No es una recomendación.</div></div>`;
+}
+
+function pintarPortafolio(p) {
+  const s = p.summary;
+  if (!s || !p.positions.length) { $("porta").innerHTML = "Sin acciones todavía."; return }
+  $("porta").innerHTML = `
+    <div class="hero"><div class="muted" style="color:#b8bcc6">Valor total</div><div class="big">${cop(s.total_value)}</div>
+      <div>Desde que empezaste: <span class="${s.gain >= 0 ? "up" : "down"}">${s.gain >= 0 ? "▲" : "▼"} ${cop(s.gain)} · ${pct(s.gain_pct)}</span></div>
+      <div>Cómo va hoy: <span class="${s.day_change >= 0 ? "up" : "down"}">${cop(s.day_change)} · ${pct(s.day_change_pct)}</span></div>
+      <div class="muted" style="color:#b8bcc6">${s.positions_count} acciones · sector principal: ${esc(s.top_sector)} (${pct(s.top_sector_pct, false)})</div></div>
+    <div class="scroll"><table style="margin-top:10px"><tr><th>Acción</th><th>Hoy</th><th class="n">Costo prom.</th><th class="n">Valor</th><th class="n">Ganancia</th></tr>
+    ${p.positions.map(x => `<tr class="click" data-t="${esc(x.ticker)}"><td><b>${esc(x.name)}</b><div class="bar"><i style="width:${x.weight_pct}%"></i></div><span class="muted">${pct(x.weight_pct, false)} de tu dinero</span></td>
+      <td>${chip(x.change_pct)}</td><td class="n">${cop(x.avg_cost)}</td><td class="n">${cop(x.value)}</td>
+      <td class="n ${x.gain >= 0 ? "up" : "down"}">${cop(x.gain)}<br>${pct(x.gain_pct)}</td></tr>`).join("")}</table></div>
+    <h3>Por sector</h3>${s.sectors.map(z => `<div class="row"><span style="flex:0 1 170px">${esc(z.sector)}</span><div class="bar" style="flex:1"><i style="width:${z.weight_pct}%"></i></div><span>${pct(z.weight_pct, false)}</span></div>`).join("")}`;
+  document.querySelectorAll("#porta tr.click").forEach(tr => tr.onclick = () => elegir(tr.dataset.t));
+}
+
+function pintarMercado(lista) {
+  S.mercado = lista;
+  const orden = [...lista].sort((a, b) => Math.abs(b.change_pct) - Math.abs(a.change_pct));
+  const ultimo = lista.reduce((m, a) => a.updated_at > m ? a.updated_at : m, "");
+  $("frescura").textContent = ultimo ? `Actualizado: ${new Date(ultimo).toLocaleString("es-CO")} · puede tener unos 15 min de retraso` : "";
+  $("mercado").innerHTML = `<div class="scroll"><table><tr><th>Acción</th><th class="solo-ancho">Sector</th><th class="n">Precio</th><th>Hoy</th></tr>
+    ${orden.map(a => `<tr class="click" data-t="${esc(a.ticker)}"><td><b>${esc(a.name)}</b></td><td class="muted solo-ancho">${esc(a.sector)}</td><td class="n">${cop(a.price)}</td><td>${chip(a.change_pct)}</td></tr>`).join("")}</table></div>`;
+  document.querySelectorAll("#mercado tr.click").forEach(tr => tr.onclick = () => elegir(tr.dataset.t));
+}
+
+function grafica(svgId, series, colores) {
+  const svg = $(svgId), W = 600, H = 220, P = 34;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const todos = series.flatMap(s => s.map(p => p.y));
+  if (!todos.length) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#5d6370">Sin datos para este rango</text>`; return }
+  let min = Math.min(...todos), max = Math.max(...todos); if (min === max) { min *= .98; max *= 1.02 }
+  const n = Math.max(...series.map(s => s.length));
+  const x = i => P + (W - 2 * P) * (n > 1 ? i / (n - 1) : .5), y = v => H - P - (H - 2 * P) * (v - min) / (max - min);
+  svg.innerHTML = `<text x="4" y="${P}" font-size="11" fill="#5d6370">${cop(max)}</text><text x="4" y="${H - P + 4}" font-size="11" fill="#5d6370">${cop(min)}</text>` +
+    series.map((s, k) => s.length === 1 ? `<circle cx="${x(0)}" cy="${y(s[0].y)}" r="${k ? 3 : 6}" fill="${colores[k]}"/>` : `<polyline fill="none" stroke="${colores[k]}" stroke-width="${k ? 1.5 : 2.5}" ${k ? 'stroke-dasharray="5 4"' : ""} points="${s.map((p, i) => `${x(i)},${y(p.y)}`).join(" ")}"/>`).join("") +
+    `<text x="${P}" y="${H - 8}" font-size="11" fill="#5d6370">${esc(series[0][0]?.d || "")}</text><text x="${W - P}" y="${H - 8}" font-size="11" fill="#5d6370" text-anchor="end">${esc(series[0].at(-1)?.d || "")}</text>`;
+  svg.onmousemove = e => { const r = svg.getBoundingClientRect(), i = Math.round(((e.clientX - r.left) / r.width * W - P) / (W - 2 * P) * (n - 1)), p = series[0][Math.max(0, Math.min(n - 1, i))];
+    if (!p) return; const tip = svg.parentElement.querySelector(".tip"); tip.style.display = "block"; tip.style.left = (e.clientX - r.left + 10) + "px"; tip.style.top = "8px"; tip.textContent = `${p.d} · ${cop(p.y)}` };
+  svg.onmouseleave = () => { svg.parentElement.querySelector(".tip").style.display = "none" };
+}
+
+function botonesRango(cont, actual, alElegir) {
+  $(cont).innerHTML = [["1m", "1M"], ["3m", "3M"], ["1y", "1A"]].map(([v, t]) => `<button class="ghost ${v === actual ? "on" : ""}" data-r="${v}">${t}</button>`).join("");
+  $(cont).querySelectorAll("button").forEach(b => b.onclick = () => alElegir(b.dataset.r));
+}
+
+async function graficaPortafolio() {
+  botonesRango("rangosP", S.rangoP, r => { S.rangoP = r; graficaPortafolio() });
+  if (!S.token) return;
+  const h = await api(`/v1/portfolio/history?range=${S.rangoP}`);
+  grafica("chartP", [h.map(p => ({ d: p.day, y: p.value })), h.map(p => ({ d: p.day, y: p.invested }))], ["#b78b43", "#9aa0aa"]);
+}
+
+async function graficaAccion() {
+  botonesRango("rangosA", S.rangoA, r => { S.rangoA = r; graficaAccion() });
+  const h = await api(`/v1/market/assets/${S.accion}/history?range=${S.rangoA}`);
+  const sube = h.length > 1 && h.at(-1).price >= h[0].price;
+  grafica("chartA", [h.map(p => ({ d: p.day, y: p.price }))], [sube ? "#20724c" : "#a35a3c"]);
+  const a = S.mercado.find(m => m.ticker === S.accion);
+  $("accionSel").textContent = a ? a.name : S.accion;
+  $("drivers").innerHTML = a ? `<b>¿Qué mueve a esta acción?</b> ${esc(a.drivers || "")}` : "";
+}
+
+function elegir(t) { S.accion = t; graficaAccion(); document.querySelector("#chartA").scrollIntoView({ behavior: "smooth", block: "center" }) }
+
+async function pintarNoticias() {
+  if (!S.token) return;
+  const q = new URLSearchParams(); if ($("fImpacto").value) q.set("impact", $("fImpacto").value); if ($("fTipo").value) q.set("direction", $("fTipo").value);
+  const lista = await api("/v1/news?" + q);
+  $("noticias").innerHTML = lista.length ? `<p class="muted">${lista.length} noticias, de la que más te afecta a la que menos.</p>` + lista.map(noticia).join("") : "No hay noticias con esos filtros (o aún no tienes acciones).";
+}
+
+async function todo() {
+  try {
+    pintarMercado(await api("/v1/market/assets"));
+    await graficaAccion();
+    if (S.token) {
+      $("estado").textContent = "Sesión de invitado activa.";
+      pintarHoy(await api("/v1/today"));
+      pintarPortafolio(await api("/v1/portfolio"));
+      await graficaPortafolio();
+      await pintarNoticias();
+    } else graficaPortafolio();
+  } catch (e) {
+    if (e.message !== "401") $("estado").innerHTML = `<span class="err">No se pudo hablar con la API: ${esc(e.message)}. ¿Está prendida? ¿Abriste el visor en http://localhost:5173?</span>`;
+  }
+}
+
+const conEspera = f => async e => { const b = e.target; b.disabled = true; try { await f() } catch (x) {} finally { b.disabled = false } };
+$("bLogin").onclick = conEspera(entrar); $("bEjemplo").onclick = conEspera(ejemplo); $("bReset").onclick = conEspera(reset); $("bRecargar").onclick = conEspera(todo);
+$("fImpacto").onchange = pintarNoticias; $("fTipo").onchange = pintarNoticias;
+todo();
+</script>
+</body>
+</html>
