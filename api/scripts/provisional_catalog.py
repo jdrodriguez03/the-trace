@@ -1,6 +1,6 @@
 # Dueño: Julian · PROVISIONAL: cambiar por api/app/content/catalog.py de Isabela.
-# Son los datos del prototipo (mvp5_parte6_final.html). Los símbolos de Yahoo Finance
-# están sin verificar: se comprueban uno por uno antes de bajar el historial (día 12).
+# Son los datos del prototipo (mvp5_parte6_final.html). Símbolos de Yahoo verificados el
+# 25 oct 2026 con `backfill_prices --verificar`: Bancolombia cotiza como PFCIBEST.CL.
 
 ASSETS = [
     # ticker, símbolo de Yahoo, nombre, sector, precio en pesos, cambio del día en %
@@ -12,7 +12,7 @@ ASSETS = [
      "price": 21800, "change": 1.9},
     {"ticker": "GEB", "yahoo": "GEB.CL", "name": "Grupo Energía Bogotá",
      "sector": "Energía eléctrica", "price": 2700, "change": 1.2},
-    {"ticker": "PFBCOLOM", "yahoo": "PFBCOLOM.CL", "name": "Bancolombia", "sector": "Bancos",
+    {"ticker": "PFBCOLOM", "yahoo": "PFCIBEST.CL", "name": "Bancolombia", "sector": "Bancos",
      "price": 38400, "change": 0.8},
     {"ticker": "GRUPOARGOS", "yahoo": "GRUPOARGOS.CL", "name": "Grupo Argos",
      "sector": "Seguros e inversiones", "price": 16900, "change": 0.3},
@@ -26,6 +26,7 @@ ASSETS = [
      "sector": "Construcción", "price": 9800, "change": -2.1},
 ]
 
-# El símbolo del COLCAP en Yahoo está SIN VERIFICAR: se comprueba con
-# `uv run python -m scripts.backfill_prices --verificar`. Si Yahoo no lo tiene, se carga por CSV.
-COLCAP = {"code": "COLCAP", "yahoo": "^COLCAP", "points": "1812.40", "change": 0.6}
+# Yahoo no tiene el índice COLCAP (verificado el 25 oct 2026). Usamos el fondo iShares COLCAP
+# (ICOLCAP.CL), que lo replica: su cambio del día es casi igual, pero su precio NO son los puntos
+# del índice. Por eso la API marca ese dato con proxy=True y la web no lo muestra como puntos.
+COLCAP = {"code": "COLCAP", "yahoo": "ICOLCAP.CL", "points": "1812.40", "change": 0.6}

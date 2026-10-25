@@ -7,7 +7,7 @@ from sqlmodel import select
 from app.clock import hoy
 from app.core.history import desde_para
 from app.core.loaders import load_closes
-from app.core.market_refresh import refresh_if_stale
+from app.core.market_refresh import colcap_es_fondo, refresh_if_stale
 from app.core.prices import latest_prices
 from app.db import SessionDep
 from app.models import Asset, IndexSnapshot
@@ -36,7 +36,7 @@ def acciones(session: SessionDep) -> list[AssetOut]:
 
 @router.get("/colcap", response_model=ColcapOut)
 def colcap(session: SessionDep) -> ColcapOut:
-    """El COLCAP más reciente: puntos y cambio del día."""
+    """El COLCAP más reciente: cambio del día y puntos (si proxy=True, es el fondo ICOLCAP)."""
     refresh_if_stale(session)
     fila = session.exec(
         select(IndexSnapshot)
@@ -47,7 +47,7 @@ def colcap(session: SessionDep) -> ColcapOut:
     if fila is None:
         raise HTTPException(status_code=404, detail="Todavía no hay datos del COLCAP.")
     return ColcapOut(points=fila.points, change_pct=fila.change_pct, day=fila.day,
-                     updated_at=fila.updated_at)
+                     updated_at=fila.updated_at, proxy=colcap_es_fondo(fila.source))
 
 
 @router.get("/assets/{ticker}/history", response_model=list[PricePointOut])

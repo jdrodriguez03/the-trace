@@ -14,12 +14,11 @@ from app.db import engine
 from app.providers.base import Activos, Cotizacion, PriceProvider, con_cambio
 
 DIAS = 365
-# Otros símbolos que vale la pena probar si el principal no aparece en Yahoo. SIN VERIFICAR:
-# Bancolombia pudo cambiar de símbolo con su reorganización como Grupo Cibest, y el COLCAP no
-# tiene un símbolo confirmado. --verificar dice cuál funciona.
+# Otros símbolos que vale la pena probar si el principal deja de aparecer en Yahoo.
+# Verificado el 25 oct 2026: Bancolombia cotiza como PFCIBEST.CL (Grupo Cibest) y el índice
+# COLCAP no está en Yahoo, así que se usa el fondo ICOLCAP.CL (ver provisional_catalog.py).
 ALTERNATIVAS = {
     "PFBCOLOM": ["PFCIBEST.CL", "CIBEST.CL"],
-    CODIGO_COLCAP: ["^COLCAP", "COLCAP.CL", "^COLCAP.CL"],
 }
 
 
@@ -93,8 +92,8 @@ def main() -> None:
     for ticker, n in conteo.items():
         print(f"  {ticker:<11} {n:>4}" + ("   ✘ sin datos" if n == 0 else ""))
     if conteo.get(CODIGO_COLCAP, 0) == 0:
-        print("\nEl COLCAP no vino de Yahoo: cárgalo con `uv run python -m scripts.load_prices "
-              "archivo.csv` (formato en scripts/ejemplos/precios.csv).")
+        print("\nEl COLCAP (fondo ICOLCAP) no vino de Yahoo: puedes cargar el índice con "
+              "`uv run python -m scripts.load_prices archivo.csv` (ver scripts/ejemplos/precios.csv).")
 
 
 if __name__ == "__main__":

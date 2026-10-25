@@ -162,11 +162,12 @@ def _movimiento(m: ModeloHoy) -> str:
 
 
 def today_extended(m: ModeloHoy, colcap_change_pct: float | None, noticias: list[Noticia],
-                   causas: dict[int, str]) -> dict:
+                   causas: dict[int, str], aproximado: bool = False) -> dict:
     """La explicación de respaldo («Explicación con IA» sin IA): acción por acción, frente al
     COLCAP y, si un sector pasa de 40 %, dónde está tu dinero.
 
     El prototipo la devolvía como HTML; aquí sale como datos para que la web la pinte.
+    aproximado=True cuando el cambio del COLCAP viene del fondo ICOLCAP: dice «cerca de 0,4 %».
     """
     acciones = []
     for r in m.ranked:
@@ -189,7 +190,9 @@ def today_extended(m: ModeloHoy, colcap_change_pct: float | None, noticias: list
         else:
             comparacion = "Hoy le fue peor que al COLCAP."
         verbo = "subió" if colcap_change_pct >= 0 else "bajó"
-        frente_colcap = (f"El COLCAP, {FRASE_COLCAP}, {verbo} {_uno(colcap_change_pct)} %. "
+        # Si el dato es del fondo que replica al COLCAP, el % es casi igual pero no exacto.
+        cerca = "cerca de " if aproximado else ""
+        frente_colcap = (f"El COLCAP, {FRASE_COLCAP}, {verbo} {cerca}{_uno(colcap_change_pct)} %. "
                          f"Tu portafolio {_movimiento(m)}. {comparacion}")
 
     concentracion = None

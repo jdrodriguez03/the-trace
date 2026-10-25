@@ -124,11 +124,11 @@ def test_si_yahoo_falla_sigue_con_el_ultimo_precio_y_no_insiste(api):
 
 
 def test_el_colcap_va_a_su_propia_tabla(api):
-    falso = ProveedorFalso({"^COLCAP": Cotizacion(hoy(), Decimal("1830.5"), 1.0)})
+    falso = ProveedorFalso({"ICOLCAP.CL": Cotizacion(hoy(), Decimal("25200.5"), 0.35)})
     with Session(engine) as s:
         refresh_if_stale(s, falso, lunes_10am())
         filas = s.exec(select(IndexSnapshot)).all()
-        assert [(f.points, f.source) for f in filas] == [(Decimal("1830.5"), "falso")]
+        assert [(f.points, f.source) for f in filas] == [(Decimal("25200.5"), "falso")]
 
 
 def test_las_rutas_no_fallan_sin_proveedor(api):
@@ -273,3 +273,23 @@ def test_ruta_historial_del_portafolio(api):
     puntos = api.get("/v1/portfolio/history?range=1y", headers=h).json()
     assert puntos[-1] == {"day": hoy().isoformat(), "value": 218000.0, "invested": 218000.0}
     assert api.get("/v1/portfolio/history", headers=entrar()).json() == []  # sin portafolio
+
+
+# ---- El COLCAP desde el fondo ICOLCAP ----
+def test_el_colcap_de_yahoo_se_marca_como_fondo(api):
+    assert api.get("/v1/market/colcap").json()["proxy"] is False  # el de ejemplo son puntos
+    with Session(engine) as s:
+        guardar = market_refresh.guardar_cotizaciones
+        guardar(s, [("COLCAP", Cotizacion(hoy(), Decimal("25200.5"), 0.35))], "yahoo")
+    r = api.get("/v1/market/colcap").json()
+    assert r["proxy"] is True and r["points"] == 25200.5
+    h = entrar()
+    api.post("/v1/portfolio/transactions", headers=h, json={"ticker": "ISA", "kind": "buy", "quantity": 10})
+    hoy_ = api.get("/v1/today", headers=h).json()
+    assert hoy_["colcap"]["proxy"] is True
+    assert "subió cerca de 0,4 %" in hoy_["fallback"]["vs_colcap"]  # el % del fondo es aproximado
+
+
+def test_el_colcap_por_csv_son_puntos():
+    assert market_refresh.colcap_es_fondo("csv") is False
+    assert market_refresh.colcap_es_fondo("yahoo") is True

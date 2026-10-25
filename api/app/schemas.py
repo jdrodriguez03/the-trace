@@ -34,6 +34,9 @@ class ColcapOut(BaseModel):
     change_pct: float
     day: date
     updated_at: datetime
+    # nuevo (día 12): True si el dato viene del fondo ICOLCAP y no del índice. Entonces `points`
+    # es el precio del fondo en pesos: la web NO lo muestra como puntos, solo el cambio del día.
+    proxy: bool = False
 
 
 # ---- Portafolio (protegido) ----
@@ -173,6 +176,7 @@ class TodayColcapOut(BaseModel):
     points: Numero
     change_pct: float
     line: str  # «Hoy las acciones más grandes del país subieron un poco. …»
+    proxy: bool = False  # nuevo (día 12): igual que en ColcapOut
 
 
 class FallbackAssetOut(BaseModel):

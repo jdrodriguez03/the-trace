@@ -25,6 +25,12 @@ ABRE, CIERRA = time(8, 0), time(17, 0)  # horario en que vale la pena pedir prec
 _ultimo_intento: datetime | None = None
 
 
+def colcap_es_fondo(fuente: str) -> bool:
+    """El COLCAP que llega de Yahoo es el fondo ICOLCAP (Yahoo no tiene el índice): su precio no
+    son los puntos del índice. El que llega por CSV (o el de ejemplo) sí son puntos."""
+    return fuente == "yahoo"
+
+
 def reiniciar_intentos() -> None:
     """Para las pruebas: olvida el último intento."""
     global _ultimo_intento
