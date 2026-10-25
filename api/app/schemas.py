@@ -74,5 +74,46 @@ class HoldingOut(BaseModel):
     quantity: Numero  # compras menos ventas
 
 
+class PositionOut(BaseModel):
+    """Una acción de tu portafolio con su costo promedio y su ganancia o pérdida."""
+
+    ticker: str
+    name: str
+    sector: str
+    quantity: Numero
+    avg_cost: Numero  # costo promedio por acción, en pesos
+    invested: Numero  # lo que pagaste por las que te quedan
+    price: Numero  # precio de hoy
+    change_pct: float  # cambio del día de la acción, en %
+    value: Numero  # cantidad × precio de hoy
+    gain: Numero  # ganancia (+) o pérdida (−) en pesos
+    gain_pct: float
+    realized_gain: Numero  # ganancia o pérdida de lo que ya vendiste
+    day_change: Numero  # cuánto se movió hoy, en pesos
+    weight_pct: float  # qué parte de tu dinero es, en %
+
+
+class SectorOut(BaseModel):
+    sector: str
+    value: Numero
+    weight_pct: float
+
+
+class PortfolioSummaryOut(BaseModel):
+    total_value: Numero
+    invested: Numero
+    gain: Numero
+    gain_pct: float
+    realized_gain: Numero
+    day_change: Numero
+    day_change_pct: float
+    top_sector: str | None = None
+    top_sector_pct: float
+    positions_count: int
+    sectors: list[SectorOut]
+
+
 class PortfolioOut(BaseModel):
-    holdings: list[HoldingOut]
+    holdings: list[HoldingOut]  # se mantiene para no romper lo que ya usa la web
+    positions: list[PositionOut] = []  # nuevo (día 8): de mayor a menor valor
+    summary: PortfolioSummaryOut | None = None  # nuevo (día 8)

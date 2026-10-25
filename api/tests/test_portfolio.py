@@ -160,7 +160,9 @@ def test_el_usuario_b_no_ve_ni_borra_lo_del_usuario_a(api):
     mid = comprar(api, a, cantidad=10).json()["id"]
 
     assert api.get(T, headers=b).json() == []
-    assert api.get("/v1/portfolio", headers=b).json() == {"holdings": []}
+    vacio = api.get("/v1/portfolio", headers=b).json()
+    assert vacio["holdings"] == [] and vacio["positions"] == []
+    assert vacio["summary"]["total_value"] == 0
     assert api.delete(f"{T}/{mid}", headers=b).status_code == 404  # igual que si no existiera
     assert tiene(api, a) == {"ECOPETROL": 10}  # lo de A sigue intacto
 

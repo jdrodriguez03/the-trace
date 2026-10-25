@@ -1,10 +1,10 @@
 # Dueño: Julian · El mercado: las 10 acciones y el COLCAP. Es público, no pide sesión.
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import and_, func
 from sqlmodel import select
 
+from app.core.prices import latest_prices
 from app.db import SessionDep
-from app.models import Asset, IndexSnapshot, PriceSnapshot
+from app.models import IndexSnapshot
 from app.schemas import AssetOut, ColcapOut
 
 router = APIRouter(prefix="/v1/market", tags=["market"])
@@ -13,21 +13,7 @@ router = APIRouter(prefix="/v1/market", tags=["market"])
 @router.get("/assets", response_model=list[AssetOut])
 def acciones(session: SessionDep) -> list[AssetOut]:
     """Las acciones con su precio más reciente, su cambio del día y la hora de actualización."""
-    # Para cada acción, el día más reciente que tenga precio guardado.
-    ultimo_dia = (
-        select(PriceSnapshot.ticker, func.max(PriceSnapshot.day).label("dia"))
-        .group_by(PriceSnapshot.ticker)
-        .subquery()
-    )
-    filas = session.exec(
-        select(Asset, PriceSnapshot)
-        .join(PriceSnapshot, PriceSnapshot.ticker == Asset.ticker)
-        .join(
-            ultimo_dia,
-            and_(ultimo_dia.c.ticker == PriceSnapshot.ticker, ultimo_dia.c.dia == PriceSnapshot.day),
-        )
-        .order_by(Asset.ticker)
-    ).all()
+    filas = latest_prices(session)
     return [
         AssetOut(
             ticker=a.ticker, name=a.name, sector=a.sector, price=p.price,
