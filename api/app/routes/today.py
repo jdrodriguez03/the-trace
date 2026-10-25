@@ -3,7 +3,7 @@ from fastapi import APIRouter
 
 from app.auth import CurrentUser
 from app.core.loaders import latest_colcap, load_news, load_summary
-from app.core.market_refresh import refresh_if_stale
+from app.core.market_refresh import colcap_es_fondo, refresh_if_stale
 from app.core.today import (
     Noticia,
     colcap_line,
@@ -34,7 +34,8 @@ def hoy(user: CurrentUser, session: SessionDep) -> TodayOut:
     colcap_out = None
     if colcap is not None:
         colcap_out = TodayColcapOut(points=colcap.points, change_pct=colcap.change_pct,
-                                    line=colcap_line(colcap.change_pct, m))
+                                    line=colcap_line(colcap.change_pct, m),
+                                    proxy=colcap_es_fondo(colcap.source))
 
     if m is None:  # sin portafolio: solo el COLCAP, para que la pantalla no quede vacía
         return TodayOut(has_portfolio=False, colcap=colcap_out, updated_at=actualizado)
@@ -57,7 +58,8 @@ def hoy(user: CurrentUser, session: SessionDep) -> TodayOut:
                               cause=today_cause(t, noticias, causas)),
         colcap=colcap_out,
         fallback=TodayFallbackOut(**today_extended(
-            m, colcap.change_pct if colcap else None, noticias, causas)),
+            m, colcap.change_pct if colcap else None, noticias, causas,
+            aproximado=colcap_es_fondo(colcap.source) if colcap else False)),
         news=ranked_news_out(session, noticias_db, pesos)[:NOTICIAS_EN_HOY],
         updated_at=actualizado,
     )

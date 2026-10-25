@@ -11,6 +11,9 @@ import yfinance as yf
 from app.providers.base import Activos, Cierre, Cotizacion, con_cambio
 
 logger = logging.getLogger(__name__)
+# yfinance imprime sus propios errores («symbol may be delisted»); nosotros ya avisamos con los
+# nuestros, más claros. Se callan los suyos para no llenar la terminal ni los registros.
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
 TIEMPO_MAXIMO = 10  # segundos: si Yahoo no responde, la pantalla sigue con el último precio
 
