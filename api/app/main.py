@@ -8,7 +8,7 @@ from sqlalchemy import text
 from app.config import get_settings
 from app.db import SessionDep
 from app.limits import LimiteMiddleware
-from app.routes import market, me, portfolio
+from app.routes import market, me, news, portfolio, today
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,8 @@ app.add_middleware(
 app.include_router(me.router)
 app.include_router(market.router)
 app.include_router(portfolio.router)
+app.include_router(news.router)
+app.include_router(today.router)
 
 
 @app.get("/health")
