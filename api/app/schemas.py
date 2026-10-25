@@ -34,6 +34,9 @@ class ColcapOut(BaseModel):
     change_pct: float
     day: date
     updated_at: datetime
+    # nuevo (día 12): True si el dato viene del fondo ICOLCAP y no del índice. Entonces `points`
+    # es el precio del fondo en pesos: la web NO lo muestra como puntos, solo el cambio del día.
+    proxy: bool = False
 
 
 # ---- Portafolio (protegido) ----
@@ -118,6 +121,22 @@ class PortfolioOut(BaseModel):
     holdings: list[HoldingOut]  # se mantiene para no romper lo que ya usa la web
     positions: list[PositionOut] = []  # nuevo (día 8): de mayor a menor valor
     summary: PortfolioSummaryOut | None = None  # nuevo (día 8)
+    updated_at: datetime | None = None  # nuevo (día 12): hora del precio más reciente
+
+
+# ---- Historial (días 15) ----
+Rango = Literal["1m", "3m", "1y"]  # los botones 1M, 3M y 1A
+
+
+class PricePointOut(BaseModel):
+    day: date
+    price: Numero  # cierre de ese día (el de hoy se va actualizando)
+
+
+class PortfolioPointOut(BaseModel):
+    day: date
+    value: Numero  # lo que valían ese día las acciones que tenías
+    invested: Numero  # lo que habías pagado por ellas
 
 
 # ---- Noticias (protegido) ----
@@ -157,6 +176,7 @@ class TodayColcapOut(BaseModel):
     points: Numero
     change_pct: float
     line: str  # «Hoy las acciones más grandes del país subieron un poco. …»
+    proxy: bool = False  # nuevo (día 12): igual que en ColcapOut
 
 
 class FallbackAssetOut(BaseModel):

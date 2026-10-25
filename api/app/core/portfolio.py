@@ -68,7 +68,7 @@ class Resumen:
     sectors: list[Sector] = field(default_factory=list)
 
 
-def _en_orden(movimientos: list[Movimiento]) -> list[Movimiento]:
+def en_orden(movimientos: list[Movimiento]) -> list[Movimiento]:
     """Por fecha; el mismo día, las compras antes que las ventas (igual que al validar ventas)."""
     return sorted(movimientos, key=lambda m: (m.day, m.kind == "sell", m.id or float("inf")))
 
@@ -83,6 +83,27 @@ def cambio_del_dia(valor: Decimal, change_pct: float) -> Decimal:
     Ejemplo: algo que hoy vale $1.010 y subió 1 % ayer valía $1.000, así que subió $10.
     """
     return valor - valor / (1 + Decimal(str(change_pct)) / 100)
+
+
+def aplicar_movimiento(m: Movimiento, cantidad: dict[str, Decimal], costo: dict[str, Decimal],
+                       realizada: dict[str, Decimal]) -> None:
+    """Aplica una compra o venta a los acumuladores (método de costo promedio).
+
+    - Comprar: suma cantidad y suma lo pagado.
+    - Vender: no cambia el costo promedio; la ganancia realizada es (precio − promedio) × cantidad.
+    La usan el resumen del portafolio y su historial, para que los dos cuenten lo mismo.
+    """
+    t = m.ticker
+    if m.kind == "buy":
+        cantidad[t] += m.quantity
+        costo[t] += m.quantity * m.price
+        return
+    promedio = costo[t] / cantidad[t] if cantidad[t] else CERO
+    realizada[t] += (m.price - promedio) * m.quantity
+    costo[t] -= promedio * m.quantity
+    cantidad[t] -= m.quantity
+    if cantidad[t] <= 0:  # vendiste todo: la próxima compra arranca un promedio nuevo
+        cantidad[t], costo[t] = CERO, CERO
 
 
 def build_positions(
@@ -101,18 +122,8 @@ def build_positions(
     costo: dict[str, Decimal] = defaultdict(Decimal)  # lo pagado por las acciones que quedan
     realizada: dict[str, Decimal] = defaultdict(Decimal)
 
-    for m in _en_orden(movimientos):
-        t = m.ticker
-        if m.kind == "buy":
-            cantidad[t] += m.quantity
-            costo[t] += m.quantity * m.price
-        else:
-            promedio = costo[t] / cantidad[t] if cantidad[t] else CERO
-            realizada[t] += (m.price - promedio) * m.quantity
-            costo[t] -= promedio * m.quantity
-            cantidad[t] -= m.quantity
-            if cantidad[t] <= 0:  # vendiste todo: la próxima compra arranca un promedio nuevo
-                cantidad[t], costo[t] = CERO, CERO
+    for m in en_orden(movimientos):
+        aplicar_movimiento(m, cantidad, costo, realizada)
 
     posiciones = []
     for t, q in cantidad.items():

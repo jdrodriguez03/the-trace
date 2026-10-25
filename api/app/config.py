@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = ""
     price_refresh_minutes: int = 15
+    # De dónde salen los precios: "yahoo" o "off" (no pide precios nuevos; las pruebas usan "off").
+    price_provider: str = "yahoo"
     web_origin: str = "http://localhost:5173"
     sentry_dsn: str = ""
 

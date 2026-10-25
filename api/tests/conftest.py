@@ -4,6 +4,7 @@ import os
 
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["SUPABASE_URL"] = "https://pruebas.supabase.co"
+os.environ["PRICE_PROVIDER"] = "off"  # las pruebas NUNCA llaman a Yahoo
 os.environ["WEB_ORIGIN"] = "https://trace-web-pruebas.onrender.com"
 
 
