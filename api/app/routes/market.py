@@ -7,6 +7,9 @@ from app.db import SessionDep
 from app.models import IndexSnapshot
 from app.schemas import AssetOut, ColcapOut
 
+# PROVISIONAL: cambiar por api/app/content/drivers.py de Isabela.
+from scripts.provisional_content import DRIVER_DEFAULT, DRIVERS
+
 router = APIRouter(prefix="/v1/market", tags=["market"])
 
 
@@ -18,6 +21,7 @@ def acciones(session: SessionDep) -> list[AssetOut]:
         AssetOut(
             ticker=a.ticker, name=a.name, sector=a.sector, price=p.price,
             change_pct=p.change_pct, updated_at=p.updated_at,
+            drivers=DRIVERS.get(a.ticker, DRIVER_DEFAULT),
         )
         for a, p in filas
     ]

@@ -77,3 +77,27 @@ class Transaction(SQLModel, table=True):
     price: Decimal = Field(max_digits=14, decimal_places=4)
     day: date
     created_at: datetime = Field(default_factory=ahora, sa_type=DateTime(timezone=True))
+
+
+class NewsItem(SQLModel, table=True):
+    """Una noticia sobre una acción. Por ahora las cargamos nosotros (semilla o CSV)."""
+
+    __tablename__ = "news_items"
+    __table_args__ = (
+        CheckConstraint("direction IN ('Positivo', 'Negativo', 'Neutro')", name="ck_news_direction"),
+        CheckConstraint("magnitude IN ('Alta', 'Media', 'Baja')", name="ck_news_magnitude"),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    ticker: str = Field(foreign_key="assets.ticker", index=True, max_length=20)
+    direction: str = Field(max_length=10)  # tipo: "Positivo" (buena), "Negativo" (mala), "Neutro"
+    magnitude: str = Field(max_length=5)  # impacto: "Alta" (grande), "Media", "Baja" (pequeño)
+    title: str = Field(max_length=200)
+    summary: str = Field(max_length=500)  # la explicación corta
+    why: str = Field(default="", max_length=500)  # «por qué te afecta»
+    watch: str = Field(default="", max_length=300)  # «qué conviene mirar»
+    cause: str | None = Field(default=None, max_length=200)  # la causa corta que usa Hoy
+    source: str = Field(default="Resumen de mercado", max_length=100)
+    url: str | None = Field(default=None, max_length=500)
+    day: date
+    created_at: datetime = Field(default_factory=ahora, sa_type=DateTime(timezone=True))
