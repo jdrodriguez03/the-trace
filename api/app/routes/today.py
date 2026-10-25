@@ -3,6 +3,7 @@ from fastapi import APIRouter
 
 from app.auth import CurrentUser
 from app.core.loaders import latest_colcap, load_news, load_summary
+from app.core.market_refresh import refresh_if_stale
 from app.core.today import (
     Noticia,
     colcap_line,
@@ -24,6 +25,7 @@ NOTICIAS_EN_HOY = 3
 @router.get("", response_model=TodayOut)
 def hoy(user: CurrentUser, session: SessionDep) -> TodayOut:
     """Qué pasó hoy con tu portafolio y por qué: titular, explicación, COLCAP y noticias."""
+    refresh_if_stale(session)
     resumen, actualizado = load_summary(session, user.id)
     noticias_db = load_news(session)
     colcap = latest_colcap(session)

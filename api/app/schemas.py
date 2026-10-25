@@ -118,6 +118,22 @@ class PortfolioOut(BaseModel):
     holdings: list[HoldingOut]  # se mantiene para no romper lo que ya usa la web
     positions: list[PositionOut] = []  # nuevo (día 8): de mayor a menor valor
     summary: PortfolioSummaryOut | None = None  # nuevo (día 8)
+    updated_at: datetime | None = None  # nuevo (día 12): hora del precio más reciente
+
+
+# ---- Historial (días 15) ----
+Rango = Literal["1m", "3m", "1y"]  # los botones 1M, 3M y 1A
+
+
+class PricePointOut(BaseModel):
+    day: date
+    price: Numero  # cierre de ese día (el de hoy se va actualizando)
+
+
+class PortfolioPointOut(BaseModel):
+    day: date
+    value: Numero  # lo que valían ese día las acciones que tenías
+    invested: Numero  # lo que habías pagado por ellas
 
 
 # ---- Noticias (protegido) ----
