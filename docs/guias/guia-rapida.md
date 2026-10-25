@@ -279,7 +279,7 @@ Otros comandos útiles:
 - `npm run api:types` (en `web/`, con la API corriendo): actualiza los tipos de la web desde el contrato.
 - `npx shadcn@latest add <componente>` (en `web/`, solo Isabela): agrega un componente de shadcn.
 - `uv run python -m scripts.load_news noticias.csv` y `uv run python -m scripts.load_prices precios.csv` (en `api/`, solo Julian): cargan noticias, o precios de respaldo si Yahoo falla, desde un CSV.
-- `uv run python -m scripts.backfill_prices` (en `api/`, solo Julian): baja de Yahoo el último año de precios, para las gráficas.
+- `uv run python -m scripts.backfill_prices --verificar` y luego `uv run python -m scripts.backfill_prices` (en `api/`, solo Julian): el primero comprueba que cada símbolo exista en Yahoo; el segundo baja el último año de precios, para las gráficas.
 - `uv run alembic revision --autogenerate -m "…"` y `uv run alembic upgrade head` (en `api/`, solo Julian): crea y aplica un cambio a la base.
 
 ### Dos auxilios

@@ -4,6 +4,7 @@ from sqlmodel import select
 
 from app.auth import CurrentUser
 from app.core.loaders import load_news, load_summary
+from app.core.market_refresh import refresh_if_stale
 from app.core.news import rank_news
 from app.db import SessionDep
 from app.models import Asset, NewsItem
@@ -41,6 +42,7 @@ def noticias(
     - impact: Alta, Media o Baja (grande, mediano, pequeño).
     - direction: Positivo, Negativo o Neutro (buena, mala, neutra).
     """
+    refresh_if_stale(session)
     resumen, _ = load_summary(session, user.id)
     pesos = {p.ticker: p.weight_pct for p in resumen.positions}
     filtradas = [n for n in load_news(session)

@@ -2,21 +2,27 @@
 # El portafolio no se guarda: se calcula sumando tus movimientos (compras menos ventas).
 from collections import defaultdict
 from dataclasses import asdict
+from datetime import timedelta
 from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import delete, select
 
 from app.auth import CurrentUser
 from app.clock import hoy
-from app.core.loaders import load_summary
+from app.core.history import desde_para, portfolio_history
+from app.core.loaders import load_closes, load_movements, load_summary
+from app.core.market_refresh import refresh_if_stale
 from app.db import SessionDep
 from app.models import Asset, PriceSnapshot, Transaction
 from app.schemas import (
     HoldingOut,
     PortfolioOut,
+    PortfolioPointOut,
     PortfolioSummaryOut,
     PositionOut,
+    Rango,
     SectorOut,
     TransactionIn,
     TransactionOut,
@@ -59,7 +65,8 @@ def _a_salida(t: Transaction) -> TransactionOut:
 @router.get("", response_model=PortfolioOut)
 def portafolio(user: CurrentUser, session: SessionDep) -> PortfolioOut:
     """Tu portafolio: cada acción con costo promedio y ganancia o pérdida, y el resumen total."""
-    r, _ = load_summary(session, user.id)
+    refresh_if_stale(session)
+    r, actualizado = load_summary(session, user.id)
 
     return PortfolioOut(
         # holdings se mantiene igual que antes para no romper la web (regla 3 del CLAUDE.md)
@@ -75,6 +82,7 @@ def portafolio(user: CurrentUser, session: SessionDep) -> PortfolioOut:
             top_sector_pct=r.top_sector_pct, positions_count=len(r.positions),
             sectors=[SectorOut(**asdict(s)) for s in r.sectors],
         ),
+        updated_at=actualizado,
     )
 
 
@@ -155,3 +163,16 @@ def empezar_de_nuevo(user: CurrentUser, session: SessionDep) -> None:
     """
     session.exec(delete(Transaction).where(Transaction.user_id == user.id))
     session.commit()
+
+
+@router.get("/history", response_model=list[PortfolioPointOut])
+def historial(user: CurrentUser, session: SessionDep,
+              rango: Annotated[Rango, Query(alias="range")] = "1m") -> list[PortfolioPointOut]:
+    """«Cómo ha ido tu portafolio»: cada día, cuánto valía frente a lo que habías invertido."""
+    hasta = hoy()
+    desde = desde_para(rango, hasta)
+    movimientos = load_movements(session, user.id)
+    # Unos días de más al principio, para tener el «último precio» del primer día del rango.
+    cierres = load_closes(session, desde - timedelta(days=10), {m.ticker for m in movimientos})
+    return [PortfolioPointOut(day=p.day, value=p.value, invested=p.invested)
+            for p in portfolio_history(movimientos, cierres, desde, hasta)]
