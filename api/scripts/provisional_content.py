@@ -56,3 +56,53 @@ CAUSES = {
     10: "se levantan menos casas y edificios",
     11: "el precio del oro subió",
 }
+
+# «Por qué te afecta» y «qué conviene mirar» de cada noticia (LOCAL_RADAR del prototipo).
+RADAR = {
+    1: ("Si el petróleo baja, Ecopetrol recibe menos plata por cada barril que vende.",
+        "El precio del petróleo."),
+    2: ("Con más petróleo para vender, la empresa puede recibir más plata.",
+        "Cuánto petróleo produce cada mes."),
+    3: ("Cuando entrega más préstamos y se los pagan, el banco gana más.",
+        "Cuántos préstamos entrega y cuántos le pagan a tiempo."),
+    4: ("Si los clientes se atrasan, el banco guarda plata para cubrir la pérdida y gana menos.",
+        "Cuántos clientes se atrasan en sus pagos."),
+    5: ("Los contratos de energía le aseguran ingresos durante muchos años.",
+        "Cómo avanzan las obras de esas líneas."),
+    6: ("Por ahora no cambia lo que la empresa espera ganar.",
+        "Si las obras siguen avanzando como estaban previstas."),
+    7: ("Con más agua en los embalses, produce más energía y le cuesta menos.",
+        "Cuánta lluvia cae y qué tan llenos están los embalses."),
+    8: ("Sus ganancias son parecidas a las del año pasado, sin sorpresas.",
+        "Cuánto ganan sus seguros y sus inversiones."),
+    9: ("Si a las empresas de las que es dueño les va peor, a Grupo Argos también.",
+        "Cómo les va a las empresas de las que es dueño."),
+    10: ("Con menos obras, la empresa recibe menos pedidos de cemento.",
+         "Cuántas casas y edificios se están construyendo."),
+    11: ("Si el oro sube, cada gramo que Mineros produce vale más.", "El precio del oro."),
+}
+
+# «¿Qué mueve a esta acción?» (sensitivityFor del prototipo).
+DRIVERS = {
+    "ECOPETROL": "La mueven el precio del petróleo, el dólar y cuánto petróleo produce. Si el "
+                 "dólar sube, su petróleo vale más en pesos.",
+    "PFBCOLOM": "Le importan lo que cuesta pedir prestado, cuánta gente pide préstamos y si los "
+                "clientes pagan a tiempo.",
+    "ISA": "Dependen de sus contratos de líneas de energía, del dólar y de las reglas del "
+           "gobierno. Como los contratos duran años, sus ingresos son estables.",
+    "GRUPOSURA": "Le afectan los seguros que ofrece y cómo les va a las empresas donde invierte. "
+                 "También pesa lo que cuesta pedir prestado.",
+    "GRUPOARGOS": "Depende de cómo les vaya a las empresas de las que es dueño, como las de "
+                  "cemento y energía.",
+    "CEMARGOS": "Se mueve con la construcción de casas y obras, el precio de los materiales y el "
+                "dólar. Cuando se construye menos, recibe menos pedidos.",
+    "GEB": "Le importan sus contratos de transporte de energía y gas, las reglas del gobierno y "
+           "el dólar. Casi todo su ingreso viene de contratos largos.",
+    "CELSIA": "La mueven las lluvias: con más agua produce más energía y más barata. También "
+              "pesa el precio de la energía.",
+    "PFDAVVNDA": "Le afectan lo que cuesta pedir prestado, cuánta gente pide préstamos y si los "
+                 "clientes pagan. Una economía débil le complica el cobro.",
+    "MINEROS": "Depende del precio del oro, del dólar y de cuánto oro logra sacar. Si el oro "
+               "sube, cada gramo que produce vale más.",
+}
+DRIVER_DEFAULT = "Le afectan la economía del país, su sector y las decisiones de la empresa."

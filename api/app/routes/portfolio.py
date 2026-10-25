@@ -9,8 +9,7 @@ from sqlmodel import delete, select
 
 from app.auth import CurrentUser
 from app.clock import hoy
-from app.core.portfolio import Movimiento, Precio, calculate_portfolio
-from app.core.prices import latest_prices
+from app.core.loaders import load_summary
 from app.db import SessionDep
 from app.models import Asset, PriceSnapshot, Transaction
 from app.schemas import (
@@ -60,15 +59,7 @@ def _a_salida(t: Transaction) -> TransactionOut:
 @router.get("", response_model=PortfolioOut)
 def portafolio(user: CurrentUser, session: SessionDep) -> PortfolioOut:
     """Tu portafolio: cada acción con costo promedio y ganancia o pérdida, y el resumen total."""
-    movimientos = [
-        Movimiento(ticker=m.ticker, kind=m.kind, quantity=m.quantity, price=m.price, day=m.day,
-                   id=m.id)
-        for m in _movimientos(session, user.id)
-    ]
-    filas = latest_prices(session)
-    precios = {a.ticker: Precio(price=p.price, change_pct=p.change_pct) for a, p in filas}
-    activos = {a.ticker: (a.name, a.sector) for a, _ in filas}
-    r = calculate_portfolio(movimientos, precios, activos)
+    r, _ = load_summary(session, user.id)
 
     return PortfolioOut(
         # holdings se mantiene igual que antes para no romper la web (regla 3 del CLAUDE.md)

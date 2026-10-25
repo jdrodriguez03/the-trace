@@ -161,7 +161,7 @@ def _movimiento(m: ModeloHoy) -> str:
     return f"{'subió' if m.direction == 'up' else 'bajó'} {_uno(m.pct)} %"
 
 
-def today_extended(m: ModeloHoy, colcap_change_pct: float, noticias: list[Noticia],
+def today_extended(m: ModeloHoy, colcap_change_pct: float | None, noticias: list[Noticia],
                    causas: dict[int, str]) -> dict:
     """La explicación de respaldo («Explicación con IA» sin IA): acción por acción, frente al
     COLCAP y, si un sector pasa de 40 %, dónde está tu dinero.
@@ -179,14 +179,18 @@ def today_extended(m: ModeloHoy, colcap_change_pct: float, noticias: list[Notici
         acciones.append({"ticker": r.ticker, "name": r.name, "change_pct": r.change_pct,
                          "text": texto})
 
-    d = m.pct - colcap_change_pct
-    if abs(d) < 0.3:
-        comparacion = "Se movió parecido al mercado."
-    else:
-        comparacion = "Hoy le fue mejor que al COLCAP." if d > 0 else "Hoy le fue peor que al COLCAP."
-    verbo = "subió" if colcap_change_pct >= 0 else "bajó"
-    frente_colcap = (f"El COLCAP, {FRASE_COLCAP}, {verbo} {_uno(colcap_change_pct)} %. "
-                     f"Tu portafolio {_movimiento(m)}. {comparacion}")
+    frente_colcap = None  # sin dato del COLCAP no se compara: mejor callar que inventar
+    if colcap_change_pct is not None:
+        d = m.pct - colcap_change_pct
+        if abs(d) < 0.3:
+            comparacion = "Se movió parecido al mercado."
+        elif d > 0:
+            comparacion = "Hoy le fue mejor que al COLCAP."
+        else:
+            comparacion = "Hoy le fue peor que al COLCAP."
+        verbo = "subió" if colcap_change_pct >= 0 else "bajó"
+        frente_colcap = (f"El COLCAP, {FRASE_COLCAP}, {verbo} {_uno(colcap_change_pct)} %. "
+                         f"Tu portafolio {_movimiento(m)}. {comparacion}")
 
     concentracion = None
     if m.resumen.sectors and m.resumen.top_sector_pct >= 40:
