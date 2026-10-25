@@ -1,11 +1,17 @@
 # Dueño: Julian · El mercado: las 10 acciones y el COLCAP. Es público, no pide sesión.
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 
+from app.clock import hoy
+from app.core.history import desde_para
+from app.core.loaders import load_closes
+from app.core.market_refresh import refresh_if_stale
 from app.core.prices import latest_prices
 from app.db import SessionDep
-from app.models import IndexSnapshot
-from app.schemas import AssetOut, ColcapOut
+from app.models import Asset, IndexSnapshot
+from app.schemas import AssetOut, ColcapOut, PricePointOut, Rango
 
 # PROVISIONAL: cambiar por api/app/content/drivers.py de Isabela.
 from scripts.provisional_content import DRIVER_DEFAULT, DRIVERS
@@ -16,6 +22,7 @@ router = APIRouter(prefix="/v1/market", tags=["market"])
 @router.get("/assets", response_model=list[AssetOut])
 def acciones(session: SessionDep) -> list[AssetOut]:
     """Las acciones con su precio más reciente, su cambio del día y la hora de actualización."""
+    refresh_if_stale(session)
     filas = latest_prices(session)
     return [
         AssetOut(
@@ -30,6 +37,7 @@ def acciones(session: SessionDep) -> list[AssetOut]:
 @router.get("/colcap", response_model=ColcapOut)
 def colcap(session: SessionDep) -> ColcapOut:
     """El COLCAP más reciente: puntos y cambio del día."""
+    refresh_if_stale(session)
     fila = session.exec(
         select(IndexSnapshot)
         .where(IndexSnapshot.code == "COLCAP")
@@ -40,3 +48,14 @@ def colcap(session: SessionDep) -> ColcapOut:
         raise HTTPException(status_code=404, detail="Todavía no hay datos del COLCAP.")
     return ColcapOut(points=fila.points, change_pct=fila.change_pct, day=fila.day,
                      updated_at=fila.updated_at)
+
+
+@router.get("/assets/{ticker}/history", response_model=list[PricePointOut])
+def historial(ticker: str, session: SessionDep,
+              rango: Annotated[Rango, Query(alias="range")] = "1m") -> list[PricePointOut]:
+    """Los precios diarios de una acción para su gráfica: último mes, 3 meses o año."""
+    ticker = ticker.strip().upper()
+    if session.get(Asset, ticker) is None:
+        raise HTTPException(status_code=404, detail="Esa acción no existe en The Trace.")
+    cierres = load_closes(session, desde_para(rango, hoy()), {ticker}).get(ticker, [])
+    return [PricePointOut(day=c.day, price=c.price) for c in cierres]

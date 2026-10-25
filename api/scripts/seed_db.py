@@ -27,14 +27,19 @@ def seed(session: Session, day: date | None = None) -> dict[str, int]:
         session.add(asset)
     session.flush()  # las acciones deben existir antes que sus precios (llave foránea)
 
+    # Precios de ejemplo solo para acciones SIN precios reales. Si ya hay uno real de cualquier
+    # día (Yahoo o CSV), un precio de ejemplo con fecha de hoy se vería como el «más reciente».
+    con_precio_real = set(session.exec(
+        select(PriceSnapshot.ticker).where(PriceSnapshot.source != "catalogo")
+    ).all())
     for a in ASSETS:
+        if a["ticker"] in con_precio_real:
+            continue
         fila = session.exec(
             select(PriceSnapshot).where(
                 PriceSnapshot.ticker == a["ticker"], PriceSnapshot.day == day
             )
         ).first()
-        if fila is not None and fila.source != "catalogo":
-            continue  # ya hay un precio real (Yahoo o CSV): no se pisa con el de ejemplo
         if fila is None:
             fila = PriceSnapshot(ticker=a["ticker"], day=day, price=Decimal(a["price"]),
                                  change_pct=a["change"], source="catalogo")
@@ -42,10 +47,16 @@ def seed(session: Session, day: date | None = None) -> dict[str, int]:
             fila.price, fila.change_pct, fila.updated_at = Decimal(a["price"]), a["change"], ahora()
         session.add(fila)
 
+    colcap_real = session.exec(
+        select(IndexSnapshot).where(IndexSnapshot.code == COLCAP["code"],
+                                    IndexSnapshot.source != "catalogo")
+    ).first()
     colcap = session.exec(
         select(IndexSnapshot).where(IndexSnapshot.code == COLCAP["code"], IndexSnapshot.day == day)
     ).first()
-    if colcap is None:
+    if colcap_real is not None:
+        pass  # ya hay un COLCAP real: no se agrega uno de ejemplo
+    elif colcap is None:
         colcap = IndexSnapshot(code=COLCAP["code"], day=day, points=Decimal(COLCAP["points"]),
                                change_pct=COLCAP["change"], source="catalogo")
         session.add(colcap)

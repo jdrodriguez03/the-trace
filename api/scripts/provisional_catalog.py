@@ -26,4 +26,6 @@ ASSETS = [
      "sector": "Construcción", "price": 9800, "change": -2.1},
 ]
 
-COLCAP = {"code": "COLCAP", "points": "1812.40", "change": 0.6}
+# El símbolo del COLCAP en Yahoo está SIN VERIFICAR: se comprueba con
+# `uv run python -m scripts.backfill_prices --verificar`. Si Yahoo no lo tiene, se carga por CSV.
+COLCAP = {"code": "COLCAP", "yahoo": "^COLCAP", "points": "1812.40", "change": 0.6}
