@@ -293,3 +293,10 @@ def test_el_colcap_de_yahoo_se_marca_como_fondo(api):
 def test_el_colcap_por_csv_son_puntos():
     assert market_refresh.colcap_es_fondo("csv") is False
     assert market_refresh.colcap_es_fondo("yahoo") is True
+
+
+def test_si_compras_un_fin_de_semana_la_grafica_no_queda_vacia():
+    viernes, domingo = date(2026, 10, 23), date(2026, 10, 25)
+    cierres = {"ISA": [Cierre(viernes, Decimal(29000))]}
+    puntos = portfolio_history([compra(10, 29000, domingo, 1)], cierres, viernes, domingo)
+    assert [(p.day, p.value, p.invested) for p in puntos] == [(domingo, 290000, 290000)]
