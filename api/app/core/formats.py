@@ -31,3 +31,13 @@ def pct(valor: float | Decimal, decimales: int = 1, signo: bool = True) -> str:
     if redondo < 0:
         return f"{MENOS}{texto} %"
     return f"+{texto} %" if signo else f"{texto} %"
+
+
+def parte(valor: float | Decimal) -> str:
+    """«Qué parte de tu dinero», redondeada como en Hoy del prototipo: 32,84 -> "33 %".
+
+    Una parte que no llega a 1 % se escribe "Menos de 1 %", para no mostrar un engañoso "0 %".
+    """
+    if 0 < valor < 1:
+        return "Menos de 1 %"
+    return f"{_redondear(valor, 0)} %"
