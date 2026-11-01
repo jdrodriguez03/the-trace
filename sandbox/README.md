@@ -2,6 +2,10 @@
 
 Herramientas para **probar en local**. No son parte de la app ni se publican en Render.
 
+## `spa/`: prototipo SPA completo (Vite + index.html)
+
+Iteración de pantallas y UX (Insights, onboarding, IA en cliente para pruebas). Ver [`spa/README.md`](spa/README.md). Arranque: `cd sandbox/spa && npm install && npm run dev` → **http://localhost:5174**.
+
 ## `visor/`: ver la API funcionando antes de que exista la web
 
 Una página sencilla que llama a la API igual que lo hará la app: entra como invitado, arma el
