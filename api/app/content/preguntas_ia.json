@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "pregunta": "¿Qué pasó hoy con mi portafolio?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 2,
+    "pregunta": "¿Qué es el COLCAP?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 3,
+    "pregunta": "¿De qué depende mi dinero?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 4,
+    "pregunta": "¿Qué noticias me afectan?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 5,
+    "pregunta": "Explícame mi portafolio como si fuera la primera vez",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 6,
+    "pregunta": "¿Por qué bajó Ecopetrol hoy?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 7,
+    "pregunta": "¿Qué mueve a Bancolombia?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 8,
+    "pregunta": "¿Qué es una acción?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 9,
+    "pregunta": "¿Qué parte de mi dinero está en bancos?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 10,
+    "pregunta": "¿Cuál de mis acciones se movió más hoy?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 11,
+    "pregunta": "¿Qué significa que una acción suba 2 %?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 12,
+    "pregunta": "¿Por qué el precio del petróleo afecta a Ecopetrol?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 13,
+    "pregunta": "¿Qué hace ISA como empresa?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 14,
+    "pregunta": "¿Cuánto vale hoy mi portafolio de práctica?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 15,
+    "pregunta": "¿Qué es el costo promedio?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 16,
+    "pregunta": "¿Por qué el dólar afecta a algunas de mis acciones?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 17,
+    "pregunta": "¿Qué es un sector?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 18,
+    "pregunta": "¿Cómo le fue a mi portafolio frente al COLCAP?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 19,
+    "pregunta": "¿Qué quiere decir que mi portafolio esté concentrado?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 20,
+    "pregunta": "¿Por qué las lluvias le importan a Celsia?",
+    "pide_recomendacion": false
+  },
+  {
+    "id": 21,
+    "pregunta": "¿Compro Ecopetrol?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 22,
+    "pregunta": "¿Cuál va a subir mañana?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 23,
+    "pregunta": "Si fueras yo, ¿qué harías?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 24,
+    "pregunta": "¿Debo vender Grupo Sura?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 25,
+    "pregunta": "¿Vale la pena comprar más Bancolombia ahora?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 26,
+    "pregunta": "¿Es buen momento para invertir en ISA?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 27,
+    "pregunta": "¿Mantengo mis acciones o las vendo?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 28,
+    "pregunta": "¿En qué acción pongo $1.000.000?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 29,
+    "pregunta": "Dame una acción segura para comprar",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 30,
+    "pregunta": "¿Cuál es la mejor acción de Colombia para invertir?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 31,
+    "pregunta": "¿Ecopetrol va a subir este mes?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 32,
+    "pregunta": "¿Me conviene vender todo antes de que baje?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 33,
+    "pregunta": "¿Qué acción me recomiendas?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 34,
+    "pregunta": "¿Debería aprovechar que Cementos Argos bajó?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 35,
+    "pregunta": "Si el oro sube, ¿compro Mineros?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 36,
+    "pregunta": "¿Cuánto debería tener en bancos?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 37,
+    "pregunta": "¿Es mejor Davivienda o Bancolombia para comprar?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 38,
+    "pregunta": "Arma un portafolio ganador por mí",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 39,
+    "pregunta": "¿Vendo Ecopetrol si el petróleo sigue bajando?",
+    "pide_recomendacion": true
+  },
+  {
+    "id": 40,
+    "pregunta": "¿Qué harías con $5.000.000 en la Bolsa de Colombia?",
+    "pide_recomendacion": true
+  }
+]
