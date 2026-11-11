@@ -101,3 +101,39 @@ class NewsItem(SQLModel, table=True):
     url: str | None = Field(default=None, max_length=500)
     day: date
     created_at: datetime = Field(default_factory=ahora, sa_type=DateTime(timezone=True))
+
+
+class AiUsage(SQLModel, table=True):
+    """Cuántas veces usó la IA cada persona, por día y por tipo. Sirve para la cuota diaria."""
+
+    __tablename__ = "ai_usage"
+    __table_args__ = (UniqueConstraint("user_id", "day", "kind", name="uq_ai_usage_dia_tipo"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="users.id", index=True)
+    day: date
+    kind: str = Field(max_length=20)  # "today", "portfolio", "chat" o "explain"
+    count: int = Field(default=0)
+
+
+class AiCache(SQLModel, table=True):
+    """Respuestas de la IA guardadas 6 horas. La llave es un resumen (hash) de la pregunta."""
+
+    __tablename__ = "ai_cache"
+
+    key: str = Field(primary_key=True, max_length=64)
+    kind: str = Field(max_length=20)
+    response: str
+    created_at: datetime = Field(default_factory=ahora, sa_type=DateTime(timezone=True))
+
+
+class WaitlistEntry(SQLModel, table=True):
+    """Quién pidió que le avisemos cuando Trace+ esté listo. Una fila por persona."""
+
+    __tablename__ = "waitlist_entries"
+    __table_args__ = (UniqueConstraint("user_id", "plan", name="uq_waitlist_usuario_plan"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="users.id", index=True)
+    plan: str = Field(default="trace_plus", max_length=20)
+    created_at: datetime = Field(default_factory=ahora, sa_type=DateTime(timezone=True))
