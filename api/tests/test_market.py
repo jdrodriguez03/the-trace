@@ -31,3 +31,14 @@ def test_colcap_sale_sin_iniciar_sesion(api):
     r = api.get("/v1/market/colcap")
     assert r.status_code == 200
     assert r.json()["points"] == 1812.4 and r.json()["change_pct"] == 0.6
+
+
+def test_historial_de_todas_las_acciones_en_una_peticion(api):
+    r = api.get("/v1/market/history?range=1m")
+    assert r.status_code == 200
+    datos = r.json()
+    assert isinstance(datos, dict)
+    for serie in datos.values():
+        assert all({"day", "price"} <= set(p) for p in serie)
+        dias = [p["day"] for p in serie]
+        assert dias == sorted(dias)  # del más viejo al más nuevo
