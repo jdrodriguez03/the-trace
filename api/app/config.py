@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     price_provider: str = "yahoo"
     web_origin: str = "http://localhost:5173"
     sentry_dsn: str = ""
+    # Usos de IA al día por persona y por tipo (ADR-0005). Al pasarse: 429 AI_QUOTA.
+    ai_daily_limit: int = 5
 
 
 @lru_cache

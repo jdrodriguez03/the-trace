@@ -371,8 +371,8 @@ Para terminar lo que quedó pendiente y dejarlo fusionado.
 
 **Julian · tablas de la IA y Trace+ (2 h)**
 
-- [ ] Tablas `AiUsage` (usuario, fecha, tipo, conteo), `AiCache` y `WaitlistEntry`, con su migración.
-- [ ] `POST /v1/waitlist/trace-plus` (no duplica) y `GET /v1/me` con `ai_quota` (usados y límite del día).
+- [x] Tablas `AiUsage` (usuario, fecha, tipo, conteo), `AiCache` y `WaitlistEntry`, con su migración.
+- [x] `POST /v1/waitlist/trace-plus` (no duplica) y `GET /v1/me` con `ai_quota` (usados y límite del día).
 - [ ] Límite propio para `/v1/ai/*`: 10 peticiones por minuto por usuario.
 
 * **Listo cuando:** las rutas aparecen en `/docs` y sus pruebas pasan.
@@ -397,9 +397,9 @@ Para terminar lo que quedó pendiente y dejarlo fusionado.
 
 **Julian · contexto y respaldo de la IA (2 h)**
 
-- [ ] `api/app/core/context.py`: `build_portfolio_context` igual al prototipo, más la ganancia o pérdida de cada acción, sin nombre ni correo. Juan Angel lo usa hoy: súbelo temprano.
-- [ ] `api/app/core/fallback.py`: `local_portfolio_insight` y `local_chat_fallback` traducidos del prototipo.
-- [ ] Pruebas: «¿debo vender Ecopetrol?» responde con «The Trace no recomienda»; el contexto no contiene correos.
+- [x] `api/app/core/context.py`: `build_portfolio_context` igual al prototipo, más la ganancia o pérdida de cada acción, sin nombre ni correo. Juan Angel lo usa hoy: súbelo temprano.
+- [x] `api/app/core/fallback.py`: `local_portfolio_insight` y `local_chat_fallback` traducidos del prototipo.
+- [x] Pruebas: «¿debo vender Ecopetrol?» responde con «The Trace no recomienda»; el contexto no contiene correos.
 
 * **Listo cuando:** las pruebas pasan.
 

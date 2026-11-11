@@ -15,6 +15,11 @@ from app.main import app
 
 client = TestClient(app)
 
+
+def sin_cuota(datos: dict) -> dict:
+    """/me trae también la cuota de IA (campo opcional nuevo); aquí solo miramos quién eres."""
+    return {k: v for k, v in datos.items() if k != "ai_quota"}
+
 ISSUER = "https://pruebas.supabase.co/auth/v1"  # SUPABASE_URL de conftest.py + /auth/v1
 LLAVE_SUPABASE = ec.generate_private_key(ec.SECP256R1())  # la "llave de Supabase" de mentira
 LLAVE_ATACANTE = ec.generate_private_key(ec.SECP256R1())
@@ -89,7 +94,7 @@ def test_invitado_entra_y_se_crea_una_sola_vez():
     for _ in range(2):
         r = client.get("/v1/me", headers=con(token(sub=uid, anonimo=True)))
         assert r.status_code == 200
-        assert r.json() == {"id": uid, "email": None, "is_guest": True}
+        assert sin_cuota(r.json()) == {"id": uid, "email": None, "is_guest": True}
     with Session(engine) as session:
         assert len(session.exec(select(models.User).where(models.User.id == uuid.UUID(uid))).all()) == 1
 
@@ -97,11 +102,11 @@ def test_invitado_entra_y_se_crea_una_sola_vez():
 def test_con_correo_no_es_invitado():
     uid = str(uuid.uuid4())
     r = client.get("/v1/me", headers=con(token(sub=uid, email="ana@correo.com")))
-    assert r.json() == {"id": uid, "email": "ana@correo.com", "is_guest": False}
+    assert sin_cuota(r.json()) == {"id": uid, "email": "ana@correo.com", "is_guest": False}
 
 
 def test_invitado_que_luego_pone_correo_conserva_su_id():
     uid = str(uuid.uuid4())
     client.get("/v1/me", headers=con(token(sub=uid, anonimo=True)))
     r = client.get("/v1/me", headers=con(token(sub=uid, email="ana@correo.com")))
-    assert r.json() == {"id": uid, "email": "ana@correo.com", "is_guest": False}
+    assert sin_cuota(r.json()) == {"id": uid, "email": "ana@correo.com", "is_guest": False}
