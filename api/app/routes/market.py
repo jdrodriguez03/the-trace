@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 
 from app.clock import hoy
+from app.content.drivers import DRIVER_DEFAULT, DRIVERS
 from app.core.history import desde_para
 from app.core.loaders import load_closes
 from app.core.market_refresh import colcap_es_fondo, refresh_if_stale
@@ -12,9 +13,6 @@ from app.core.prices import latest_prices
 from app.db import SessionDep
 from app.models import Asset, IndexSnapshot
 from app.schemas import AssetOut, ColcapOut, PricePointOut, Rango
-
-# PROVISIONAL: cambiar por api/app/content/drivers.py de Isabela.
-from scripts.provisional_content import DRIVER_DEFAULT, DRIVERS
 
 router = APIRouter(prefix="/v1/market", tags=["market"])
 
@@ -59,3 +57,26 @@ def historial(ticker: str, session: SessionDep,
         raise HTTPException(status_code=404, detail="Esa acción no existe en The Trace.")
     cierres = load_closes(session, desde_para(rango, hoy()), {ticker}).get(ticker, [])
     return [PricePointOut(day=c.day, price=c.price) for c in cierres]
+
+
+@router.get("/history", response_model=dict[str, list[PricePointOut]])
+def historiales(session: SessionDep,
+                rango: Annotated[Rango, Query(alias="range")] = "1y") -> dict[str, list[PricePointOut]]:
+    """Los precios diarios de TODAS las acciones y del COLCAP en una sola petición.
+
+    La web los pide una vez al abrir: así no hace 11 peticiones y no choca con el límite por IP
+    cuando muchas personas entran desde la misma red (por ejemplo, en la presentación).
+    """
+    desde = desde_para(rango, hoy())
+    salida = {
+        t: [PricePointOut(day=c.day, price=c.price) for c in cierres]
+        for t, cierres in load_closes(session, desde).items()
+    }
+    indice = session.exec(
+        select(IndexSnapshot)
+        .where(IndexSnapshot.code == "COLCAP", IndexSnapshot.day >= desde)
+        .order_by(IndexSnapshot.day)
+    ).all()
+    if indice:
+        salida["COLCAP"] = [PricePointOut(day=f.day, price=f.points) for f in indice]
+    return salida
