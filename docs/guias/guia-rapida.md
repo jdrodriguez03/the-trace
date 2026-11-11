@@ -190,7 +190,14 @@ Como arranca desde un computador vacío, el CI atrapa el «en mi máquina funcio
 | Vista previa | Cada PR (solo la web) | La API del MVP | Ver la pantalla del PR en el celular antes de aprobar |
 | MVP (público) | Cada fusión a `main` | La base de Supabase del MVP | Demos del domingo, prueba con personas y presentación |
 
-La API está en el plan gratis de Render: si nadie la usa en 15 minutos se duerme, y la primera petición tarda casi un minuto. Antes de una demo, ábranla un minuto antes. En la semana 4 se decide si pasarla al plan Starter (unos US$7 al mes) para la prueba con personas y la presentación.
+La API va en el plan Starter de Render (unos US$7 al mes) para la prueba con personas y la presentación: así no se duerme. En el plan gratis se dormiría a los 15 minutos y la primera petición tardaría casi un minuto.
+
+Render se configura con `render.yaml`, en la raíz. Solo Julian lo hace, una vez:
+
+1. En Render: **New → Blueprint**, escoge el repo y acepta los dos servicios, `trace-api` y `trace-web`.
+2. Escribe en el panel las variables que piden valor. Son las de `api/.env` y las `VITE_` públicas de `web/.env.local`.
+3. Antes de cada publicación, Render corre `alembic upgrade head` para aplicar los cambios a la base.
+4. La primera vez, carga las 10 acciones con `uv run python -m scripts.seed_db`, desde `api/`.
 
 El repositorio es privado durante el mes, así que GitHub no bloquea `main` ni escanea claves por su cuenta: la regla de no subir directo se cumple entre todos y `gitleaks` cuida las claves. Cuando haya usuarios reales, el MVP se separa en staging y producción con una rama `prod`; eso es parte de la v2.
 
