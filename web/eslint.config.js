@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'public/legacy']), // legacy: el prototipo aprobado, tal cual
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

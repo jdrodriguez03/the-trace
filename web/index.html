@@ -1,14 +1,456 @@
 <!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#11151c" />
-    <title>The Trace — Entiende tus acciones</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080b">
+<meta name="description" content="Practica con acciones de Colombia y entiende, en palabras simples, qué movió tu dinero cada día.">
+<title>The Trace · Entiende qué mueve tus acciones</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Dueño: Julian · Las pantallas son el prototipo aprobado (docs/prototype). src/main.tsx las conecta. -->
+</head>
+<body data-current-view="today">
+<div id="bootSplash" aria-live="polite"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-logo"/></svg><span>The Trace</span><i></i></div>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-today" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 15h3"/></symbol>
+<symbol id="i-portfolio" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12z"/><path d="M15 3.8A8.5 8.5 0 0 1 20.2 9H15z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 20.5 12z"/><path d="M8.5 11h7M8.5 14.5h4.5"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></symbol>
+<symbol id="i-insights" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16.5V11M12 16.5V6.5M17 16.5v-4"/></symbol>
+<symbol id="i-radar" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M7.5 9h9M7.5 12.5h9M7.5 16h5"/></symbol>
+<symbol id="i-market" viewBox="0 0 24 24"><path d="M3.5 17l5.5-5.5 4 4 7.5-8"/><path d="M15 7.5h5.5V13"/></symbol>
+<symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3.5v4.5M15 3.5v4.5"/><path d="M6.5 8h11v3a5.5 5.5 0 0 1-11 0z"/><path d="M12 16.5v4"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8"/><path d="M4 4.5V9h4.5"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol>
+<symbol id="i-next" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8v.2"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 9.5a6 6 0 1 0-12 0c0 6.5-2.5 8-2.5 8h17S18 16 18 9.5"/><path d="M13.7 20.5a2 2 0 0 1-3.4 0"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v3.5M8.5 20.5h7"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 20.5H5.5a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2H9"/><path d="M16 16.5l4.5-4.5L16 7.5"/><path d="M20.5 12H9"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M14 4.5h5.5V10"/><path d="M19.5 4.5L11 13"/><path d="M17 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7H10"/></symbol>
+<linearGradient id="g-up" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B7A4E" stop-opacity=".22"/><stop offset="1" stop-color="#0B7A4E" stop-opacity="0"/></linearGradient>
+<linearGradient id="g-down" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B4452F" stop-opacity=".2"/><stop offset="1" stop-color="#B4452F" stop-opacity="0"/></linearGradient>
+<linearGradient id="g-flat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8C94A7" stop-opacity=".2"/><stop offset="1" stop-color="#8C94A7" stop-opacity="0"/></linearGradient>
+<symbol id="i-logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#000" stroke="#fff" stroke-width="1.25"/><path d="M6 18.5h4.5l2.8-7.5 4.4 11 2.8-6.5H26" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs></svg>
+<!-- PORTADA: lo primero que ve alguien que no ha entrado. El scroll cuenta la historia. -->
+<div id="landing" class="ld" aria-label="The Trace">
+  <header class="ld-top" id="ldTop">
+    <div class="brand"><svg class="brand-mark" aria-hidden="true"><use href="#i-logo"/></svg>The Trace</div>
+    <nav class="ld-top-nav"><button class="btn-ghost" type="button" onclick="openLogin()">Entrar</button><button class="btn-primary btn-sm" type="button" onclick="openLogin()">Empezar</button></nav>
+  </header>
+
+  <section class="ld-hero" aria-labelledby="ldTitle">
+    <div class="ld-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="ld-grid" aria-hidden="true"></div>
+    <svg class="ld-pulse" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 140 H430 L470 140 L505 46 L548 196 L588 104 L618 140 H1200"/></svg>
+    <div class="ld-hero-in">
+      <p class="ld-kicker"><span class="ld-dot"></span>Acciones de la Bolsa de Colombia</p>
+      <h1 class="ld-h1" id="ldTitle"><span class="ld-w">Entiende</span> <span class="ld-w">qué</span> <span class="ld-w ld-grad">mueve</span> <span class="ld-w">tus</span> <span class="ld-w">acciones.</span></h1>
+      <p class="ld-lede">Cada día, una frase corta que te dice qué pasó con tu portafolio de práctica y por qué.</p>
+      <div class="ld-ctas"><button class="btn-primary btn-lg" type="button" onclick="openLogin()">Empezar a practicar</button><a class="btn-secondary btn-lg" href="#ldStory">Ver cómo funciona</a></div>
+    </div>
+    <a class="ld-cue" href="#ldStory" aria-label="Baja para ver cómo funciona"><span>Baja para ver tu día</span><i aria-hidden="true"></i></a>
+  </section>
+
+  <section class="ld-story" id="ldStory" aria-label="Cómo se ve tu día en The Trace">
+    <div class="ld-sticky">
+      <div class="ld-steps">
+        <article class="ld-step is-on" data-step="0"><p class="ld-n">01</p><h2>Lo que pasó, en una frase.</h2><p>Abres la app y lo primero que ves es tu día: cuánto subió o bajó tu dinero.</p></article>
+        <article class="ld-step" data-step="1"><p class="ld-n">02</p><h2>Qué lo movió.</h2><p>Cada acción suma o resta pesos. Ves cuál pesó más en tu portafolio.</p></article>
+        <article class="ld-step" data-step="2"><p class="ld-n">03</p><h2>La noticia que lo explica.</h2><p>Te contamos qué pasó y por qué te afecta, en palabras simples.</p></article>
+        <article class="ld-step" data-step="3"><p class="ld-n">04</p><h2>Frente al mercado.</h2><p>Comparas tu día con el COLCAP, el termómetro de las acciones más grandes del país.</p></article>
+      </div>
+      <div class="ld-phone-wrap" aria-hidden="true">
+        <div class="ld-phone" id="ldPhone">
+          <div class="ld-notch"></div>
+          <div class="ld-screen">
+            <div class="ld-bar"><span class="ld-prog"><i class="on"></i><i></i><i></i><i></i></span></div>
+            <div class="ld-scr is-on" data-scr="0">
+              <p class="ld-s-k">Martes · tu día</p>
+              <p class="ld-s-h">Hoy tu portafolio <b class="up">subió 0,6 %</b>, unos <b class="up"><span data-ld-count="28400">$28.400</span> más</b></p>
+              <svg class="ld-s-spark" viewBox="0 0 300 80" preserveAspectRatio="none"><defs><linearGradient id="ldg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3dcc8e" stop-opacity=".35"/><stop offset="1" stop-color="#3dcc8e" stop-opacity="0"/></linearGradient></defs><path class="ar" d="M0 62 L30 58 L60 64 L90 50 L120 54 L150 40 L180 44 L210 30 L240 36 L270 22 L300 18 L300 80 L0 80Z" fill="url(#ldg)"/><path class="ln" pathLength="1" d="M0 62 L30 58 L60 64 L90 50 L120 54 L150 40 L180 44 L210 30 L240 36 L270 22 L300 18"/></svg>
+              <p class="ld-s-p">La mayor causa fue ISA, que ganó un contrato para nuevas líneas de energía.</p>
+            </div>
+            <div class="ld-scr" data-scr="1">
+              <p class="ld-s-k">Qué movió tu portafolio hoy</p>
+              <ul class="ld-wf">
+                <li><b>ISA</b><span class="ld-wf-t"><i class="up" style="--l:0%;--w:65.7%"></i></span><em class="up">+$19.700</em></li>
+                <li><b>Bancolombia</b><span class="ld-wf-t"><i class="up" style="--l:65.7%;--w:34.3%"></i></span><em class="up">+$10.300</em></li>
+                <li><b>Ecopetrol</b><span class="ld-wf-t"><i class="down" style="--l:94.7%;--w:5.3%"></i></span><em class="down">−$1.600</em></li>
+                <li class="tot"><b>Tu día</b><span class="ld-wf-t"><i class="up" style="--l:0%;--w:94.7%"></i></span><em class="up">+$28.400</em></li>
+              </ul>
+              <p class="ld-s-p">Cada barra empieza donde terminó la anterior.</p>
+            </div>
+            <div class="ld-scr" data-scr="2">
+              <div class="ld-news"><div class="ld-news-img"><img data-art="towers" alt="" loading="lazy" onerror="this.remove()"></div>
+                <p class="ld-tags"><span class="tag up">▲ Buena noticia</span><span class="ld-imp">Impacto grande</span></p>
+                <p class="ld-news-t">ISA gana un contrato para nuevas líneas de energía</p>
+                <p class="ld-news-w"><b>Por qué te afecta</b>Los contratos de energía le aseguran ingresos durante muchos años.</p></div>
+            </div>
+            <div class="ld-scr" data-scr="3">
+              <p class="ld-s-k">Frente al COLCAP</p>
+              <div class="ld-cmp"><div><span>Tu portafolio</span><span class="ld-cmp-t"><i style="--w:100%"></i></span><b class="up">▲ 0,6 %</b></div><div><span>COLCAP</span><span class="ld-cmp-t"><i style="--w:68%"></i></span><b class="up">▲ 0,4 %</b></div></div>
+              <p class="ld-s-h ld-s-h-sm">A tu portafolio le fue un poco mejor que al mercado.</p>
+              <p class="ld-s-p">Esto explica lo que pasó. No dice qué va a pasar ni qué hacer.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ld-zoom" id="ldZoom" aria-label="Empresas de la Bolsa de Colombia">
+    <div class="ld-zoom-sticky">
+      <div class="ld-zoom-frame"><img data-art="bogota" alt="Edificios de Bogotá junto a la montaña" loading="lazy" onerror="this.remove()"></div>
+      <div class="ld-zoom-txt"><h2>Practica con las empresas que mueven el país.</h2><p>Ecopetrol, Bancolombia, ISA y otras siete, con precios de la Bolsa de Colombia.</p></div>
+    </div>
+  </section>
+
+  <section class="ld-marquee" aria-label="Empresas para practicar"><div class="ld-mq-track" id="ldMarquee"></div></section>
+
+  <section class="ld-how" id="ldHow" aria-labelledby="ldHowTitle">
+    <h2 class="ld-h2 rv" id="ldHowTitle">Tres pasos. Cero jerga.</h2>
+    <div class="ld-cards">
+      <svg class="ld-how-line" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M60 20 C 240 -6, 300 46, 500 20 S 760 -6, 940 20"/></svg>
+      <article class="ld-card rv" style="--i:0" data-scene="pick"><div class="ld-scene sc-pick" aria-hidden="true"><div class="scp-row"><span class="scp-chip" style="--c:#E7A400">IS<i class="ck"></i></span><span class="scp-chip" style="--c:#8FA3CF">EC<i class="ck"></i></span><span class="scp-chip" style="--c:#0E9F9A">GS<i class="ck"></i></span></div><div class="scp-tray"><span>Tu portafolio</span><div class="scp-slots"><i></i><i></i><i></i></div></div></div><span class="ld-card-n">1</span><h3>Elige hasta 5 empresas</h3><p>Arma tu portafolio de práctica con un monto en pesos y repártelo como quieras.</p></article>
+      <article class="ld-card rv" style="--i:1" data-scene="buy"><div class="ld-scene sc-buy" aria-hidden="true"><div class="scb-rc"><svg class="scb-ck" viewBox="0 0 52 52"><circle cx="26" cy="26" r="22"/><path d="M16 27l7 7 14-15"/></svg><div class="scb-rows"><span><b>Compraste ISA</b><em>40 acciones</em></span><span class="scb-sep"></span><span><b>Ganas hoy</b><em class="pill up" data-sc-count="128400">+$128.400</em></span></div></div></div><span class="ld-card-n">2</span><h3>Compra y vende cuando quieras</h3><p>Ves tu costo promedio y cuánto ganas o pierdes con cada movimiento.</p></article>
+      <article class="ld-card rv" style="--i:2" data-scene="chat"><div class="ld-scene sc-chat" aria-hidden="true"><span class="scc-q">¿Por qué bajó Ecopetrol hoy?</span><span class="scc-a"><span class="scc-dots"><i></i><i></i><i></i></span><span class="scc-t">Porque el precio del petróleo bajó. Representa 33 % de tu dinero.</span></span></div><span class="ld-card-n">3</span><h3>Pregúntale a Trace AI</h3><p>Te explica lo que pasó con tus acciones. No te dice qué hacer.</p></article>
+    </div>
+  </section>
+
+  <section class="ld-fill" id="ldFill" aria-label="Lo que promete The Trace">
+    <div class="ld-fill-sticky"><p class="ld-fill-txt" id="ldFillTxt">No te decimos qué comprar ni vender. Te explicamos qué pasó, para que entiendas y decidas tú.</p><div class="ld-fill-line" aria-hidden="true"><i></i></div></div>
+  </section>
+
+  <section class="ld-final" id="ldFinal" aria-labelledby="ldFinalTitle">
+    <canvas class="ld-pulse-c ld-pulse-final" aria-hidden="true"></canvas>
+    <div class="ld-orbit" id="ldOrbit" aria-hidden="true"></div>
+    <p class="ld-kicker rv"><span class="ld-dot"></span>Gratis · toma menos de un minuto</p>
+    <h2 class="ld-h2 ld-final-h rv" id="ldFinalTitle">Empieza hoy con <span class="ld-grad" data-ld-count="5000000">$ 5.000.000</span> de práctica.</h2>
+    <p class="ld-lede rv">Elige tus empresas, repártelo como quieras y mañana te contamos qué pasó.</p>
+    <div class="ld-final-ctas rv"><button class="btn-primary btn-lg ld-mag" type="button" onclick="openLogin()"><span>Entrar con mi correo</span></button><button class="btn-secondary btn-lg" type="button" onclick="loginGuest()">Probar ya, sin correo</button></div>
+    <p class="ld-trust rv">Gratis · Sin dinero real · Te explicamos, no te decimos qué hacer</p>
+  </section>
+  <footer class="ld-foot"><div class="brand"><svg class="brand-mark" aria-hidden="true"><use href="#i-logo"/></svg>The Trace</div><p>The Trace es un portafolio de práctica, sin dinero real. Informa; no es una recomendación de inversión.</p></footer>
+</div>
+
+
+<!-- INICIO DE SESIÓN -->
+<div id="loginScreen">
+  <div class="login-art" aria-hidden="true">
+    <img class="bg" data-art="bogota" alt="" onerror="this.remove()">
+    <div class="brand"><svg class="brand-mark"><use href="#i-logo"/></svg>The Trace</div>
+    <div>
+      <h2>Cada día, la explicación de lo que movió tus acciones.</h2>
+      <p class="lede">Arma un portafolio de práctica con empresas colombianas y entiende, en palabras simples, por qué subió o bajó.</p>
+    </div>
+    <div class="preview">
+      <div class="preview-top"><span class="pv-date">Hoy</span><span>Tu día</span></div>
+      <p class="preview-sentence">Hoy tu portafolio <span class="up">subió 0,6 %</span>, unos <span class="up" data-ld-count="28400">$28.400</span> más</p>
+      <div id="loginPreview"></div>
+    </div>
+    
+  </div>
+  <div class="login-pane">
+    <div class="login-box">
+      <button class="login-back" type="button" onclick="backToLanding()"><svg class="ico" aria-hidden="true" style="width:16px;height:16px"><use href="#i-back"/></svg>Ver cómo funciona</button>
+      <div class="brand"><svg class="brand-mark" aria-hidden="true"><use href="#i-logo"/></svg>The Trace</div>
+      <div class="login-photo" aria-hidden="true"><img data-art="bogota" alt="" onerror="this.parentNode.remove()"></div>
+      <h1 class="login-title">Entiende qué mueve tus acciones.</h1>
+      <p class="login-sub">Practica con acciones de Colombia y recibe una explicación clara de lo que pasó cada día.</p>
+      <form id="loginForm">
+        <label class="field-label" for="emailInput">Tu correo</label>
+        <input class="field-input" id="emailInput" type="email" placeholder="tucorreo@correo.com" autocomplete="email">
+        <label class="field-label" for="passInput" style="margin-top:12px">Tu contraseña</label>
+        <input class="field-input" id="passInput" type="password" placeholder="Mínimo 6 caracteres" autocomplete="current-password" minlength="6">
+        <div class="login-actions">
+          <button class="btn-primary btn-lg" type="submit">Entrar</button>
+          <div class="login-or" aria-hidden="true">o</div>
+          <button class="btn-secondary btn-lg" type="button" onclick="loginGuest()">Probar sin correo</button>
+        </div>
+      </form>
+      <div class="magic-sent" id="magicSent" hidden role="status">
+        <div class="magic-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/><path class="fly" d="M14 3.5h6.5"/></svg></div>
+        <h2 class="magic-title">Revisa tu correo</h2>
+        <p class="login-sub">Te enviamos un enlace a <b id="magicEmail"></b>. Ábrelo en este equipo para entrar. No necesitas contraseña.</p>
+        <div class="login-actions">
+          <button class="btn-primary btn-lg" type="button" onclick="enterApp($('magicSent').dataset.email)">Ya abrí el enlace</button>
+          <button class="btn-secondary btn-lg" type="button" onclick="magicBack()">Usar otro correo</button>
+        </div>
+      </div>
+      <p class="login-note">Si es tu primera vez, con tu correo y una contraseña creamos tu cuenta. Así tu portafolio de práctica queda guardado. Sin correo, entras como invitado.</p>
+      <ul class="trust">
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Sin dinero real: es un portafolio de práctica.</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Explicaciones en palabras simples, sin jerga.</li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>No te decimos qué comprar ni vender.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<section class="ob" id="onboarding" aria-label="Crea tu portafolio de práctica">
+  <div class="ob-top"><div class="ob-top-in"><div class="brand"><svg class="brand-mark" aria-hidden="true"><use href="#i-logo"/></svg>The Trace</div><p class="ob-top-kicker" id="obTopHint">Sin dinero real · solo práctica</p></div></div>
+  <div class="ob-in"><div id="obBody"></div></div>
+  <div class="ob-foot"><div class="ob-foot-in" id="obFoot"></div></div>
+</section>
+
+<div id="appShell">
+  <canvas class="dot-field" id="dotField" aria-hidden="true"></canvas>
+  <canvas class="aurora-field" id="auroraField" aria-hidden="true"></canvas>
+  <div class="mobile-ambient-scrim" id="mobileAmbientScrim" aria-hidden="true"></div>
+  <header class="topbar" id="topbar">
+    <div class="topbar-row">
+      <div class="topbar-left">
+        <button type="button" class="brand brand-home" onclick="goHome()" aria-label="Ir al inicio — Insights"><svg class="brand-mark" aria-hidden="true"><use href="#i-logo"/></svg><span class="brand-word">The Trace</span></button>
+        <button class="icon-btn search-toggle" id="searchToggle" type="button" aria-label="Buscar" aria-expanded="false" aria-controls="searchWrap" onclick="openSearchMobile()"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg></button>
+      </div>
+      <div class="topbar-search-wrap" id="searchWrap">
+        <div class="topbar-search">
+          <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+          <input id="globalSearch" placeholder="Buscar acciones, sectores o noticias" aria-label="Buscar acciones, sectores o noticias" autocomplete="off" enterkeyhint="search" oninput="handleGlobalSearch(this.value)">
+          <button class="search-close" type="button" aria-label="Cerrar búsqueda" onclick="closeSearch();document.getElementById('searchToggle').focus()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        </div>
+        <div class="search-results-overlay" id="searchOverlay"></div>
+      </div>
+      <nav class="tabs" aria-label="Navegación principal">
+        <button class="tab active" type="button" data-view="story" aria-current="page" onclick="goHome()">Insights</button>
+        <button class="tab" type="button" data-view="today" onclick="switchView('today',{todayMode:'tech'})">Hoy</button>
+        <button class="tab" type="button" data-view="portfolio" onclick="switchView('portfolio')">Mi portafolio</button>
+        <button class="tab" type="button" data-view="radar" onclick="switchView('radar')">Noticias</button>
+        <button class="tab" type="button" data-view="market" onclick="switchView('market')">Mercado</button>
+        <button class="tab" type="button" data-view="chat" onclick="switchView('chat')">Trace AI</button>
+        <div class="more-wrap">
+          <button class="tab" type="button" id="extrasToggle" aria-haspopup="true" aria-expanded="false" aria-controls="extrasGroup" onclick="toggleExtras()">Más<svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+          <div class="more-menu" id="extrasGroup" hidden>
+            <p class="menu-group">Lecturas del día</p>
+            <button class="menu-item" type="button" onclick="toggleExtras(false);openTodayDetail('studio')"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-insights"/></svg></span><span class="menu-text"><span class="menu-label">Estudio</span><span class="menu-hint">Vista editorial del día</span></span></button>
+            <button class="menu-item" type="button" onclick="toggleExtras(false);openTodayDetail('tech')"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-market"/></svg></span><span class="menu-text"><span class="menu-label">Ver datos</span><span class="menu-hint">Gráficas, trazas y detalle financiero</span></span></button>
+            <button class="menu-item" type="button" data-view="story" onclick="toggleExtras(false);goHome()"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-insights"/></svg></span><span class="menu-text"><span class="menu-label">Insights</span><span class="menu-hint">La historia del día, en una pantalla</span></span></button>
+            <button class="menu-item" type="button" data-view="insights" onclick="switchView('insights')"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-portfolio"/></svg></span><span class="menu-text"><span class="menu-label">Lectura</span><span class="menu-hint">De qué depende tu dinero</span></span></button>
+            <div class="menu-sep"></div>
+            <p class="menu-group">Mercado y noticias</p>
+            <button class="menu-item" type="button" data-view="radar" onclick="switchView('radar')"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-radar"/></svg></span><span class="menu-text"><span class="menu-label">Noticias que te afectan</span><span class="menu-hint">Lo que pasó con tus acciones</span></span></button>
+            <button class="menu-item" type="button" data-view="market" onclick="switchView('market')"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-market"/></svg></span><span class="menu-text"><span class="menu-label">Mercado colombiano</span><span class="menu-hint">Qué subió y qué bajó hoy</span></span></button>
+            <div class="menu-sep"></div>
+            <p class="menu-group">Solo para el equipo</p>
+            <button class="menu-item" type="button" onclick="toggleExtras(false);openApiModal()"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-plug"/></svg></span><span class="menu-text"><span class="menu-label">Conexión con el servidor</span><span class="menu-hint"><span class="status-dot" id="miniStatusDot"></span><span id="miniStatusText">Sin conectar</span></span><span id="miniStatusSub" hidden></span></span></button>
+            <button class="menu-item" type="button" onclick="toggleExtras(false);resetDemo()"><span class="menu-ico"><svg class="ico" aria-hidden="true"><use href="#i-reset"/></svg></span><span class="menu-text"><span class="menu-label">Empezar de nuevo</span><span class="menu-hint">Borra tu portafolio de práctica</span></span></button>
+          </div>
+        </div>
+      </nav>
+      <div class="topbar-right">
+        <button class="icon-btn bell-btn" type="button" onclick="switchView('radar')" title="Noticias que te afectan" aria-label="Noticias que te afectan"><svg class="ico" aria-hidden="true"><use href="#i-bell"/></svg><span class="bell-dot" id="bellDot"></span></button>
+        <div class="acct-wrap"><button class="avatar-circle" id="avatarCircle" type="button" aria-label="Mi cuenta" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu" onclick="toggleAccountMenu(event)">TR</button>
+          <div class="acct-menu" id="accountMenu" role="menu" aria-label="Mi cuenta" hidden>
+            <div class="acct-head"><p class="acct-name" id="acctName">Invitado</p><p class="acct-sub" id="acctSub">Sin correo, portafolio de práctica</p></div>
+            <button class="acct-item" type="button" role="menuitem" onclick="accountGo('portfolio')"><svg class="ico" aria-hidden="true"><use href="#i-portfolio"/></svg><span>Mi portafolio</span></button>
+            <button class="acct-item" type="button" role="menuitem" onclick="accountPlan()"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg><span>Plan Trace+</span></button>
+            <button class="acct-item" type="button" role="menuitem" onclick="accountReset()"><svg class="ico" aria-hidden="true"><use href="#i-reset"/></svg><span>Empezar de nuevo</span></button>
+            <div class="acct-sep" role="separator"></div>
+            <button class="acct-item acct-out" type="button" role="menuitem" onclick="logout()"><svg class="ico" aria-hidden="true"><use href="#i-logout"/></svg><span>Cerrar sesión</span></button>
+            <p class="acct-note" id="acctNote">Al cerrar sesión, tu portafolio sigue guardado en tu cuenta.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <button class="float-back" id="floatBack" type="button" onclick="goBack()" aria-label="Volver"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button>
+  <div class="ticker" id="ticker" role="region" aria-label="Cotizaciones de hoy"><div class="ticker-track" id="tickerTrack"></div></div>
+
+  <main id="mainContent">
+    <button class="back-today" id="backToToday" type="button" onclick="goHome()"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg>Volver al inicio</button>
+
+    <!-- HOY -->
+    <section class="view active" id="view-today">
+      <div class="page-head today-page-head"><div><p class="page-date" id="todayDate"></p><h1 class="page-title">Hoy</h1><p class="page-sub">El movimiento de tu dinero, la acción que más pesó y cómo se compara con el mercado.</p></div><div class="hoy-switch" role="group" aria-label="Cómo ver tu día" data-on="tech"><button type="button" class="active" data-hs="tech" onclick="setTodayMode('tech')">Datos</button><button type="button" data-hs="studio" onclick="setTodayMode('studio')">Reportaje</button><i></i></div></div>
+      <div class="today-mode-nav" role="tablist" aria-label="Modo de lectura de Hoy">
+        <button class="today-mode-btn active" type="button" role="tab" data-today-mode="story" aria-selected="true" onclick="setTodayMode('story')">Historia</button>
+        <button class="today-mode-btn" type="button" role="tab" data-today-mode="studio" aria-selected="false" onclick="setTodayMode('studio')">Estudio</button>
+        <button class="today-mode-btn" type="button" role="tab" data-today-mode="tech" aria-selected="false" onclick="setTodayMode('tech')">Técnico</button>
+      </div>
+      <div class="today-mode panel-story active" id="todayModeStory" role="tabpanel" aria-label="Historia del día"></div>
+      <div class="today-mode panel-studio" id="todayModeStudio" role="tabpanel" aria-label="Vista estudio"></div>
+      <div class="today-mode panel-tech" id="todayModeTech" role="tabpanel" aria-label="Vista técnica" hidden>
+        <div class="welcome" id="welcomeBanner" hidden role="status"><p class="welcome-txt"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg><span>Este es tu portafolio de práctica. Aquí encuentras cada día una explicación de lo que ocurrió.</span></p><button class="btn-ghost" type="button" onclick="dismissWelcome()">Entendido</button></div>
+        <div class="today-grid" id="todayContent">
+        <div class="today-main">
+          <section class="today-hero" id="todayMain" aria-labelledby="t4MainTitle"></section>
+          <section class="panel news-section" id="todayNews" aria-labelledby="todayNewsTitle">
+            <div class="news-section-head"><div><h2 class="panel-title" id="todayNewsTitle">Noticias de tus acciones</h2>
+            <p class="panel-sub">Lo que ocurrió con tus acciones y por qué te afecta. No es una recomendación.</p></div><button class="btn-ghost btn-sm" type="button" onclick="switchView('radar')">Ver todas</button></div>
+            <div class="brief-list" id="todayNewsList"></div>
+            <p class="sr-only" id="todayNewsStatus" aria-live="polite"></p>
+          </section>
+        </div>
+        <aside class="today-rail" aria-label="Más sobre tu día">
+          <section class="panel rail-card" id="todayColcap"></section>
+          <section class="panel alert-card" id="todayAlert">
+            <div class="alert-txt"><strong id="dailyAlertLbl">Resumen diario</strong><span id="dailyAlertDesc">Un resumen breve de lo ocurrido con tus acciones. <b id="dailyAlertState">Desactivado</b></span></div>
+            <button class="switch" id="dailyAlertSwitch" type="button" role="switch" aria-checked="false" aria-labelledby="dailyAlertLbl" aria-describedby="dailyAlertDesc" onclick="toggleDailyAlert()"></button>
+          </section>
+          <div id="adSlotToday"></div>
+          <button class="plan-strip" id="planStrip" type="button" aria-haspopup="dialog" onclick="openPlanSheet()"><span class="plan-strip-txt"><strong>Trace+</strong><span>Quita los anuncios y recibe alertas.</span></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button>
+        </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTAFOLIO -->
+    <section class="view" id="view-portfolio">
+      <div class="page-head pf-head">
+        <div><h1 class="page-title">Tu portafolio</h1><p class="page-sub">Lo que tienes, cuánto vale y de qué depende.</p></div>
+        <div class="head-actions"><span class="status-pill"><span class="status-dot ok" id="portfolioStatusDot"></span><span id="portfolioUpdated">Precios de hoy</span></span><button class="btn-primary" type="button" onclick="openTradeModal('buy')"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Comprar o vender</button></div>
+      </div>
+      <section class="pf-hero" id="pfHistory" aria-labelledby="pfHistTitle"></section>
+      <div class="pf-mid">
+        <section class="panel pf-dist" aria-labelledby="pfDistTitle">
+          <h2 class="panel-title" id="pfDistTitle">Cómo está repartido</h2><p class="panel-sub">Pasa el dedo o el mouse por la dona.</p>
+          <div class="pf-donut" id="pfDonut"></div>
+          <div class="pf-legend" id="sectorList"></div>
+          <div class="conc-notice" id="concNotice" hidden role="note"></div>
+          <p class="colcap-line" id="colcapLine"></p>
+        </section>
+        <section class="pf-holds" aria-labelledby="pfHoldTitle">
+          <div class="pf-holds-head"><div><h2 class="panel-title" id="pfHoldTitle">Tus acciones</h2><p class="panel-sub" id="heroAssets">0 acciones</p></div><div class="filter-row" id="sectorFilters"></div></div>
+          <div class="pf-cards" id="holdingsBody"></div>
+        </section>
+      </div>
+      <section class="panel pf-lectura" id="pfLectura" aria-labelledby="insightHeadline">
+        <div class="pfl-main" id="insSummary"><p class="ins-label"><span class="ia-badge" aria-hidden="true">IA</span>Lectura de tu portafolio</p><h2 id="insightHeadline">Leyendo…</h2><div class="ins-text" id="insightSummary">Tu lectura usa las acciones que tienes hoy.</div>
+          <div class="ai-prompt-chips"><button class="prompt-chip" type="button" onclick="runPortfolioAI('Dame un resumen de mi portafolio')">Resumen</button><button class="prompt-chip" type="button" onclick="runPortfolioAI('¿De qué sector depende más mi dinero y por qué?')">De qué depende</button><button class="prompt-chip" type="button" onclick="runPortfolioAI('¿Qué noticias conviene mirar según mis acciones?')">Qué conviene mirar</button></div>
+          <button class="btn-primary pfl-btn" type="button" onclick="runPortfolioAI('Hazme una lectura completa: de qué sector depende más mi dinero y qué noticias conviene mirar')"><span class="ia-badge inv" aria-hidden="true">IA</span>Pídele una lectura a la IA</button></div>
+        <div class="pfl-side"><h3 class="pfl-h">Noticias sobre tus acciones</h3><div id="insightSignals"></div></div>
+      </section>
+      <section class="panel tx-panel" id="txPanel" aria-labelledby="txTitle">
+        <div class="panel-head"><div><h2 class="panel-title" id="txTitle">Tus movimientos</h2><p class="panel-sub">Tus compras y ventas, de la más nueva a la más vieja.</p></div><button class="btn-secondary btn-sm" type="button" onclick="openTradeModal('buy')">Registrar movimiento</button></div>
+        <div class="tl" id="txList"></div>
+      </section>
+      <div id="adSlotPortfolio"></div>
+      <div hidden><span id="heroTotal"></span><span id="heroChange"></span><span id="heroInvested"></span><span id="heroGain"></span><span id="heroTopSector"></span><span id="chartCenterValue"></span><span id="chartCenterLabel"></span><canvas id="portfolioChart"></canvas></div>
+    </section>
+
+    <!-- NOTICIAS -->
+    <section class="view" id="view-radar">
+      <div class="page-head"><div><h1 class="page-title">Noticias que te afectan</h1><p class="page-sub">Lo que ocurrió con las acciones de tu portafolio y por qué te afecta.</p></div><div class="head-actions"><button class="btn-secondary" type="button" onclick="switchView('portfolio')">Ver portafolio</button><button class="btn-primary" type="button" id="analyzeBtn" onclick="runLiveRadarAnalysis()">Actualizar</button></div></div>
+      <div class="radar-top">
+        <section class="panel panel-pad">
+          <div class="control-row"><div><h2 class="panel-title">Acciones que seguimos</h2><p class="panel-sub" id="radarCoverage">0 acciones de tu portafolio</p></div><div class="radar-status"><span class="live-dot" id="radarLiveDot"></span><span id="radarStatusText">Noticias de hoy</span></div></div>
+          <div class="radar-logos" id="radarLogos" aria-hidden="true"></div>
+          <div class="seg seg-sm radar-mine" role="group" aria-label="Qué noticias ver"><button type="button" class="active" data-radar-mine="1" aria-pressed="true" onclick="setRadarMine(true)">De mis acciones</button><button type="button" data-radar-mine="0" aria-pressed="false" onclick="setRadarMine(false)">De todas las acciones</button></div>
+          <div class="filter-row radar-filters" role="group" aria-label="Filtrar noticias"><button class="radar-filter active" type="button" data-radar-filter="all" onclick="setRadarFilter('all')">Todas</button><button class="radar-filter" type="button" data-radar-filter="Alta" onclick="setRadarFilter('Alta')">Impacto grande</button><button class="radar-filter" type="button" data-radar-filter="Media" onclick="setRadarFilter('Media')">Impacto mediano</button><button class="radar-filter" type="button" data-radar-filter="Baja" onclick="setRadarFilter('Baja')">Impacto pequeño</button><button class="radar-filter" type="button" data-radar-filter="Positivo" onclick="setRadarFilter('Positivo')">Buena noticia</button><button class="radar-filter" type="button" data-radar-filter="Negativo" onclick="setRadarFilter('Negativo')">Mala noticia</button><button class="radar-filter" type="button" data-radar-filter="Neutro" onclick="setRadarFilter('Neutro')">Neutra</button></div>
+        </section>
+        <section class="panel panel-pad how"><h2>¿Cómo funciona?</h2><p>El equipo carga las noticias del día. Primero ves las de impacto grande en las acciones donde tienes más dinero. Puedes combinar un impacto con un tipo de noticia.</p></section>
+      </div>
+      <section class="panel">
+        <div class="panel-head"><div><h2 class="panel-title">Noticias para ti</h2><p class="panel-sub" id="radarResultCount"></p></div><button class="btn-ghost" type="button" onclick="setRadarFilter('all')">Restablecer filtros</button></div>
+        <div id="briefList"></div>
+      </section>
+    </section>
+
+    <!-- MERCADO -->
+    <section class="view" id="view-market">
+      <div class="page-head mk-head"><div><h1 class="page-title">Mercado colombiano</h1><p class="mk-sent" id="mkSent"></p><div class="mk-breadth" id="mkBreadth"></div><p class="page-fresh" id="marketFresh"></p></div></div>
+      <section class="panel mk-panel" aria-label="Acciones de la Bolsa de Colombia">
+        <div class="mk-bar"><div class="filter-row" id="mkFilters" role="group" aria-label="Filtrar acciones"><button class="filter-chip active" type="button" data-f="all" onclick="mkSet('f','all')">Todas</button><button class="filter-chip" type="button" data-f="up" onclick="mkSet('f','up')">Subieron</button><button class="filter-chip" type="button" data-f="down" onclick="mkSet('f','down')">Bajaron</button><button class="filter-chip" type="button" data-f="mine" onclick="mkSet('f','mine')">Mis acciones</button></div>
+        <div class="hoy-switch mk-switch" role="group" aria-label="Cómo ver las acciones" data-on="list"><button type="button" class="active" data-mk="list" onclick="mkSet('v','list')">Lista</button><button type="button" data-mk="tiles" onclick="mkSet('v','tiles')">Mosaico</button><i></i></div></div>
+        <div class="market-list" id="moversList"></div>
+        <div class="mk-tiles" id="marketHeatmap" hidden></div>
+      </section>
+      <span id="marketCount" hidden></span>
+    </section>
+
+    <!-- CHAT · página dedicada -->
+    <section class="view" id="view-chat" aria-label="Trace AI">
+      <div class="page-head chat-page-head"><div><h1 class="page-title">Trace AI</h1><p class="page-sub">Pregunta en lenguaje simple. Te explico lo que pasó, sin recomendarte qué hacer.</p></div></div>
+      <div class="chat-page-shell">
+        <div class="chat-log" id="chatLog"></div>
+        <div class="advisor-chips">
+          <button type="button" onclick="fillChat('¿Qué pasó hoy con mi portafolio?')">Qué pasó hoy</button>
+          <button type="button" onclick="fillChat('¿De qué depende mi dinero?')">De qué depende</button>
+          <button type="button" onclick="fillChat('¿Qué noticias me afectan?')">Qué me afecta</button>
+        </div>
+        <div class="advisor-compose">
+          <button class="mic-btn" id="micBtn" type="button" aria-pressed="false" aria-label="Prender micrófono" onclick="toggleMic()"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg></button>
+          <input class="chat-input" id="chatInput" placeholder="Escribe o dicta tu pregunta" aria-label="Escribe tu pregunta" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="send-btn" type="button" aria-label="Enviar" onclick="sendChat()"><svg class="ico" aria-hidden="true"><use href="#i-send"/></svg></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="Navegación principal">
+    <button type="button" data-view="story" class="active" aria-current="page" onclick="openInsights()"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-insights"/></svg></span><span>Insights</span></button>
+    <button type="button" data-view="today" onclick="openTodayPage()"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-today"/></svg></span><span>Hoy</span></button>
+    <button type="button" data-view="portfolio" onclick="switchView('portfolio')"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-portfolio"/></svg></span><span>Portafolio</span></button>
+    <button type="button" data-view="chat" onclick="switchView('chat')"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><span>Trace AI</span></button>
+    <button type="button" id="moreBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="moreSheet" onclick="openMoreSheet()"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-more"/></svg></span><span>Más</span></button>
+  </nav>
+  <div class="sheet-overlay" id="moreOverlay" onclick="closeMoreSheet()"></div>
+  <div class="sheet" id="moreSheet" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+    <div class="sheet-grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 class="sheet-title" id="moreTitle">Más</h2><button class="sheet-close" type="button" aria-label="Cerrar" onclick="closeMoreSheet()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="sheet-list">
+      <button class="sheet-item" type="button" data-view="radar" onclick="switchView('radar')"><span class="sheet-ico"><svg class="ico" aria-hidden="true"><use href="#i-radar"/></svg></span><span class="sheet-text"><span class="sheet-label">Noticias que te afectan</span><span class="sheet-hint">Lo que pasó con tus acciones</span></span></button>
+      <button class="sheet-item" type="button" data-view="market" onclick="switchView('market')"><span class="sheet-ico"><svg class="ico" aria-hidden="true"><use href="#i-market"/></svg></span><span class="sheet-text"><span class="sheet-label">Mercado colombiano</span><span class="sheet-hint">Qué subió y qué bajó hoy</span></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- VENTANAS -->
+<div class="modal-overlay" id="apiModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="apiTitle"><div class="modal-head"><div><p class="modal-kicker">Solo para el equipo</p><h3 class="modal-title" id="apiTitle">Conexión con el servidor</h3></div><button class="close-btn" type="button" aria-label="Cerrar" onclick="closeApiModal()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></div><p class="modal-text">Este prototipo no llama a la API. Usa datos de ejemplo con la misma forma que <b>api/app/schemas.py</b>. La IA responde desde el servidor: la clave de Gemini nunca llega al navegador.</p><p class="field-label">Usos de IA que te quedan hoy</p><ul class="quota-list" id="aiQuotaList"></ul><p class="field-hint" style="margin-top:0">Cada tipo tiene 5 usos al día por persona.</p><div class="modal-sep"></div><label class="field-label" for="logoDevKey">Clave de logos (logo.dev)</label><p class="field-hint" style="margin:-2px 0 10px">Muestra los logos en alta calidad. Usa la clave pública, la que empieza por <b>pk_</b>.</p><input class="field-input" id="logoDevKey" type="text" placeholder="pk_…" autocomplete="off" spellcheck="false"><div class="modal-actions"><button class="btn-secondary" type="button" style="flex:1" onclick="saveLogoKey()">Guardar clave de logos</button></div></div></div>
+<div class="modal-overlay" id="addModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="addTitle"><div class="modal-head"><div><p class="modal-kicker">Portafolio de práctica</p><h3 class="modal-title" id="addTitle">Comprar acciones</h3></div><button class="close-btn" type="button" aria-label="Cerrar" onclick="closeAddModal()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+<div class="seg seg-full" role="group" aria-label="Tipo de movimiento"><button type="button" data-kind="buy" onclick="setTradeKind('buy')">Comprar</button><button type="button" data-kind="sell" onclick="setTradeKind('sell')">Vender</button></div>
+<label class="field-label" for="addTickerSelect">Acción</label><select class="field-input" id="addTickerSelect" onchange="tradeTicker()"></select>
+<p class="field-hint" id="tradeHave"></p>
+<div class="seg seg-sm" role="group" aria-label="Cómo quieres indicar la cantidad"><button type="button" data-mode="amount" onclick="setTradeMode('amount')">En pesos</button><button type="button" data-mode="quantity" onclick="setTradeMode('quantity')">En acciones</button></div>
+<label class="field-label" for="addAmountInput" id="addAmountLbl">Cuánto quieres invertir (pesos)</label><input class="field-input" inputmode="numeric" autocomplete="off" id="addAmountInput" placeholder="Ej. $1.000.000" oninput="tradeInput(this)" onkeydown="if(event.key==='Enter')submitTrade()"><button class="btn-ghost btn-sm trade-all" id="tradeAll" type="button" onclick="tradeSellAll()" hidden>Vender todo</button>
+<div class="trade-row"><div><label class="field-label" for="tradeDay">Fecha</label><input class="field-input" type="date" id="tradeDay" onchange="tradeDayChange()"></div><div><label class="field-label" for="tradePrice">Precio por acción</label><input class="field-input" id="tradePrice" inputmode="numeric" autocomplete="off" oninput="this.value=this.value?dots(parseCOP(this.value)):'';tradeUI()"></div></div>
+<p class="field-hint">El precio se llena con el cierre de esa fecha. Puedes cambiarlo.</p>
+<p class="trade-calc" id="tradeCalc" aria-live="polite"></p>
+<p class="trade-err" id="tradeErr" role="alert" hidden></p>
+<div class="modal-actions"><button class="btn-primary" id="tradeSubmit" type="button" onclick="submitTrade()">Registrar compra</button><button class="btn-secondary" type="button" onclick="closeAddModal()">Cancelar</button></div><p class="field-hint" style="margin:12px 0 0">Es de práctica, sin dinero real.</p></div></div>
+<div class="modal-overlay" id="resetModal"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="resetTitle"><div class="modal-head"><h3 class="modal-title" id="resetTitle">¿Empezar de nuevo?</h3></div><p class="modal-text">Se borran todas tus compras y ventas de práctica y podrás elegir tus acciones otra vez. No se puede deshacer.</p><div class="modal-actions"><button class="btn-primary" type="button" onclick="doResetDemo()">Sí, reiniciar</button><button class="btn-secondary" type="button" onclick="closeResetModal()">Cancelar</button></div></div></div>
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeAssetDrawer()"></div>
+<aside class="asset-drawer" id="assetDrawer" role="dialog" aria-modal="true" aria-label="Detalle de la acción"><div class="drawer-head"><div class="drawer-id"><span id="drawerLogo"></span><div><p class="drawer-kicker">Sobre esta acción</p><div class="drawer-name" id="drawerTitle">—</div><div class="drawer-meta" id="drawerMeta">—</div></div></div><button class="close-btn" type="button" aria-label="Cerrar" onclick="closeAssetDrawer()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="drawer-body" id="drawerBody"></div></aside>
+<button class="fab-chat" type="button" onclick="switchView('chat')" title="Trace AI" aria-label="Ir a Trace AI"><span class="advisor-waves" aria-hidden="true"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path class="soft" d="M0 20 Q25 34 50 20 T100 20 T150 20 T200 20 T250 20 T300 20 T350 20 T400 20"/><path d="M0 22 Q25 6 50 22 T100 22 T150 22 T200 22 T250 22 T300 22 T350 22 T400 22"/></svg></span><span class="advisor-name">Trace AI</span></button>
+<div class="ask-ai" id="askAI" hidden>
+  <button type="button" id="askAIBtn">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 15.5c2.4-4.2 4.1-6 6.2-6 2.2 0 2.5 5.2 4.6 5.2 1.8 0 2.4-3.2 4.2-5.2 1.5-1.6 3.2-2 5.5-1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    Consultar a la IA
+  </button>
+</div>
+<div id="chatContext" hidden></div>
+<div class="bs-overlay" id="planOverlay" onclick="closePlanSheet()"></div>
+<div class="bs" id="planSheet" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+  <div class="bs-grab" aria-hidden="true"></div>
+  <div class="bs-head"><h2 class="bs-title" id="planTitle">Trace+</h2><button class="bs-close" id="planClose" type="button" aria-label="Cerrar" onclick="closePlanSheet()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+  <p class="bs-p">Trace+ es un plan de pago que llegará más adelante. Hoy no se cobra nada.</p>
+  <ul class="bs-list">
+    <li><span class="bs-ck" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span><span>Sin anuncios en toda la app.</span></li>
+    <li><span class="bs-ck" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span><span>Alertas cuando pase algo importante con tus acciones.</span></li>
+    <li><span class="bs-ck" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span><span>Más explicaciones con IA cada día.</span></li>
+  </ul>
+  <button class="btn-primary bs-cta" id="planCta" type="button" onclick="planNotify()">Avísame cuando esté listo</button>
+  <button class="btn-ghost bs-later" type="button" onclick="closePlanSheet()">Ahora no</button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+
+
+<script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

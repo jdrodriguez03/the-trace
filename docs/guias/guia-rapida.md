@@ -19,7 +19,7 @@ Lo que construimos este mes es un **MVP**: una versión para mostrar y probar, n
 | --- | --- | --- |
 | API | Python 3.12, **FastAPI**, Pydantic, **uv** (entornos), **ruff** (estilo), **pytest** (pruebas) | Rutas protegidas, cálculos del portafolio y de Hoy, IA |
 | Base de datos y login | **Supabase** (PostgreSQL + Auth) en la nube, **SQLModel** (tablas como clases de Pydantic), **Alembic** (cambios a la base) | Guardar usuarios, portafolios y noticias; entrar como invitado o con correo |
-| Web | **React + Vite + TypeScript**, **Tailwind CSS**, **shadcn/ui**, React Router, TanStack Query, Recharts | La app mobile-first con el diseño del prototipo, instalable en el celular |
+| Web | **Vite + TypeScript** con las pantallas del prototipo aprobado, conectadas a la API y a Supabase (ADR-0006). React + Tailwind + shadcn/ui quedan para la v2 | La app mobile-first, idéntica al prototipo aprobado |
 | IA | **Gemini** con su SDK de Python (`google-genai`), solo desde el servidor | Explicación de Hoy, Lectura del portafolio y chat |
 | Datos | yfinance (Yahoo Finance) para los precios actuales y el historial, más scripts para cargar noticias (y precios de respaldo) desde un CSV | Precios de la Bolsa con unos 15 min de retraso, gratis y sin clave |
 | Hosting | **Render**: la web como sitio estático y la API como servicio, en un solo entorno | La dirección pública del MVP, con vista previa de la web en cada PR |
@@ -107,6 +107,8 @@ Cada carpeta tiene una regla de qué entra y qué no; si algo no encaja en ningu
 | `api/migrations/` | Historial de la base | Archivos que genera Alembic | Archivos editados a mano | Julian |
 | `api/scripts/` | Tareas que se corren a mano | Cargar los datos semilla, bajar el último año de precios, cargar noticias (y precios de respaldo) desde un CSV, evaluar la IA | Código que usa la app | Julian (Juan Angel en `eval_ia.py`) |
 | `web/src/features/` | Las pantallas, una carpeta por pantalla | Componentes de React de esa pantalla | Textos escritos a mano (van en `content/`), colores sueltos (van en el tema), `fetch` sueltos (van en `api/`) | Juan Angel (Isabela en `news-radar`, `market`, `account`, `monetization` y `galeria`) |
+| `web/public/legacy/app.js` · `web/src/legacy/styles.css` | Las pantallas del prototipo aprobado (ADR-0006) | El JavaScript y el CSS del prototipo, con los cambios para leer de `window.TRACE` | Cambios sin probar en PC y en celular | Julian |
+| `web/src/connect/` | El puente con la API y Supabase (`window.TRACE`) | Sesión, llamadas a la API, cola de cambios | Claves secretas (solo la publishable) | Julian |
 | `web/src/api/` | Hablar con la API | Cliente con la sesión, un hook por ruta, `types.ts` generado, `mocks/` | Lógica de pantalla | Juan Angel |
 | `web/src/components/` | Piezas que se repiten | `ui/`: componentes de shadcn; `trace/`: componentes propios | Componentes de una sola pantalla | Isabela |
 | `web/src/content/` | Todo el texto de la interfaz | Textos copiados del prototipo, sin jerga | Código con lógica | Isabela |
