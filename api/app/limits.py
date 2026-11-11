@@ -1,4 +1,4 @@
-# Dueño: Julian · Límite de peticiones por IP: 60 por minuto. Frena abusos y errores de código.
+# Dueño: Julian · Límite de peticiones por IP: 240 por minuto. Frena abusos y errores de código.
 # Importante: es un freno general. La IA tendrá además su propio límite por usuario (Día 16).
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -34,7 +34,7 @@ class LimitePorIP:
     duerme, y solo sirven mientras haya una única copia corriendo (como ahora).
     """
 
-    def __init__(self, limite: str = "60/minute") -> None:
+    def __init__(self, limite: str = "240/minute") -> None:
         self.enabled = True
         self._limite = parse(limite)
         self._storage = MemoryStorage()
@@ -52,7 +52,7 @@ limiter = LimitePorIP()
 
 
 class LimiteMiddleware:
-    """Responde 429 a quien pase de 60 peticiones por minuto, antes de llegar a las rutas.
+    """Responde 429 a quien pase de 240 peticiones por minuto, antes de llegar a las rutas.
 
     Es propio (no de slowapi) porque el de slowapi no encuentra las rutas que se registran con
     include_router en esta versión de FastAPI y dejaba pasar todo sin límite.

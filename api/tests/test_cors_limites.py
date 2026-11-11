@@ -32,10 +32,10 @@ def test_las_respuestas_normales_llevan_la_cabecera_cors(api):
 
 
 # ---- Límite de peticiones ----
-def test_la_peticion_61_en_un_minuto_responde_429(api):
+def test_la_peticion_241_en_un_minuto_responde_429(api):
     limiter.enabled = True
     limiter.reset()
-    for _ in range(60):
+    for _ in range(240):
         assert api.get("/v1/market/colcap").status_code == 200
 
     r = api.get("/v1/market/colcap", headers={"Origin": WEB})
@@ -48,7 +48,7 @@ def test_la_peticion_61_en_un_minuto_responde_429(api):
 def test_el_limite_es_por_ip_y_health_no_cuenta(api):
     limiter.enabled = True
     limiter.reset()
-    for _ in range(61):
+    for _ in range(241):
         api.get("/v1/market/colcap", headers={"X-Forwarded-For": "1.1.1.1"})
     assert api.get("/v1/market/colcap", headers={"X-Forwarded-For": "1.1.1.1"}).status_code == 429
 
