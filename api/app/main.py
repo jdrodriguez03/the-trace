@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="The Trace API", version="0.1.0")
 
-# Límite de peticiones por IP (60 por minuto). Responde 429 al pasarse.
+# Límite de peticiones por IP (240 por minuto: en la presentación muchos comparten red). Responde 429 al pasarse.
 app.add_middleware(LimiteMiddleware)
 
 # CORS: solo la web nuestra puede llamar a la API desde un navegador.
