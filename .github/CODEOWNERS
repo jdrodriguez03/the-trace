@@ -21,3 +21,8 @@
 /docs/qa/                           @USUARIO_ISABELA
 /docs/CONTRIBUTING.md               @USUARIO_ISABELA
 /.github/ISSUE_TEMPLATE/            @USUARIO_ISABELA
+
+# Julian · puente de la web con la API y pantallas del prototipo (ADR-0006)
+/web/src/connect/                   @USUARIO_JULIAN
+/web/src/legacy/                    @USUARIO_JULIAN
+/web/public/legacy/                 @USUARIO_JULIAN
