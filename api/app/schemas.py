@@ -8,10 +8,25 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field, PlainSerializer, field_validator, model_validator
 
 
+class AiQuotaOut(BaseModel):
+    """Cuántos usos de IA lleva hoy la persona, por tipo, y el límite del día."""
+
+    used: dict[str, int]  # {"today": 2, "chat": 0, ...}
+    limit: int  # usos por tipo al día
+
+
 class MeOut(BaseModel):
     id: uuid.UUID
     email: str | None = None
     is_guest: bool
+    ai_quota: AiQuotaOut | None = None  # nuevo: cuota de IA del día
+
+
+class WaitlistOut(BaseModel):
+    """Respuesta de «Avísame cuando esté listo». `already` es True si ya estaba anotada."""
+
+    plan: str
+    already: bool
 
 
 # ---- Mercado (público) ----
