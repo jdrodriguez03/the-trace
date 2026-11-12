@@ -1440,7 +1440,7 @@ document.addEventListener('keydown',e=>{
    ========================================================================= */
 document.documentElement.classList.add('js');
 /* Portada e inicio de sesión: fotos del banco de imágenes. Si una no carga, queda la ilustración. */
-const ART_PHOTO={towers:'electrica-5',bogota:'seguros-1',login:'bancos-4'};
+const ART_PHOTO={towers:'electrica-5',bogota:'bogota-1',login:'bancos-4'};
 document.querySelectorAll('img[data-art]').forEach(i=>{const k=ART_PHOTO[i.dataset.art];const fb=artURI(i.dataset.art==='login'?'bogota':i.dataset.art);if(!k){i.src=fb;return}i.onerror=()=>{i.onerror=null;i.src=fb};i.src='/img/sectores/'+k+'.webp'});
 const safe=(fn,name)=>{try{fn()}catch(e){console.warn('[visual] '+name,e)}};
 
