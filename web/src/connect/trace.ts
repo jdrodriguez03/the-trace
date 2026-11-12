@@ -46,7 +46,18 @@ function enCola(tarea: () => Promise<unknown>) {
 
 const txNum = (t: Tx): Tx => ({ ...t, quantity: num(t.quantity), price: num(t.price) })
 
-export function crearTrace(mercado: Mercado | null) {
+type DatosPersona = { tx: Tx[]; news: Noticia[]; quota: Cuota | null }
+
+async function cargarPersonaDelServidor(): Promise<DatosPersona> {
+  const me = await api<{ ai_quota?: Cuota | null }>('/v1/me') // crea la fila del usuario la primera vez
+  const [tx, news] = await Promise.all([
+    api<Tx[]>('/v1/portfolio/transactions'),
+    api<Noticia[]>('/v1/news?mine=false').catch(() => []),
+  ])
+  return { tx: tx.map(txNum), news, quota: me.ai_quota ?? null }
+}
+
+export function crearTrace(mercado: Mercado | null, precarga: Promise<DatosPersona> | null = null) {
   let yo: Persona | null = null
   return {
     mode: mercado ? 'live' : 'demo',
@@ -88,14 +99,14 @@ export function crearTrace(mercado: Mercado | null) {
       },
     },
 
-    /** Lo de la persona: sus movimientos y las noticias (con qué parte de su dinero tocan). */
-    async cargarPersona(): Promise<{ tx: Tx[]; news: Noticia[]; quota: Cuota | null }> {
-      const me = await api<{ ai_quota?: Cuota | null }>('/v1/me') // crea la fila del usuario la primera vez
-      const [tx, news] = await Promise.all([
-        api<Tx[]>('/v1/portfolio/transactions'),
-        api<Noticia[]>('/v1/news?mine=false').catch(() => []),
-      ])
-      return { tx: tx.map(txNum), news, quota: me.ai_quota ?? null }
+    /** Lo de la persona: movimientos, noticias y cuota de IA. La primera vez usa lo que se pidió en paralelo con los precios. */
+    async cargarPersona(): Promise<DatosPersona> {
+      if (precarga) {
+        const p = precarga
+        precarga = null
+        try { return await p } catch { /* se pide de nuevo abajo */ }
+      }
+      return cargarPersonaDelServidor()
     },
 
     /** Trace AI. El servidor arma el contexto con el portafolio: la web solo manda la pregunta. */
@@ -136,15 +147,43 @@ export function crearTrace(mercado: Mercado | null) {
   }
 }
 
+const CACHE_MERCADO = 'trace_mercado_v1'
+const ESPERA_MAXIMA_MS = 2500 // si la API tarda más, se abre con los precios guardados
+
+function mercadoGuardado(): Mercado | null {
+  try {
+    const g = JSON.parse(localStorage.getItem(CACHE_MERCADO) || 'null')
+    return g && Array.isArray(g.assets) && g.assets.length ? (g as Mercado) : null
+  } catch { return null }
+}
+
+function guardarMercado(m: Mercado) {
+  try { localStorage.setItem(CACHE_MERCADO, JSON.stringify(m)) } catch { /* sin espacio: no pasa nada */ }
+}
+
+/** Arranque rápido:
+ *  1) Pide los precios y, si ya hay sesión, el portafolio, al mismo tiempo.
+ *  2) Si los precios tardan más de 2,5 s y hay unos guardados de la visita anterior, abre con esos.
+ *     Los nuevos quedan guardados para la próxima vez. */
 export async function iniciarTrace() {
   const demo = import.meta.env.VITE_USE_MOCKS === 'true'
-  let mercado: Mercado | null = null
-  if (!demo) {
-    try {
-      mercado = await cargarMercado()
-    } catch (e) {
-      console.error('No se pudo cargar el mercado; la app sigue con datos de ejemplo.', e)
-    }
+  if (demo) return crearTrace(null)
+
+  const sesion = supabase ? (await supabase.auth.getSession()).data.session : null
+  const precarga = sesion ? cargarPersonaDelServidor() : null
+  precarga?.catch(() => undefined) // si falla, cargarPersona lo vuelve a pedir
+
+  const fresco = cargarMercado().then((m) => { guardarMercado(m); return m })
+  const guardado = mercadoGuardado()
+  let mercado: Mercado | null
+  try {
+    mercado = guardado
+      ? await Promise.race([fresco, new Promise<Mercado>((ok) => setTimeout(() => ok(guardado), ESPERA_MAXIMA_MS))])
+      : await fresco
+  } catch (e) {
+    console.error('No se pudo cargar el mercado.', e)
+    mercado = guardado // sin conexión: los últimos precios guardados; si no hay, modo demo
   }
-  return crearTrace(mercado)
+  fresco.catch(() => undefined)
+  return crearTrace(mercado, precarga)
 }
