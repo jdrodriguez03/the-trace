@@ -1417,7 +1417,9 @@ document.addEventListener('keydown',e=>{
    Regla: el contenido ya está escrito en la página; la animación solo lo acompaña.
    ========================================================================= */
 document.documentElement.classList.add('js');
-document.querySelectorAll('img[data-art]').forEach(i=>{i.src=artURI(i.dataset.art)});
+/* Portada e inicio de sesión: fotos del banco de imágenes. Si una no carga, queda la ilustración. */
+const ART_PHOTO={towers:'electrica-1',bogota:'seguros-1',login:'bancos-1'};
+document.querySelectorAll('img[data-art]').forEach(i=>{const k=ART_PHOTO[i.dataset.art];const fb=artURI(i.dataset.art==='login'?'bogota':i.dataset.art);if(!k){i.src=fb;return}i.onerror=()=>{i.onerror=null;i.src=fb};i.src='/img/sectores/'+k+'.webp'});
 const safe=(fn,name)=>{try{fn()}catch(e){console.warn('[visual] '+name,e)}};
 
 /* ---- Cifras que cuentan hasta su valor ---- */
@@ -1762,7 +1764,7 @@ function storyRoutesHTML(m){let pts=API.portfolioHistory('1m');const c=calculate
   let line='';if(pts.length>1){const v=pts.map(p=>p.value),lo=Math.min(...v),hi=Math.max(...v),rg=(hi-lo)||1;line=v.map((x,i)=>`${i?'L':'M'}${(i/(v.length-1)*200).toFixed(1)} ${(52-(x-lo)/rg*44).toFixed(1)}`).join('')}
   const wf=m.sorted.slice(0,3).map(r=>`<i class="${r.d>=0?'up':'down'}" style="--w:${Math.max(8,Math.min(100,Math.abs(r.d)/Math.max(...m.sorted.map(x=>Math.abs(x.d)),1)*100)).toFixed(0)}%"></i>`).join('');
   const items=PORTFOLIO.map(p=>({label:p.n,value:p.value,color:sectorColor(p.sector)}));const top=c.sectors[0],tw=top&&c.total?Math.round(top[1]/c.total*100):0;
-  const nw=localRadarResults(true)[0];const art=nw?photoUrl(photoFor(nw)):artURI('bogota');
+  const nw=localRadarResults(true)[0];const art=nw?photoUrl(photoFor(nw)):'/img/sectores/seguros-1.webp';
   return `<div class="story-routes sr">
   <button type="button" class="story-route sr-card" onclick="event.stopPropagation();openTodayDetail('tech')"><span class="sr-prev sr-chart"><svg viewBox="0 0 200 56" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="${line}"/></svg><span class="sr-wf">${wf}</span></span><b>Tu día en detalle</b><span>Gráficas y lo que sumó o restó cada acción.</span><em>Abrir →</em></button>
   <button type="button" class="story-route sr-card" onclick="event.stopPropagation();switchView('portfolio')"><span class="sr-prev sr-dn">${donutSVG(items,{id:'srDn',center:tw+' %',sub:''})}<span class="sr-dn-t">en ${escapeHTML(top?top[0]:'—')}</span></span><b>Tu portafolio</b><span>Lo que tienes, cuánto vale y de qué depende.</span><em>Abrir →</em></button>
