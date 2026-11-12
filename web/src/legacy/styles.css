@@ -2076,3 +2076,24 @@ body:not(.on-landing) .ld-hint{display:none}
 .ad-logo-house .brand-mark{width:26px;height:26px}
 .ad-house-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}
 .ad-house-foot .ad-note{margin-top:0}
+
+/* =====================================================================
+   Celular (auditoría 11 nov): menos cosas que aparecen y desaparecen.
+   ===================================================================== */
+@media (max-width:760px){
+  /* Barras superiores casi opacas: el contenido ya no se ve pasar por detrás. */
+  .topbar{background:rgba(7,8,11,.94)}
+  .ld-top,.ld-top.is-solid{background:rgba(7,8,11,.9);border-color:rgba(255,255,255,.1);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+  /* La barra mini fija (valor y «Comprar o vender») saltaba al bajar: en celular ya está la barra de abajo. */
+  .minibar{display:none!important}
+  /* Lo que se revela al bajar aparece ya visible: sin entradas ni saltos. */
+  .rv,.rv-i,.rv-i .media img{opacity:1!important;transform:none!important;transition:none!important}
+  /* Cierre de la portada: el título cabe en la pantalla y los logos flotantes no lo tapan. */
+  .ld-final{padding:110px 20px 120px}
+  .ld-final-h{font-size:clamp(34px,10.5vw,46px);max-width:none}
+  .ld-orbit{display:none}
+  /* Onboarding: botones a lo ancho, en una sola línea. */
+  .ob-foot-in{flex-direction:column;align-items:stretch}
+  .ob-foot-btns{flex-direction:column-reverse;align-items:stretch;width:100%}
+  .ob-foot-btns .btn-primary,.ob-foot-btns .btn-ghost{width:100%;white-space:nowrap}
+}
