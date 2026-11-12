@@ -1709,8 +1709,11 @@ obFinish=function(){const n=OB.picked.length;if(!n||OB.amount<=0)return;const am
 /* El color de Petróleo y energía casi no se veía sobre el fondo oscuro */
 SECTOR_COLORS['Petróleo y energía']='#8FA3CF';
 /* Precios: solo la hora del dato, sin hablar de retraso */
-freshTxt=function(){const d=new Date(MARKET_UPDATED_AT);return ISO(d)===HOY_ISO?`Precios de las ${timeTxt(MARKET_UPDATED_AT)}`:`Precios del cierre del ${d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'})}`};
-freshShort=function(){const d=new Date(MARKET_UPDATED_AT);return ISO(d)===HOY_ISO?'Precios de las '+timeTxt(MARKET_UPDATED_AT):'Precios del último cierre'};
+/* La Bolsa cierra a las 4:00 p. m. (hora de Colombia). Después de esa hora el precio es el de cierre: no se muestra la hora en que se guardó. */
+const horaBogota=iso=>Number(new Intl.DateTimeFormat('en-GB',{timeZone:'America/Bogota',hour:'2-digit',hour12:false}).format(new Date(iso)));
+const mercadoCerro=()=>horaBogota(MARKET_UPDATED_AT)>=16;
+freshTxt=function(){const d=new Date(MARKET_UPDATED_AT);if(ISO(d)!==HOY_ISO)return `Precios del cierre del ${d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'})}`;return mercadoCerro()?'Precios del cierre de hoy':`Precios de las ${timeTxt(MARKET_UPDATED_AT)}`};
+freshShort=function(){const d=new Date(MARKET_UPDATED_AT);if(ISO(d)!==HOY_ISO)return 'Precios del último cierre';return mercadoCerro()?'Precios del cierre de hoy':'Precios de las '+timeTxt(MARKET_UPDATED_AT)};
 
 /* Hoy: «Datos | Reportaje» en lugar de las pestañas ocultas */
 function hoySwitchHTML(){return `<div class="hoy-switch" role="group" aria-label="Cómo ver tu día"><button type="button" data-hs="tech" onclick="setTodayMode('tech')">Datos</button><button type="button" data-hs="studio" onclick="setTodayMode('studio')">Reportaje</button><i></i></div>`}
