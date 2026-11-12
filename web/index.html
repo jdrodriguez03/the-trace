@@ -397,7 +397,7 @@
     <button type="button" data-view="today" onclick="openTodayPage()"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-today"/></svg></span><span>Hoy</span></button>
     <button type="button" data-view="portfolio" onclick="switchView('portfolio')"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-portfolio"/></svg></span><span>Portafolio</span></button>
     <button type="button" data-view="chat" onclick="switchView('chat')"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><span>Trace AI</span></button>
-    <button type="button" id="moreBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="moreSheet" onclick="openMoreSheet()"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-more"/></svg></span><span>Más</span></button>
+    <button type="button" data-view="market" onclick="switchView('market')"><span class="nav-ico"><svg class="ico" aria-hidden="true"><use href="#i-market"/></svg></span><span>Mercado</span></button><span id="moreBtn" hidden></span>
   </nav>
   <div class="sheet-overlay" id="moreOverlay" onclick="closeMoreSheet()"></div>
   <div class="sheet" id="moreSheet" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
