@@ -600,7 +600,7 @@ function renderQuota(){const el=$('aiQuotaList');if(!el)return;el.innerHTML=Obje
 function openApiModal(){renderQuota();$('logoDevKey').value=logoKey;$('apiModal').classList.add('active');setTimeout(()=>$('logoDevKey').focus(),40)}
 function closeApiModal(){$('apiModal').classList.remove('active')}
 async function runPortfolioAI(question){switchView('insights');$('insightSummary').textContent='Leyendo…';
-  const res=await callAI('portfolio',()=>localPortfolioInsight());
+  const res=await callAI('portfolio',()=>localPortfolioInsight(),question);
   if(res.error){$('insightHeadline').textContent='En corto';$('insightSummary').textContent=localPortfolioInsight();showToast(QUOTA_MSG);return}
   $('insightHeadline').textContent='Lectura con IA';$('insightSummary').innerHTML=parseMarkdown(res.text)+`<p class="ai-left">Te quedan ${res.remaining} lecturas hoy.</p>`}
 function localPortfolioInsight(){
@@ -661,7 +661,7 @@ async function sendChat(opts){
   openAdvisor();
   pushMsg('user',display);
   const typing=pushTyping();
-  const res=await callAI('chat',()=>localChatFallback(question));
+  const res=await callAI('chat',()=>localChatFallback(question),question);
   typing.remove();
   if(res.error){pushMsg('bot','Ya usaste tus 5 preguntas de hoy. Mañana tienes 5 más. Mientras tanto, en Hoy y en Noticias ves lo que pasó con tus acciones.');return}
   CHAT_HISTORY.push({q:question,a:res.text});pushMsg('bot',res.text)
@@ -1854,7 +1854,7 @@ askFromSelection=function(){const bar=$('askAI');const text=((bar&&bar.dataset.t
   c.innerHTML=`<div class="akc-head"><span class="akc-wave" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 15.5c2.4-4.2 4.1-6 6.2-6 2.2 0 2.5 5.2 4.6 5.2 1.8 0 2.4-3.2 4.2-5.2 1.5-1.6 3.2-2 5.5-1.6"/></svg></span><b>Trace AI</b><button class="akc-x" type="button" aria-label="Cerrar" onclick="$('askCard').hidden=true"><svg class="ico"><use href="#i-x"/></svg></button></div><p class="akc-q">«${escapeHTML(short)}»</p><div class="akc-a"><span class="typing"><span></span><span></span><span></span></span></div><div class="akc-foot"><span class="akc-left"></span><button class="btn-ghost btn-sm" type="button" onclick="askContinue()">Seguir en Trace AI →</button></div>`;
   const W=Math.min(360,innerWidth-24);c.style.width=W+'px';const x=r?Math.min(innerWidth-W-12,Math.max(12,r.left+r.width/2-W/2)):(innerWidth-W)/2;let y=r?r.bottom+12:120;if(y+260>innerHeight)y=Math.max(76,(r?r.top:innerHeight)-272);c.style.left=x+'px';c.style.top=y+'px';c.hidden=false;c.classList.remove('in');void c.offsetWidth;c.classList.add('in');
   c.dataset.q=built.question;c.dataset.d=built.display;
-  callAI('chat',()=>localChatFallback(built.question)).then(res=>{const a=c.querySelector('.akc-a');if(res.error){a.textContent='Ya usaste tus 5 preguntas de hoy. Mañana tienes 5 más.';return}a.innerHTML=parseMarkdown(res.text);typeIn(a);c.dataset.a=res.text;c.querySelector('.akc-left').textContent=`Te quedan ${res.remaining} hoy`})};
+  callAI('chat',()=>localChatFallback(built.question),built.question,'explain').then(res=>{const a=c.querySelector('.akc-a');if(res.error){a.textContent='Ya usaste tus 5 preguntas de hoy. Mañana tienes 5 más.';return}a.innerHTML=parseMarkdown(res.text);typeIn(a);c.dataset.a=res.text;c.querySelector('.akc-left').textContent=`Te quedan ${res.remaining} hoy`})};
 function askContinue(){const c=$('askCard');if(!c)return;c.hidden=true;switchView('chat');startChat();if(c.dataset.a){pushMsg('user',c.dataset.d);pushMsg('bot',c.dataset.a);CHAT_HISTORY.push({q:c.dataset.q,a:c.dataset.a})}}
 document.addEventListener('mousedown',e=>{const c=$('askCard');if(c&&!c.hidden&&!e.target.closest('#askCard,#askAI'))c.hidden=true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const c=$('askCard');if(c)c.hidden=true}});
@@ -1926,7 +1926,10 @@ function setLoginBusy(on){document.querySelectorAll('#loginScreen button, .ld-fi
 /* Trae lo de la persona (movimientos y noticias) y abre la app. */
 async function liveEnter(p){currentUser=p.isGuest?'Invitado':p.email;
   try{TRACE.user=await TRACE.cargarPersona()}catch(err){showToast(err.message||'No pudimos traer tu portafolio.');return}
-  applyServerNews(TRACE.user.news);enterApp(currentUser)}
+  applyServerNews(TRACE.user.news);syncQuota(TRACE.user.quota);enterApp(currentUser)}
+/* La cuota de IA la lleva el servidor; aquí solo se guarda lo que respondió para mostrarlo. */
+function setAiLeft(kind,n){localStorage.setItem(aiKey(kind),String(Math.max(0,AI_QUOTA-n)))}
+function syncQuota(q){if(!q||!q.used)return;Object.keys(AI_KINDS).forEach(k=>localStorage.setItem(aiKey(k),String(q.used[k]||0)))}
 async function loginGuest(){if(!LIVE){enterApp('Invitado');return}setLoginBusy(true);try{const p=await TRACE.auth.invitado();await liveEnter(p)}catch(err){showToast(err.message)}finally{setLoginBusy(false)}}
 if(LIVE){
   /* Cada cambio se calcula aquí al instante (mismas reglas que la API) y se guarda en el servidor en orden. */
@@ -1938,6 +1941,12 @@ if(LIVE){
   obUseSeed=function(){API.reset();seedTransactions().forEach(t=>{const r=API.addTransaction({ticker:t.ticker,kind:t.kind,quantity:t.quantity,price:t.price,day:t.day});if(!r.ok)showToast(r.detail)});obDone()};
   const _logout=logout;logout=function(){TRACE.auth.salir();_logout()};
   /* Si el servidor rechaza un cambio, se vuelve a lo que de verdad quedó guardado. */
+  /* Trace AI de verdad: POST /v1/ai/{tipo}. Si el servidor no responde, la explicación local de siempre. */
+  callAI=async function(kind,makeText,question,route){
+    try{const r=await TRACE.ia(route||kind,question);setAiLeft(kind,r.remaining);updateApiStatus();return{text:r.text,error:null,remaining:r.remaining,source:r.source}}
+    catch(e){if(e&&e.status===429&&e.code==='AI_QUOTA'){setAiLeft(kind,0);updateApiStatus();return{text:'',error:'QUOTA',remaining:0}}
+      if(e&&e.status===429)showToast(e.message);
+      return{text:String(makeText()||''),error:null,remaining:aiLeft(kind),source:'respaldo'}}};
   window.addEventListener('trace:error',async e=>{showToast(e.detail);try{TRACE.user=await TRACE.cargarPersona();TX=TRACE.user.tx;refreshAll();renderTxList()}catch(err){}});
 }
 
