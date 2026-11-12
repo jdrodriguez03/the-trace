@@ -2,6 +2,7 @@
 # chat y «explicar lo que subrayé». El contexto se arma AQUÍ con las acciones de la persona,
 # nunca con lo que mande la web, y nunca lleva nombre ni correo (regla 8).
 
+import json
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
@@ -65,7 +66,8 @@ def preguntar(tipo: Tipo, body: AiAskIn, user: CurrentUser, session: SessionDep)
         raise HTTPException(422, "Escribe tu pregunta.")
 
     resumen, _ = load_summary(session, user.id)
-    contexto = build_portfolio_context(resumen, None)
+    colcap_hoy = latest_colcap(session)
+    contexto = build_portfolio_context(resumen, colcap_hoy.change_pct if colcap_hoy else None)
     extra, respaldo_hoy = _datos_de_hoy(session, resumen)
     if tipo == "today":
         respaldo = respaldo_hoy
@@ -81,7 +83,9 @@ def preguntar(tipo: Tipo, body: AiAskIn, user: CurrentUser, session: SessionDep)
     tipo_prompt = "chat" if tipo == "explain" else tipo
     reglas = instrucciones(tipo_prompt, contexto, extra if tipo != "portfolio" else None)
     texto_pregunta = pregunta or "Explícame."
-    clave = cache.llave(tipo, get_settings().gemini_model, reglas, texto_pregunta)
+    historial = [(h.question, h.answer) for h in body.history] if tipo == "chat" else []
+    clave = cache.llave(tipo, get_settings().gemini_model, reglas, texto_pregunta,
+                        json.dumps(historial, ensure_ascii=False))
     guardada = cache.leer(session, clave)
     if guardada:
         return AiAnswerOut(text=guardada, source="cache",
@@ -89,10 +93,10 @@ def preguntar(tipo: Tipo, body: AiAskIn, user: CurrentUser, session: SessionDep)
 
     quota.check(session, user.id, tipo)
     try:
-        texto = generar(reglas, texto_pregunta)
+        texto = generar(reglas, texto_pregunta, historial)
         if violates_rules(texto):
             texto = generar(reglas + "\n\nRECUERDA: no sugieras comprar, vender ni mantener.",
-                            texto_pregunta)
+                            texto_pregunta, historial)
         if violates_rules(texto):
             texto = f"{NO_RECOMIENDA} {respaldo}" if tipo in ("chat", "explain") else respaldo
             return AiAnswerOut(text=texto, source="respaldo",

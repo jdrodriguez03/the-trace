@@ -581,10 +581,10 @@ document.addEventListener('click',e=>{if(!e.target.closest('.topbar-search-wrap,
    con su token. El servidor arma el contexto del portafolio (sin nombre ni correo), escribe los prompts,
    filtra cualquier recomendación y cuenta 5 usos al día por tipo.
    En este prototipo, la «respuesta» es la explicación que ya calcula la app con tus datos. */
-const AI_QUOTA=5;
+let AI_QUOTA=5; /* el servidor manda el límite real en /v1/me */
 const AI_KINDS={today:'Explicación de Hoy',portfolio:'Lectura de tu portafolio',chat:'Preguntas a Trace AI'};
 const AI_BLOCK=/\b(compra|vende|aprovecha|deberías|deberias)\b/i; /* filtro de salida del plan del MVP */
-const QUOTA_MSG='Ya usaste tus 5 usos de IA de hoy para esto. Mañana tienes 5 más. Mientras tanto, te muestro la explicación básica.';
+const quotaMsg=()=>`Ya usaste tus ${AI_QUOTA} usos de IA de hoy para esto. Mañana tienes ${AI_QUOTA} más. Mientras tanto, te muestro la explicación básica.`;
 const aiKey=kind=>`trace_ai_${HOY_ISO}_${userSlug()}_${kind}`;
 function aiLeft(kind){return Math.max(0,AI_QUOTA-(Number(localStorage.getItem(aiKey(kind)))||0))}
 async function callAI(kind,makeText){
@@ -601,7 +601,7 @@ function openApiModal(){renderQuota();$('logoDevKey').value=logoKey;$('apiModal'
 function closeApiModal(){$('apiModal').classList.remove('active')}
 async function runPortfolioAI(question){switchView('insights');$('insightSummary').textContent='Leyendo…';
   const res=await callAI('portfolio',()=>localPortfolioInsight(),question);
-  if(res.error){$('insightHeadline').textContent='En corto';$('insightSummary').textContent=localPortfolioInsight();showToast(QUOTA_MSG);return}
+  if(res.error){$('insightHeadline').textContent='En corto';$('insightSummary').textContent=localPortfolioInsight();showToast(quotaMsg());return}
   $('insightHeadline').textContent='Lectura con IA';$('insightSummary').innerHTML=parseMarkdown(res.text)+`<p class="ai-left">Te quedan ${res.remaining} lecturas hoy.</p>`}
 function localPortfolioInsight(){
   const c=calculatePortfolio();if(!PORTFOLIO.length)return'Agrega acciones para ver tu lectura.';
@@ -663,7 +663,7 @@ async function sendChat(opts){
   const typing=pushTyping();
   const res=await callAI('chat',()=>localChatFallback(question),question);
   typing.remove();
-  if(res.error){pushMsg('bot','Ya usaste tus 5 preguntas de hoy. Mañana tienes 5 más. Mientras tanto, en Hoy y en Noticias ves lo que pasó con tus acciones.');return}
+  if(res.error){pushMsg('bot',`Ya usaste tus ${AI_QUOTA} preguntas de hoy. Mañana tienes ${AI_QUOTA} más. Mientras tanto, en Hoy y en Noticias ves lo que pasó con tus acciones.`);return}
   CHAT_HISTORY.push({q:question,a:res.text});pushMsg('bot',res.text)
 }
 const noAcc=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -837,7 +837,7 @@ async function explainTodayWithAI(){
   b.disabled=true;b.textContent='Generando explicación…';b.setAttribute('aria-expanded','true');out.setAttribute('aria-busy','true');
   out.innerHTML='<div class="skeleton line w80"></div><div class="skeleton line w55" style="margin-top:10px"></div><div class="skeleton line w80" style="margin-top:10px"></div>';out.hidden=false;
   const res=await callAI('today',()=>todayAIText(m));
-  if(res.error){showToast(QUOTA_MSG);show(todayExtended(m));return}
+  if(res.error){showToast(quotaMsg());show(todayExtended(m));return}
   show(`<div class="explain-ai">${parseMarkdown(res.text)}</div><p class="explain-foot">Explicación hecha con IA a partir de tus datos. Te quedan ${res.remaining} hoy. Cuenta lo que pasó; no dice qué va a pasar ni qué hacer.</p>`)
 }
 function traceRows(m){
@@ -1854,7 +1854,7 @@ askFromSelection=function(){const bar=$('askAI');const text=((bar&&bar.dataset.t
   c.innerHTML=`<div class="akc-head"><span class="akc-wave" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 15.5c2.4-4.2 4.1-6 6.2-6 2.2 0 2.5 5.2 4.6 5.2 1.8 0 2.4-3.2 4.2-5.2 1.5-1.6 3.2-2 5.5-1.6"/></svg></span><b>Trace AI</b><button class="akc-x" type="button" aria-label="Cerrar" onclick="$('askCard').hidden=true"><svg class="ico"><use href="#i-x"/></svg></button></div><p class="akc-q">«${escapeHTML(short)}»</p><div class="akc-a"><span class="typing"><span></span><span></span><span></span></span></div><div class="akc-foot"><span class="akc-left"></span><button class="btn-ghost btn-sm" type="button" onclick="askContinue()">Seguir en Trace AI →</button></div>`;
   const W=Math.min(360,innerWidth-24);c.style.width=W+'px';const x=r?Math.min(innerWidth-W-12,Math.max(12,r.left+r.width/2-W/2)):(innerWidth-W)/2;let y=r?r.bottom+12:120;if(y+260>innerHeight)y=Math.max(76,(r?r.top:innerHeight)-272);c.style.left=x+'px';c.style.top=y+'px';c.hidden=false;c.classList.remove('in');void c.offsetWidth;c.classList.add('in');
   c.dataset.q=built.question;c.dataset.d=built.display;
-  callAI('chat',()=>localChatFallback(built.question),built.question,'explain').then(res=>{const a=c.querySelector('.akc-a');if(res.error){a.textContent='Ya usaste tus 5 preguntas de hoy. Mañana tienes 5 más.';return}a.innerHTML=parseMarkdown(res.text);typeIn(a);c.dataset.a=res.text;c.querySelector('.akc-left').textContent=`Te quedan ${res.remaining} hoy`})};
+  callAI('chat',()=>localChatFallback(built.question),built.question,'explain').then(res=>{const a=c.querySelector('.akc-a');if(res.error){a.textContent=`Ya usaste tus ${AI_QUOTA} preguntas de hoy. Mañana tienes ${AI_QUOTA} más.`;return}a.innerHTML=parseMarkdown(res.text);typeIn(a);c.dataset.a=res.text;c.querySelector('.akc-left').textContent=`Te quedan ${res.remaining} hoy`})};
 function askContinue(){const c=$('askCard');if(!c)return;c.hidden=true;switchView('chat');startChat();if(c.dataset.a){pushMsg('user',c.dataset.d);pushMsg('bot',c.dataset.a);CHAT_HISTORY.push({q:c.dataset.q,a:c.dataset.a})}}
 document.addEventListener('mousedown',e=>{const c=$('askCard');if(c&&!c.hidden&&!e.target.closest('#askCard,#askAI'))c.hidden=true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const c=$('askCard');if(c)c.hidden=true}});
@@ -1929,7 +1929,7 @@ async function liveEnter(p){currentUser=p.isGuest?'Invitado':p.email;
   applyServerNews(TRACE.user.news);syncQuota(TRACE.user.quota);enterApp(currentUser)}
 /* La cuota de IA la lleva el servidor; aquí solo se guarda lo que respondió para mostrarlo. */
 function setAiLeft(kind,n){localStorage.setItem(aiKey(kind),String(Math.max(0,AI_QUOTA-n)))}
-function syncQuota(q){if(!q||!q.used)return;Object.keys(AI_KINDS).forEach(k=>localStorage.setItem(aiKey(k),String(q.used[k]||0)))}
+function syncQuota(q){if(!q||!q.used)return;if(q.limit)AI_QUOTA=q.limit;Object.keys(AI_KINDS).forEach(k=>localStorage.setItem(aiKey(k),String(q.used[k]||0)))}
 async function loginGuest(){if(!LIVE){enterApp('Invitado');return}setLoginBusy(true);try{const p=await TRACE.auth.invitado();await liveEnter(p)}catch(err){showToast(err.message)}finally{setLoginBusy(false)}}
 if(LIVE){
   /* Cada cambio se calcula aquí al instante (mismas reglas que la API) y se guarda en el servidor en orden. */
@@ -1943,7 +1943,7 @@ if(LIVE){
   /* Si el servidor rechaza un cambio, se vuelve a lo que de verdad quedó guardado. */
   /* Trace AI de verdad: POST /v1/ai/{tipo}. Si el servidor no responde, la explicación local de siempre. */
   callAI=async function(kind,makeText,question,route){
-    try{const r=await TRACE.ia(route||kind,question);setAiLeft(kind,r.remaining);updateApiStatus();return{text:r.text,error:null,remaining:r.remaining,source:r.source}}
+    try{const r=await TRACE.ia(route||kind,question,kind==='chat'&&!route?CHAT_HISTORY.slice(-3):[]);setAiLeft(kind,r.remaining);updateApiStatus();return{text:r.text,error:null,remaining:r.remaining,source:r.source}}
     catch(e){if(e&&e.status===429&&e.code==='AI_QUOTA'){setAiLeft(kind,0);updateApiStatus();return{text:'',error:'QUOTA',remaining:0}}
       if(e&&e.status===429)showToast(e.message);
       return{text:String(makeText()||''),error:null,remaining:aiLeft(kind),source:'respaldo'}}};
