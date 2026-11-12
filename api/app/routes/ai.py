@@ -18,7 +18,9 @@ from app.auth import CurrentUser
 from app.config import get_settings
 from app.core.context import build_portfolio_context
 from app.core.fallback import NO_RECOMIENDA, local_chat_fallback, local_portfolio_insight
+from app.content.drivers import DRIVER_DEFAULT, DRIVERS
 from app.core.loaders import latest_colcap, load_news, load_summary
+from app.core.prices import latest_prices
 from app.core.today import Noticia, colcap_line, today_head, today_lead, today_model
 from app.db import SessionDep
 from app.schemas import AiAnswerOut, AiAskIn
@@ -31,6 +33,17 @@ Tipo = Literal["today", "portfolio", "chat", "explain"]
 _limite, _contador = parse("10/minute"), FixedWindowRateLimiter(MemoryStorage())
 
 
+def _mercado(session, mias: set[str]) -> list[dict]:
+    """Todas las acciones de The Trace, estén o no en el portafolio. Así la IA puede hablar de cualquiera."""
+    return [
+        {"ticker": a.ticker, "nombre": a.name, "sector": a.sector,
+         "precio_cop": round(float(p.price), 2), "variacion_hoy_pct": round(float(p.change_pct), 2),
+         "en_tu_portafolio": a.ticker in mias,
+         "que_la_mueve": DRIVERS.get(a.ticker, DRIVER_DEFAULT)}
+        for a, p in latest_prices(session)
+    ]
+
+
 def _datos_de_hoy(session, resumen) -> tuple[dict, str]:
     """Lo que pasó hoy (para el prompt) y la explicación sin IA (respaldo)."""
     m = today_model(resumen)
@@ -39,8 +52,12 @@ def _datos_de_hoy(session, resumen) -> tuple[dict, str]:
     mias = {p.ticker for p in resumen.positions}
     noticias = [Noticia(n.id, n.ticker, n.direction, n.magnitude) for n in noticias_db]
     causas = {n.id: n.cause for n in noticias_db if n.cause}
+    mercado = _mercado(session, mias)
+    todas = [{"empresa": n.ticker, "en_tu_portafolio": n.ticker in mias, "tipo": n.direction,
+              "impacto": n.magnitude, "titulo": n.title, "explicacion": n.summary}
+             for n in sorted(noticias_db, key=lambda n: n.ticker not in mias)][:12]
     if m is None:
-        return {}, local_portfolio_insight(resumen)
+        return {"mercado": mercado, "noticias": todas}, local_portfolio_insight(resumen)
     lead = today_lead(m, noticias, causas)
     frases = [today_head(m) + ".", *lead]
     if colcap is not None:
@@ -48,9 +65,8 @@ def _datos_de_hoy(session, resumen) -> tuple[dict, str]:
     extra = {
         "resumen_de_hoy": frases,
         "colcap_variacion_pct": round(colcap.change_pct, 2) if colcap else None,
-        "noticias": [{"empresa": n.ticker, "tipo": n.direction, "impacto": n.magnitude,
-                      "titulo": n.title, "explicacion": n.summary}
-                     for n in noticias_db if n.ticker in mias][:6],
+        "mercado": mercado,
+        "noticias": todas,
     }
     return extra, " ".join(frases)
 
@@ -74,7 +90,7 @@ def preguntar(tipo: Tipo, body: AiAskIn, user: CurrentUser, session: SessionDep)
     elif tipo == "portfolio":
         respaldo = local_portfolio_insight(resumen)
     else:
-        respaldo = local_chat_fallback(pregunta, resumen)
+        respaldo = local_chat_fallback(pregunta, resumen, extra.get("mercado"))
 
     if not resumen.positions and tipo in ("today", "portfolio"):
         return AiAnswerOut(text=respaldo, source="respaldo",
