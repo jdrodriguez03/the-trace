@@ -110,10 +110,10 @@ export function crearTrace(mercado: Mercado | null, precarga: Promise<DatosPerso
     },
 
     /** Trace AI. El servidor arma el contexto con el portafolio: la web solo manda la pregunta. */
-    ia(tipo: 'today' | 'portfolio' | 'chat' | 'explain', pregunta?: string) {
+    ia(tipo: 'today' | 'portfolio' | 'chat' | 'explain', pregunta?: string, historial: { q: string; a: string }[] = []) {
       return api<{ text: string; source: 'ia' | 'cache' | 'respaldo'; remaining: number }>(`/v1/ai/${tipo}`, {
         method: 'POST',
-        body: { question: pregunta || null },
+        body: { question: pregunta || null, history: historial.map((h) => ({ question: h.q, answer: h.a })) },
         timeoutMs: 40000,
       })
     },
