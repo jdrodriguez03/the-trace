@@ -234,3 +234,14 @@ html.mob .ob h1,html.mob .ob .ob-h{font-size:27px;letter-spacing:-.04em}
 /* INICIO DE SESIÓN: pantalla completa, sin marco de tarjeta. */
 html.mob #loginScreen .login-card,html.mob #loginScreen .preview{border:0;box-shadow:none;background:transparent}
 html.mob .ob-foot{z-index:60}
+
+/* «Sigue por aquí» en celular: miniaturas simples que caben en 72 px. */
+html.mob .sr-chart svg{top:10px;height:34px}
+html.mob .sr-wf{display:none}
+html.mob .sr-dn{display:grid;place-items:center;padding:6px}
+html.mob .sr-dn .dn,html.mob .sr-dn svg{position:static!important;width:58px!important;height:58px!important;max-width:58px;margin:0!important;transform:none!important}
+html.mob .sr-dn .dn [data-dn-s],html.mob .sr-dn-t{display:none}
+html.mob .sr-dn .dn [data-dn-c]{font-size:12px!important}
+html.mob .sr-news-t{display:none}
+html.mob .sr-news::after{display:none}
+html.mob .sr-news img{transform:none}
