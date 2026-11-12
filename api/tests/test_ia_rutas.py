@@ -116,3 +116,26 @@ def test_la_cuota_sale_de_la_configuracion(api, gemini, monkeypatch):
     monkeypatch.setattr(get_settings(), "ai_daily_limit", 20)
     yo = con_portafolio(api)
     assert api.post("/v1/ai/chat", headers=yo, json={"question": "hola"}).json()["remaining"] == 19
+
+
+def test_la_ia_conoce_acciones_que_no_estan_en_el_portafolio(api, gemini):
+    yo = con_portafolio(api)  # solo tiene Ecopetrol
+    otras = [a["ticker"] for a in api.get("/v1/market/assets").json() if a["ticker"] != "ECOPETROL"]
+    api.post("/v1/ai/chat", headers=yo, json={"question": "¿Cómo va otra acción?"})
+    reglas, _, _ = gemini["llamadas"][0]
+    assert otras and all(t in reglas for t in otras)
+    assert '"en_tu_portafolio": false' in reglas
+
+
+def test_sin_portafolio_la_ia_igual_ve_el_mercado(api, gemini):
+    yo = entrar()
+    api.post("/v1/ai/chat", headers=yo, json={"question": "¿Cómo va Ecopetrol?"})
+    reglas, _, _ = gemini["llamadas"][0]
+    assert "ECOPETROL" in reglas
+
+
+def test_respaldo_del_chat_habla_de_una_accion_que_no_tiene(api, gemini):
+    yo = entrar()
+    gemini["falla"] = True
+    r = api.post("/v1/ai/chat", headers=yo, json={"question": "¿cómo va ecopetrol?"}).json()
+    assert r["source"] == "respaldo" and "no está en tu portafolio" in r["text"]
