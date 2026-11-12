@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 TIEMPO_MAXIMO_MS = 25_000  # si Gemini tarda más, se responde con el respaldo
 
 
+def _conversacion(pregunta: str, historial: list[tuple[str, str]]) -> list[types.Content]:
+    """Las últimas preguntas y respuestas del chat, y al final la pregunta nueva."""
+    turnos = []
+    for q, a in historial:
+        turnos.append(types.Content(role="user", parts=[types.Part(text=q)]))
+        turnos.append(types.Content(role="model", parts=[types.Part(text=a)]))
+    turnos.append(types.Content(role="user", parts=[types.Part(text=pregunta)]))
+    return turnos
+
+
 class IaNoDisponible(Exception):
     """No hay clave, no hay modelo o Gemini falló: la ruta responde con el respaldo."""
 
@@ -26,7 +36,7 @@ def _cliente() -> genai.Client:
     return genai.Client(api_key=clave, http_options=types.HttpOptions(timeout=TIEMPO_MAXIMO_MS))
 
 
-def generar(instrucciones: str, pregunta: str) -> str:
+def generar(instrucciones: str, pregunta: str, historial: list[tuple[str, str]] | None = None) -> str:
     """Pide una respuesta corta a Gemini. Razonamiento bajo: rápido y barato para explicar."""
     modelo = get_settings().gemini_model
     if not modelo:
@@ -35,7 +45,7 @@ def generar(instrucciones: str, pregunta: str) -> str:
     try:
         r = _cliente().models.generate_content(
             model=modelo,
-            contents=pregunta,
+            contents=_conversacion(pregunta, historial or []),
             config=types.GenerateContentConfig(
                 system_instruction=instrucciones,
                 thinking_config=types.ThinkingConfig(thinking_level="low"),

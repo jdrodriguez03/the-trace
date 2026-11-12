@@ -227,10 +227,17 @@ class TodayOut(BaseModel):
 
 
 # ---- Trace AI (nuevo) ----
+class AiTurn(BaseModel):
+    question: Annotated[str, Field(max_length=1000)]
+    answer: Annotated[str, Field(max_length=3000)]
+
+
 class AiAskIn(BaseModel):
     """La pregunta de la persona. Para «today» y «portfolio» puede ir vacía."""
 
     question: Annotated[str, Field(max_length=1000)] | None = None
+    # nuevo: las últimas preguntas del chat, para que entienda «sigamos» o «¿y esa?»
+    history: Annotated[list[AiTurn], Field(max_length=3)] = []
 
 
 class AiAnswerOut(BaseModel):
