@@ -1,0 +1,236 @@
+/* Dueño: Julian · Estilos de la versión de celular (public/legacy/mobile.js).
+   Todo vive bajo html.mob, que solo existe con 760 px de ancho o menos: el PC no cambia.
+   Colores y letras salen de las variables del tema (styles.css). */
+
+html:not(.mob) .m-view{display:none}
+/* Arreglo: una regla vieja dejaba visible Portafolio debajo de todas las pantallas en celular. */
+html.mob .view:not(.active){display:none!important}
+
+/* Las pantallas de PC se esconden; la de celular toma su lugar. */
+html.mob #view-portfolio>:not(.m-view),
+html.mob #view-radar>:not(.m-view),
+html.mob #view-market>:not(.m-view),
+html.mob body.today-mode-tech #view-today>:not(.m-view){display:none!important}
+html.mob body:not(.today-mode-tech) #m-today{display:none}
+html.mob .ticker{display:none!important}
+html.mob main,
+html.mob body[data-current-view="today"].today-mode-tech #mainContent{padding:76px 16px calc(116px + env(safe-area-inset-bottom,0px))}
+html.mob.m-lock,html.mob.m-lock body{overflow:hidden}
+
+/* Barra de arriba: logo, búsqueda, campana de noticias y cuenta. */
+html.mob .topbar .bell-btn{display:inline-grid!important;place-items:center}
+
+.m-view{font-size:15px;color:var(--ink)}
+.m-view .chg.up{color:var(--up)}.m-view .chg.down{color:var(--down)}.m-view .chg.flat{color:var(--muted)}
+
+/* Título grande, estilo app */
+.m-head{margin:4px 2px 18px}
+.m-head h1{margin:0;font-size:32px;line-height:1.05;letter-spacing:-.045em;font-weight:800}
+.m-head p{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.4}
+.m-head p b{font-weight:700}
+
+.m-sec{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:28px 2px 10px;flex-wrap:wrap}
+.m-sec h2{margin:0;font-size:19px;letter-spacing:-.03em;font-weight:750}
+.m-sec p{margin:0;width:100%;color:var(--muted);font-size:13.5px;line-height:1.4}
+.m-note{color:var(--faint);font-size:12.5px;line-height:1.45;margin:12px 2px 0}
+.m-note b{color:var(--ink-2)}
+.m-link{background:none;border:0;padding:6px 0;color:var(--ink-2);font:inherit;font-size:14px;font-weight:650;text-decoration:none}
+.m-link::after{content:" →"}
+
+/* Píldora de cambio y etiquetas */
+.m-pill{display:inline-flex;align-items:center;gap:3px;height:24px;padding:0 8px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.m-pill.up{background:var(--up-soft);color:var(--up)}.m-pill.down{background:var(--down-soft);color:var(--down)}.m-pill.flat{background:var(--flat-soft);color:var(--muted)}
+.m-tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.01em;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.m-tag.up{background:var(--up-soft);color:var(--up)}.m-tag.down{background:var(--down-soft);color:var(--down)}.m-tag.flat{background:var(--flat-soft);color:var(--ink-2)}
+
+/* Botones */
+.m-btn{flex:1;height:50px;border-radius:14px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;font-weight:700;letter-spacing:-.02em}
+.m-btn-pri{background:var(--ink);color:#0b0d12;border-color:var(--ink)}
+.m-btn:active,.m-row:active,.m-nrow:active,.m-ncard:active,.m-cta:active{transform:scale(.985)}
+.m-actions{display:flex;gap:10px;margin-top:16px}
+.m-cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;margin:16px 0 0;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));color:var(--ink);font:inherit;font-size:15.5px;font-weight:700;letter-spacing:-.02em}
+.m-ia{width:18px;height:18px;fill:var(--up)}
+
+/* Tarjetas y filas */
+.m-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.m-list{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.m-row{display:flex;align-items:center;gap:12px;width:100%;min-height:66px;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;font:inherit;text-align:left;transition:transform .12s}
+.m-list>.m-row:last-child{border-bottom:0}
+.m-row .logo{flex:none}
+.m-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.m-row-main strong{font-size:15.5px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-row-main small,.m-row-end small{color:var(--muted);font-size:12.5px}
+.m-row-end{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-variant-numeric:tabular-nums}
+.m-row-end strong{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.m-row-end .chg{font-size:13px;font-weight:650}
+.m-own{font-style:normal;font-size:10.5px;font-weight:700;color:var(--up);background:var(--up-soft);border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:2px}
+.m-dot{width:12px;height:12px;border-radius:4px;flex:none}
+.m-bar{display:block;height:4px;border-radius:2px;margin-top:5px;width:var(--w);max-width:100%;min-width:6px}
+.m-bar.up{background:var(--up)}.m-bar.down{background:var(--down)}.m-bar.flat{background:var(--muted)}
+.m-x{background:none;border:0;color:var(--faint);font:inherit;font-size:12px;padding:2px 0}
+
+/* Pestañas (control segmentado) y chips */
+.m-seg{display:flex;gap:4px;padding:4px;margin:22px 0 14px;background:var(--sunken);border:1px solid var(--line);border-radius:14px;position:sticky;top:70px;z-index:5;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.m-seg button{flex:1;height:38px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:650}
+.m-seg button.on{background:var(--hover);color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+#m-radar .m-seg,#m-market .m-seg{margin-top:0}
+.m-chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 14px;padding:0 16px;scrollbar-width:none}
+.m-chips::-webkit-scrollbar{display:none}
+.m-chip{flex:none;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:transparent;color:var(--ink-2);font:inherit;font-size:14px;font-weight:600}
+.m-chip.on{background:var(--ink);color:#0b0d12;border-color:var(--ink)}
+
+/* HOY: tarjeta grande */
+.m-hero{position:relative;overflow:hidden;border-radius:22px;padding:20px 18px 16px;border:1px solid var(--line);background:radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.06),transparent 60%),var(--surface)}
+.m-hero.up{background:radial-gradient(120% 90% at 0% 0%,rgba(61,204,142,.16),transparent 60%),var(--surface)}
+.m-hero.down{background:radial-gradient(120% 90% at 0% 0%,rgba(240,113,103,.16),transparent 60%),var(--surface)}
+.m-kicker{margin:0 0 10px;color:var(--muted);font-size:12.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase}
+.m-hero h1{margin:0;font-size:30px;line-height:1.08;letter-spacing:-.045em;font-weight:800}
+.m-hero h1 em{font-style:normal}
+.m-hero h1 em.up{color:var(--up)}.m-hero h1 em.down{color:var(--down)}.m-hero h1 em.flat{color:var(--ink-2)}
+.m-amt{margin:8px 0 0;font-size:17px;font-weight:650;color:var(--ink-2)}
+.m-hero-spark{margin:14px -18px 0;height:64px}
+.m-hero-spark svg{width:100%;height:64px;display:block}
+.m-hero-foot{margin:10px 0 0;color:var(--muted);font-size:12.5px}
+
+/* HOY: carrusel de noticias */
+.m-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 4px;scrollbar-width:none}
+.m-rail::-webkit-scrollbar{display:none}
+.m-ncard{flex:0 0 78%;scroll-snap-align:start;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--surface);color:inherit;font:inherit;text-align:left;padding:0}
+.m-ncard-img{display:block;aspect-ratio:16/9;background:var(--sunken)}
+.m-ncard-img img{width:100%;height:100%;object-fit:cover;display:block}
+.m-ncard-body{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px 14px}
+.m-ncard-body strong{font-size:15.5px;line-height:1.3;letter-spacing:-.02em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.m-ncard-body small{color:var(--muted);font-size:12.5px}
+
+/* HOY: tú frente al mercado */
+.m-cc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.m-cc-top small{display:block;color:var(--muted);font-size:12.5px}
+.m-cc-top strong{font-size:22px;letter-spacing:-.03em}
+.m-cmp{display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:10px;margin:8px 0;font-size:13.5px;color:var(--ink-2)}
+.m-cmp i{height:6px;border-radius:3px;width:var(--w);min-width:6px}
+.m-cmp i.up{background:var(--up)}.m-cmp i.down{background:var(--down)}.m-cmp i.flat{background:var(--muted)}
+.m-cmp b{font-size:13px;font-variant-numeric:tabular-nums}
+
+/* PORTAFOLIO */
+.m-pf-top .daychart{background:transparent;border:0;padding:0;box-shadow:none}
+.m-pf-top .daychart-val{font-size:38px!important;letter-spacing:-.05em}
+.m-pf-top .chart-range-nav{margin:10px 0 6px}
+.m-pf-gain{margin:10px 0 0;color:var(--muted);font-size:13.5px;line-height:1.5}
+.m-pf-gain b{font-weight:700}
+.m-donut{display:grid;place-items:center;margin-bottom:12px}
+.m-donut .dn{max-width:240px;margin:0 auto}
+.m-row-static{min-height:54px}
+.m-tabbody{min-height:200px}
+.m-ad{margin-top:24px}
+
+/* NOTICIAS */
+.m-news{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.m-nrow{display:flex;gap:12px;align-items:flex-start;width:100%;padding:14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;font:inherit;text-align:left}
+.m-news .m-nrow:last-child{border-bottom:0}
+.m-nrow-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.m-nrow-main strong{font-size:15.5px;line-height:1.3;letter-spacing:-.02em;font-weight:700}
+.m-nrow-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.m-nrow-meta small{color:var(--muted);font-size:12px}
+.m-nrow-img{flex:none;width:84px;height:84px;border-radius:12px;overflow:hidden;background:var(--sunken)}
+.m-nrow-img img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* MERCADO */
+.m-breadth{display:flex;gap:3px;height:8px;border-radius:4px;overflow:hidden;margin:0 2px}
+.m-breadth i.up{background:var(--up)}.m-breadth i.down{background:var(--down)}
+.m-breadth-txt{margin:8px 2px 16px;color:var(--muted);font-size:13px}
+
+/* Hoja que sube desde abajo */
+.m-sheet-wrap{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0);visibility:hidden;transition:background .25s,visibility 0s .3s}
+.m-sheet-wrap.open{background:rgba(0,0,0,.6);visibility:visible;transition:background .25s}
+.m-sheet{position:absolute;left:0;right:0;bottom:0;max-height:90dvh;display:flex;flex-direction:column;background:#0f1116;border:1px solid var(--line-2);border-bottom:0;border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .32s cubic-bezier(.22,1,.36,1)}
+.m-sheet-wrap.open .m-sheet{transform:translateY(0)}
+.m-grab{position:absolute;top:8px;left:50%;width:40px;height:5px;margin-left:-20px;border-radius:3px;background:rgba(255,255,255,.3);z-index:2}
+.m-sheet-x{position:absolute;top:10px;right:12px;z-index:2;width:34px;height:34px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:22px;line-height:1}
+.m-sheet-body{overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));border-radius:22px 22px 0 0}
+.m-sheet-img{aspect-ratio:16/9;background:var(--sunken)}
+.m-sheet-img img{width:100%;height:100%;object-fit:cover;display:block}
+.m-sheet-pad{padding:16px 18px 0}
+.m-sheet-pad h2{margin:12px 0 8px;font-size:23px;line-height:1.15;letter-spacing:-.035em}
+.m-sheet-pad h3{margin:18px 0 4px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.m-sheet-pad p{margin:0;color:var(--ink-2);line-height:1.5}
+.m-row-co{margin-top:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.m-src{display:block;margin-top:14px}
+
+/* Vacíos */
+.m-empty{text-align:center;padding:40px 16px;border:1px dashed var(--line-2);border-radius:18px}
+.m-empty h2{margin:0 0 6px;font-size:19px}
+.m-empty p{margin:0 0 16px;color:var(--muted)}
+.m-empty .m-btn{max-width:220px}
+
+/* INSIGHTS en celular: el contenido termina encima de las flechas y del menú de abajo. */
+html.mob body.today-mode-story{--story-bottom-ui:calc(158px + env(safe-area-inset-bottom,0px))}
+html.mob .story-section.story-slide-donut.is-on{padding-top:84px}
+html.mob .story-section.story-slide-donut .story-h{font-size:30px;margin-bottom:6px}
+html.mob .story-section.story-slide-donut .home-donut{width:min(150px,44vw);height:min(150px,44vw)}
+html.mob .story-section.story-slide-donut .home-donut-hole{width:84px;height:84px}
+html.mob .story-section.story-slide-donut .story-donut-hint{display:none!important}
+html.mob .story-section.story-slide-donut .home-split-picks{max-height:calc(100dvh - 84px - 34px - 170px - var(--story-bottom-ui))}
+
+/* «Sigue por aquí»: tarjetas en lista vertical, no en carrusel que se sale de la pantalla. */
+html.mob .story-routes.sr{display:flex!important;flex-direction:column;gap:10px;width:100%!important;overflow:visible!important;margin:6px 0 0;padding:0!important;scroll-snap-type:none!important}
+html.mob .sr-card{display:grid!important;grid-template-columns:72px 1fr;grid-template-rows:auto auto;column-gap:14px;row-gap:2px;align-items:center;width:100%!important;min-width:0!important;flex:none!important;padding:10px 14px 10px 10px!important;border-radius:16px;transform:none!important}
+html.mob .sr-card .sr-prev{grid-row:1/3;width:72px;height:72px;border-radius:12px}
+html.mob .sr-card b{margin:0;font-size:16px}
+html.mob .sr-card > span:not(.sr-prev){font-size:13px;line-height:1.35}
+html.mob .sr-card em{display:none}
+html.mob .sr-chart svg{left:6px;right:6px;top:8px;width:calc(100% - 12px);height:30px}
+html.mob .sr-wf{left:8px;right:8px;bottom:8px;gap:3px}
+html.mob .sr-card{height:auto!important;min-height:0!important;aspect-ratio:auto!important}
+html.mob .story-section.is-on:has(.sr){padding-bottom:var(--story-bottom-ui);justify-content:flex-start;padding-top:84px}
+
+/* PORTADA en celular: secciones completas, sin scroll pegado que deja pantallas vacías. */
+html.mob .ld-hero{min-height:auto;padding:118px 20px 56px}
+html.mob .ld-cue{display:none}
+html.mob .ld-story{height:auto!important;padding:24px 0 40px}
+html.mob .ld-story .ld-sticky{position:static;height:auto;display:flex;flex-direction:column;align-items:center;padding:0 20px;gap:0;--out:0!important}
+html.mob .ld-story .ld-phone-wrap{order:1;position:static;height:auto;width:100%;display:flex;justify-content:center;transform:none!important;opacity:1!important}
+html.mob .ld-story .ld-phone{--rot:0!important;--rx:0!important;--py:0!important;transform:none!important;width:min(250px,66vw)}
+html.mob .ld-story .ld-steps{order:2;position:relative;width:100%;min-height:118px;margin-top:22px;text-align:center}
+html.mob .ld-story .ld-step{position:absolute;inset:0;opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;pointer-events:none}
+html.mob .ld-story .ld-step.is-on{opacity:1;transform:none;pointer-events:auto}
+html.mob .ld-story .ld-step h2{font-size:24px;letter-spacing:-.035em;margin:4px 0 6px}
+html.mob .ld-story .ld-step p{font-size:15px;line-height:1.45;margin:0 auto;max-width:330px}
+html.mob .m-ld-dots{order:3;display:flex;gap:8px;justify-content:center;margin-top:10px}
+html.mob .m-ld-dots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:rgba(255,255,255,.22);transition:width .3s,background .3s}
+html.mob .m-ld-dots button.on{width:24px;background:var(--ink)}
+html:not(.mob) .m-ld-dots{display:none}
+
+html.mob .ld-zoom{height:auto!important;margin:0!important;padding:28px 16px}
+html.mob .ld-zoom .ld-zoom-sticky{position:relative;height:auto;display:block;border-radius:22px;overflow:hidden;min-height:440px}
+html.mob .ld-zoom .ld-zoom-frame{position:absolute;inset:0;width:100%!important;height:100%!important;border-radius:22px;transform:none!important}
+html.mob .ld-zoom .ld-zoom-frame img{transform:none!important;width:100%;height:100%;object-fit:cover}
+html.mob .ld-zoom .ld-zoom-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.1),rgba(7,8,11,.82) 72%)}
+html.mob .ld-zoom .ld-zoom-txt{position:absolute;left:0;right:0;bottom:0;opacity:1!important;transform:none!important;text-align:left;padding:22px 20px}
+html.mob .ld-zoom .ld-zoom-txt h2{font-size:30px;line-height:1.05;letter-spacing:-.045em;margin:0 0 8px}
+html.mob .ld-zoom .ld-zoom-txt p{margin:0;font-size:15px;color:var(--ink-2)}
+
+html.mob .ld-how{padding:56px 0 24px}
+html.mob .ld-how .ld-h2{font-size:30px;padding:0 20px;letter-spacing:-.045em}
+html.mob .ld-how .ld-cards{display:flex!important;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 20px 8px;margin:0;scrollbar-width:none}
+html.mob .ld-how .ld-cards::-webkit-scrollbar{display:none}
+html.mob .ld-how .ld-card{flex:0 0 82%;scroll-snap-align:center;opacity:1!important;transform:none!important}
+html.mob .ld-how .ld-how-line{display:none}
+
+html.mob .ld-fill{height:auto!important;padding:56px 20px}
+html.mob .ld-fill .ld-fill-sticky{position:static;height:auto;padding:0}
+html.mob .ld-fill .ld-fill-txt{font-size:30px;line-height:1.12;letter-spacing:-.04em}
+html.mob .ld-fill .ld-fill-line{display:none}
+html.mob .ld-final{padding:72px 20px 88px}
+html.mob .ld-progress,html.mob .ld-hint{display:none!important}
+
+/* REGISTRO (elegir empresas y monto): pie sólido y corto, sin tapar las tarjetas. */
+html.mob .ob-foot{background:#07080b!important;backdrop-filter:none;-webkit-backdrop-filter:none;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+html.mob .ob-foot .ob-tray{display:none!important}
+html.mob .ob-foot .btn-primary{height:52px;border-radius:14px;font-size:16px}
+html.mob .ob-foot .btn-ghost{height:36px;font-size:14px}
+html.mob .ob-in{padding:16px 16px calc(150px + env(safe-area-inset-bottom,0px))}
+html.mob .ob h1,html.mob .ob .ob-h{font-size:27px;letter-spacing:-.04em}
+
+/* INICIO DE SESIÓN: pantalla completa, sin marco de tarjeta. */
+html.mob #loginScreen .login-card,html.mob #loginScreen .preview{border:0;box-shadow:none;background:transparent}
+html.mob .ob-foot{z-index:60}
