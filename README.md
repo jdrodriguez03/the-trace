@@ -130,11 +130,10 @@ Cada carpeta tiene un `README.md` que explica qué va adentro.
 
 ## Equipo
 
-| Persona | Frente |
-| --- | --- |
-| Julián David Rodríguez ([@jdrodriguez03](https://github.com/jdrodriguez03)) | Plataforma, datos y backend |
-| Juan Triana ([@agarslok](https://github.com/agarslok)) | App web e IA |
-| Isabela ([@isabellapensamiento-data](https://github.com/isabellapensamiento-data)) | Diseño, contenido y calidad |
+- Julián David Rodríguez ([@jdrodriguez03](https://github.com/jdrodriguez03))
+- Juan Triana ([@agarslok](https://github.com/agarslok))
+- Isabela ([@isabellapensamiento-data](https://github.com/isabellapensamiento-data))
+- Claude ([@claude](https://github.com/claude)), asistente de IA usado en el desarrollo
 
 ## Licencia
 
