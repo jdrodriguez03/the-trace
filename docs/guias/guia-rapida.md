@@ -108,6 +108,7 @@ Cada carpeta tiene una regla de qué entra y qué no; si algo no encaja en ningu
 | `api/scripts/` | Tareas que se corren a mano | Cargar los datos semilla, bajar el último año de precios, cargar noticias (y precios de respaldo) desde un CSV, evaluar la IA | Código que usa la app | Julian (Juan Angel en `eval_ia.py`) |
 | `web/src/features/` | Las pantallas, una carpeta por pantalla | Componentes de React de esa pantalla | Textos escritos a mano (van en `content/`), colores sueltos (van en el tema), `fetch` sueltos (van en `api/`) | Juan Angel (Isabela en `news-radar`, `market`, `account`, `monetization` y `galeria`) |
 | `web/public/legacy/app.js` · `web/src/legacy/styles.css` | Las pantallas del prototipo aprobado (ADR-0006) | El JavaScript y el CSS del prototipo, con los cambios para leer de `window.TRACE` | Cambios sin probar en PC y en celular | Julian |
+| `web/public/legacy/mobile.js` · `web/src/legacy/mobile.css` | La versión de celular (760 px o menos) | Dibuja Hoy, Portafolio, Noticias, Mercado y la portada con diseño de app. Usa los datos de `app.js`; el PC no cambia. |
 | `web/src/connect/` | El puente con la API y Supabase (`window.TRACE`) | Sesión, llamadas a la API, cola de cambios | Claves secretas (solo la publishable) | Julian |
 | `web/src/api/` | Hablar con la API | Cliente con la sesión, un hook por ruta, `types.ts` generado, `mocks/` | Lógica de pantalla | Juan Angel |
 | `web/src/components/` | Piezas que se repiten | `ui/`: componentes de shadcn; `trace/`: componentes propios | Componentes de una sola pantalla | Isabela |
