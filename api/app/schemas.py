@@ -224,3 +224,16 @@ class TodayOut(BaseModel):
     fallback: TodayFallbackOut | None = None
     news: list[NewsOut] = []  # las 3 más relevantes para ti
     updated_at: datetime | None = None  # hora del precio más reciente
+
+
+# ---- Trace AI (nuevo) ----
+class AiAskIn(BaseModel):
+    """La pregunta de la persona. Para «today» y «portfolio» puede ir vacía."""
+
+    question: Annotated[str, Field(max_length=1000)] | None = None
+
+
+class AiAnswerOut(BaseModel):
+    text: str  # la respuesta, lista para mostrar
+    source: Literal["ia", "cache", "respaldo"]  # respaldo = sin IA (no descuenta cuota)
+    remaining: int  # usos de este tipo que le quedan hoy
