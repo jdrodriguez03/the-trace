@@ -13,8 +13,8 @@ def gemini(monkeypatch):
     """Reemplaza a Gemini. `respuestas` es la cola de lo que va a contestar."""
     estado = {"respuestas": [], "llamadas": [], "falla": False}
 
-    def falso(reglas, pregunta):
-        estado["llamadas"].append((reglas, pregunta))
+    def falso(reglas, pregunta, historial=None):
+        estado["llamadas"].append((reglas, pregunta, historial))
         if estado["falla"]:
             raise rutas_ia.IaNoDisponible("sin red")
         return estado["respuestas"].pop(0) if estado["respuestas"] else "Ecopetrol bajó hoy."
@@ -40,7 +40,7 @@ def test_chat_responde_con_ia_y_descuenta(api, gemini):
 def test_el_contexto_va_sin_correo(api, gemini):
     yo = con_portafolio(api)
     api.post("/v1/ai/today", headers=yo, json={})
-    reglas, _ = gemini["llamadas"][0]
+    reglas, _, _ = gemini["llamadas"][0]
     assert "ECOPETROL" in reglas and "@" not in reglas
 
 
@@ -101,3 +101,18 @@ def test_mas_de_10_por_minuto_responde_429(api, gemini):
 ])
 def test_filtro_de_recomendaciones(texto, malo):
     assert violates_rules(texto) is malo
+
+
+def test_el_chat_recibe_las_ultimas_preguntas(api, gemini):
+    yo = con_portafolio(api)
+    previas = [{"question": "¿Qué es el COLCAP?", "answer": "Un índice."}]
+    api.post("/v1/ai/chat", headers=yo, json={"question": "sigamos", "history": previas})
+    _, pregunta, historial = gemini["llamadas"][0]
+    assert pregunta == "sigamos" and historial == [("¿Qué es el COLCAP?", "Un índice.")]
+
+
+def test_la_cuota_sale_de_la_configuracion(api, gemini, monkeypatch):
+    from app.config import get_settings
+    monkeypatch.setattr(get_settings(), "ai_daily_limit", 20)
+    yo = con_portafolio(api)
+    assert api.post("/v1/ai/chat", headers=yo, json={"question": "hola"}).json()["remaining"] == 19
