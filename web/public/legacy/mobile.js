@@ -11,7 +11,7 @@
   const ST = { pf: 'acciones', mine: true, imp: null, dir: null, mk: 'all' }
 
   /* ---------- piezas comunes ---------- */
-  const pill = c => `<span class="m-pill ${K(c)}">${dirArrow(K(c))} ${t4pct(c)} %</span>`
+  const pill = c => `<span class="m-pill ${K(c)}">${dirArrow(K(c))} ${t4pct(c)} %</span>`
   const head = (t, sub) => `<header class="m-head"><h1>${t}</h1>${sub ? `<p>${sub}</p>` : ''}</header>`
   const sec = (t, extra = '') => `<div class="m-sec"><h2>${t}</h2>${extra}</div>`
   const empty = (t, p, btn) => `<div class="m-empty"><h2>${t}</h2><p>${p}</p>${btn || ''}</div>`
@@ -72,7 +72,7 @@
         <span class="m-ncard-body">${tag(n.direccion)}<strong>${H(n.titulo)}</strong><small>${H(assetName(n.t))}</small></span>
       </button>`).join('')
     const cc = COLCAP.chg, ck = K(cc), mx = Math.max(Math.abs(cc), Math.abs(m.pct), 0.1)
-    const bar = (lbl, v) => `<div class="m-cmp"><span>${lbl}</span><i class="${K(v)}" style="--w:${(Math.abs(v) / mx * 100).toFixed(0)}%"></i><b class="chg ${K(v)}">${dirArrow(K(v))} ${t4pct(v)} %</b></div>`
+    const bar = (lbl, v) => `<div class="m-cmp"><span>${lbl}</span><i class="${K(v)}" style="--w:${(Math.abs(v) / mx * 100).toFixed(0)}%"></i><b class="chg ${K(v)}">${dirArrow(K(v))} ${t4pct(v)} %</b></div>`
     el.innerHTML = `
       <section class="m-hero ${dk}">
         <p class="m-kicker">${H(fecha)}</p>
@@ -195,7 +195,7 @@
     const list = all.filter(a => ST.mk === 'all' || (ST.mk === 'up' && a.chg > 0) || (ST.mk === 'down' && a.chg < 0) || (ST.mk === 'mine' && mine(a.t)))
     const ck = K(COLCAP.chg)
     const chip = (k, t) => `<button type="button" class="m-chip${ST.mk === k ? ' on' : ''}" aria-pressed="${ST.mk === k}" onclick="mMk('${k}')">${t}</button>`
-    el.innerHTML = head('Mercado', `Hoy el mercado <b class="chg ${ck}">${verbo(COLCAP.chg)} ${t4pct(COLCAP.chg)} %</b>`) + `
+    el.innerHTML = head('Mercado', `Hoy el mercado <b class="chg ${ck}">${verbo(COLCAP.chg)} ${t4pct(COLCAP.chg)} %</b>`) + `
       <div class="m-breadth"><i class="up" style="flex:${up || 0.001}"></i><i class="down" style="flex:${dn || 0.001}"></i></div>
       <p class="m-breadth-txt"><span class="chg up">${up} subieron</span> · <span class="chg down">${dn} bajaron</span> · ${H(freshShort())}</p>
       <div class="m-chips">${chip('all', 'Todas')}${chip('up', 'Subieron')}${chip('down', 'Bajaron')}${chip('mine', 'Las mías')}</div>
