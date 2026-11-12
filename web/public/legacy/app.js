@@ -1646,7 +1646,7 @@ renderOnboarding=function(){const hint=$('obTopHint');if(hint)hint.textContent=O
       <span class="obc-top">${logoHTML(a)}</span>
       <span class="obc-name">${escapeHTML(shortName(a.n))}</span><span class="obc-sec"><i></i>${escapeHTML(a.sector)}</span>
       <span class="obc-foot"><span class="obc-price">${formatCOP(a.price)}</span><span class="pill ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span></span></button>`}).join('')}</div>`;
-    $('obFoot').innerHTML=`<div class="ob-tray" id="obTray" aria-label="Empresas elegidas"><span class="ob-tray-k">Tu portafolio</span><span class="ob-tray-logos" id="obTrayLogos"></span></div><p class="ob-next-hint" id="obNextHint">Luego decides cuántos pesos de práctica repartir entre ellas.</p><div class="ob-foot-btns"><button class="btn-ghost" type="button" onclick="obUseSeed()">Ver un portafolio de ejemplo</button><button class="btn-primary" type="button" id="obNext" onclick="obGo(2)" disabled>Continuar: elegir el monto</button></div>`;
+    $('obFoot').innerHTML=`<div class="ob-tray" id="obTray" aria-label="Empresas elegidas"><span class="ob-tray-k">Tu portafolio</span><span class="ob-tray-logos" id="obTrayLogos"></span></div><p class="ob-next-hint" id="obNextHint">Luego decides cuántos pesos de práctica repartir entre ellas.</p><div class="ob-foot-btns"><button class="btn-ghost" type="button" onclick="obUseSeed()">Ver un portafolio de ejemplo</button><button class="btn-primary" type="button" id="obNext" onclick="obGo(2)" disabled>Continuar</button></div>`;
     document.querySelectorAll('.obc').forEach(c=>c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')}));
     revealItems($('obBody'),'.obc');obUpdate()}
   else obRenderAmount();
@@ -1656,7 +1656,7 @@ obUpdate=function(){const n=OB.picked.length;$('obN')&&($('obN').textContent=n);
   $('obMeter')?.classList.toggle('is-full',n>=OB_MAXN);
   const tray=$('obTrayLogos');if(tray){const have=[...tray.children].map(x=>x.dataset.t);OB.picked.forEach(t=>{if(!have.includes(t)){const a=assetOf0(t);tray.insertAdjacentHTML('beforeend',`<span class="ob-tl" data-t="${escapeHTML(t)}" title="${escapeHTML(a.n)}">${logoHTML(a,true)}</span>`)}});[...tray.children].forEach(x=>{if(!OB.picked.includes(x.dataset.t)){x.classList.add('out');setTimeout(()=>x.remove(),260)}})}
   $('obTray')?.classList.toggle('has',n>0);
-  const b=$('obNext');if(b){b.disabled=!n;b.textContent=n?`Continuar con ${n} ${n===1?'empresa':'empresas'}`:'Continuar: elegir el monto'}};
+  const b=$('obNext');if(b){b.disabled=!n;b.textContent=n?`Continuar con ${n} ${n===1?'empresa':'empresas'}`:'Continuar'}};
 obToggle=function(tk){const i=OB.picked.indexOf(tk);if(i>=0){OB.picked.splice(i,1);obUpdate();return}
   if(OB.picked.length>=OB_MAXN){showToast('Ya tienes 5 empresas. Quita una para elegir otra.');return}
   OB.picked.push(tk);try{navigator.vibrate&&navigator.vibrate(12)}catch{}
