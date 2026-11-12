@@ -224,7 +224,12 @@ const PHOTOS={
 const NEWS_PHOTO={1:'oil',2:'oilfield',3:'medellin',4:'card',5:'towers',6:'bogota',7:'dam',8:'skyline',9:'valley',10:'build',11:'gold'};
 const SECTOR_PHOTO={'Petróleo y energía':'oil','Bancos':'medellin','Energía eléctrica':'towers','Seguros e inversiones':'skyline','Construcción':'build','Minería':'gold'};
 const assetOf=t=>POOL_EXPANDIDO.find(a=>a.t===t)||PORTFOLIO.find(a=>a.t===t)||{t,n:assetName(t),sector:''};
-function photoFor(n){const a=assetOf(n.t||n.ticker);return PHOTOS[NEWS_PHOTO[n.id]||SECTOR_PHOTO[a.sector]||'bogota']}
+/* Banco de imágenes por sector (hechas con IA, en public/img/sectores). Cada noticia toma siempre la misma
+   imagen de su sector: se elige con el número de la noticia. Si el sector no tiene imágenes, la ilustración de antes. */
+const SECTOR_BANK={'Petróleo y energía':['petroleo-1','petroleo-2','petroleo-3'],'Bancos':['bancos-1','bancos-2','bancos-3'],'Energía eléctrica':['electrica-1','electrica-2','electrica-3'],'Seguros e inversiones':['seguros-1','seguros-2','seguros-3'],'Construcción':['construccion-1','construccion-2','construccion-3'],'Minería':['mineria-1','mineria-2']};
+function photoFor(n){const a=assetOf(n.t||n.ticker);const bank=SECTOR_BANK[a.sector];
+  if(bank&&bank.length){const k=bank[Math.abs(Number(n.id)||hashStr(String(n.titulo||n.title||'')))%bank.length];return{img:'/img/sectores/'+k+'.webp',alt:''}}
+  return PHOTOS[NEWS_PHOTO[n.id]||SECTOR_PHOTO[a.sector]||'bogota']}
 /* ---- Biblioteca de imágenes por sector (ilustraciones) ----
    Ocupa el lugar de las fotos mientras llega la biblioteca hecha con IA: una imagen por tema,
    asignada por sector o por noticia. Son SVG dentro de la página: no dependen de internet. */
@@ -247,7 +252,7 @@ function artURI(key){if(ART_CACHE[key])return ART_CACHE[key];const sc=ART_SCENES
   return ART_CACHE[key]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
 const photoKey=p=>Object.keys(PHOTOS).find(k=>PHOTOS[k]===p)||'bogota';
 
-const photoUrl=(p,w)=>artURI(photoKey(p));
+const photoUrl=(p,w)=>p&&p.img?p.img:artURI(photoKey(p));
 function mediaHTML(p,{w=640,credit=false,sector=''}={}){return `<div class="media" style="--c:${sectorColor(sector)}"><img src="${photoUrl(p,w)}" alt="${escapeHTML(p.alt)}" loading="lazy" decoding="async" onerror="var c=this.parentNode.querySelector('.credit');if(c)c.remove();this.remove()"></div>`}
 const tagHTML=d=>{const k=dirKey(d);return `<span class="tag ${k}">${dirArrow(k)} ${escapeHTML(labelDir(d))}</span>`};
 const impactHTML=m=>`<span class="impact"><span class="bars" data-l="${({Alta:3,Media:2,Baja:1})[m]||2}" aria-hidden="true"><i></i><i></i><i></i></span>${escapeHTML(labelSev(m))}</span>`;
