@@ -1984,3 +1984,8 @@ renderLoginPreview();
 /* Al recargar, la sesión sigue abierta (Supabase la guarda en el navegador). */
 if(LIVE){TRACE.auth.actual().then(p=>p?liveEnter(p).then(()=>{if(!$('appShell').classList.contains('app-shell-active')&&!$('onboarding').classList.contains('active'))showLanding()}):showLanding()).catch(()=>showLanding()).finally(hideBootSplash)}
 else{try{const ses=localStorage.getItem('trace_session');if(ses)enterApp(ses);else showLanding()}catch(e){showLanding()}hideBootSplash()}
+
+/* Insights: cuando la persona avanza o retrocede una vez, la flecha deja de latir (se recuerda en este navegador). */
+try{if(localStorage.getItem('trace_story_used'))document.body.classList.add('story-used')}catch{}
+['storyGo'].forEach(k=>{const f=window[k];if(typeof f!=='function')return;
+  window[k]=function(){document.body.classList.add('story-used');try{localStorage.setItem('trace_story_used','1')}catch{}return f.apply(this,arguments)}});
