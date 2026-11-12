@@ -2116,3 +2116,54 @@ body:not(.story-used) .story-nav-next{animation:storyNudge 2s ease-in-out infini
   .story-nav{display:grid!important;top:auto;transform:none;bottom:calc(96px + env(safe-area-inset-bottom,0px));width:48px;height:48px;font-size:28px}
   .story-nav-prev{left:16px}.story-nav-next{right:16px}
 }
+
+/* =================== Auditoría de PC (11 nov) =================== */
+/* Barra de arriba: las secciones van a la izquierda, junto al logo, con ícono y nombre.
+   La búsqueda pasa a la derecha. Así se entiende de una dónde está cada cosa. */
+@media (min-width:761px){
+  .topbar-row{display:flex;align-items:center}
+  .topbar-left{order:0}
+  .topbar .tabs{order:1;margin-left:18px;gap:4px}
+  .topbar-search-wrap{order:2;flex:1 1 auto;max-width:300px;margin:0 8px 0 auto}
+  .topbar-right{order:3}
+  .topbar .tab{height:38px;padding:0 14px;font-size:14.5px;font-weight:600;color:var(--ink-2);gap:8px}
+  .topbar .tab .tab-ico{width:17px;height:17px;opacity:.75}
+  .topbar .tab:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+  .topbar .tab.active{background:rgba(255,255,255,.12);color:#fff}
+  .topbar .tab.active .tab-ico{opacity:1}
+  .topbar{height:58px}
+  .topbar .tabs{height:58px}
+}
+@media (min-width:761px) and (max-width:1180px){
+  .topbar .tab .tab-ico{display:none}
+  .topbar .tab{padding:0 10px;font-size:14px}
+  .topbar-search-wrap{max-width:200px}
+}
+.tab-ico{display:none}
+@media (min-width:1181px){.topbar .tab .ico.tab-ico{display:inline-block}}
+
+/* Barras flotantes que tapaban tarjetas al bajar: fuera. */
+.minibar{display:none!important}
+
+/* Mercado: solo se ve la vista elegida (lista o mosaico) y el botón activo se lee. */
+#moversList[hidden],#marketHeatmap[hidden]{display:none!important}
+.mk-switch i{display:none}
+.mk-switch button.active{background:#f3f4f6;color:#0b0d12}
+
+/* Insights: flechas que no aplican se esconden; logo de la acción. */
+.story-nav.is-off{opacity:0!important;pointer-events:none;animation:none!important}
+.story-logo{display:inline-flex;margin-bottom:14px}
+.story-logo .logo{width:64px;height:64px;border-radius:18px;font-size:20px}
+
+/* Reportaje: foto real de fondo y noticia principal con imagen. */
+.studio-news-main .media{margin:-1px -1px 16px;border-radius:14px;overflow:hidden;aspect-ratio:16/8}
+.studio-news-main .media img{width:100%;height:100%;object-fit:cover}
+.studio-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+
+/* Espacio publicitario neutro */
+.ad.ad-space{display:flex;flex-direction:column;gap:6px;padding:18px;border:1px dashed rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.035);min-height:118px;justify-content:center}
+.ad-space-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.ad.ad-space p{margin:0;color:var(--muted);font-size:13.5px}
+.ad-space-foot{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:4px}
+.ad-space-foot a,.ad-space-foot button{background:none;border:0;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--ink-2);text-decoration:none;cursor:pointer}
+.ad-space-foot a:hover,.ad-space-foot button:hover{color:var(--ink)}
