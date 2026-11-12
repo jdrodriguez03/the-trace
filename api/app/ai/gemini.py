@@ -10,7 +10,7 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-TIEMPO_MAXIMO_MS = 25_000  # si Gemini tarda más, se responde con el respaldo
+TIEMPO_MAXIMO_MS = 15_000  # si Gemini tarda más, se responde con el respaldo
 
 
 class IaNoDisponible(Exception):
@@ -23,12 +23,15 @@ def _cliente() -> genai.Client:
     if not clave:
         logger.warning("Falta GEMINI_API_KEY: Trace AI responde con el respaldo")
         raise IaNoDisponible("Falta GEMINI_API_KEY")
-    return genai.Client(api_key=clave, http_options=types.HttpOptions(timeout=TIEMPO_MAXIMO_MS))
+    # attempts=1: sin reintentos. Antes, cada falla se repetía y la persona esperaba más de un minuto.
+    return genai.Client(api_key=clave, http_options=types.HttpOptions(
+        timeout=TIEMPO_MAXIMO_MS, retry_options=types.HttpRetryOptions(attempts=1)))
 
 
 def generar(instrucciones: str, pregunta: str) -> str:
-    """Pide una respuesta corta a Gemini. Razonamiento bajo: rápido y barato para explicar."""
+    """Pide una respuesta corta a Gemini."""
     modelo = get_settings().gemini_model
+    nivel = get_settings().gemini_thinking_level
     if not modelo:
         logger.warning("Falta GEMINI_MODEL: Trace AI responde con el respaldo")
         raise IaNoDisponible("Falta GEMINI_MODEL")
@@ -38,7 +41,8 @@ def generar(instrucciones: str, pregunta: str) -> str:
             contents=pregunta,
             config=types.GenerateContentConfig(
                 system_instruction=instrucciones,
-                thinking_config=types.ThinkingConfig(thinking_level="low"),
+                # Sin nivel fijo: cada modelo usa el suyo (Flash-Lite piensa lo mínimo y responde rápido).
+                thinking_config=(types.ThinkingConfig(thinking_level=nivel) if nivel else None),
                 # El razonamiento también gasta de este tope: con poco margen, la respuesta sale vacía.
                 max_output_tokens=4096,
             ),

@@ -17,7 +17,8 @@ class Settings(BaseSettings):
 
     # Opcionales por ahora: se usan en la semana 3 o 4.
     gemini_api_key: str = ""
-    gemini_model: str = ""
+    gemini_model: str = ""  # recomendado: gemini-3.5-flash-lite (rápido y barato)
+    gemini_thinking_level: str = ""  # vacío = el del modelo; "low", "medium" o "high"
     price_refresh_minutes: int = 15
     # De dónde salen los precios: "yahoo" o "off" (no pide precios nuevos; las pruebas usan "off").
     price_provider: str = "yahoo"
