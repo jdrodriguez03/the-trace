@@ -58,12 +58,31 @@ def local_portfolio_insight(resumen: Resumen) -> str:
     return " ".join(frases)
 
 
-def local_chat_fallback(pregunta: str, resumen: Resumen) -> str:
-    """Respuesta del chat sin IA. Si piden una recomendación, explica que no la damos."""
+def _fuera_del_portafolio(q: str, resumen: Resumen, mercado: list[dict]) -> dict | None:
+    """Una acción del mercado que la pregunta nombra y que NO está en el portafolio."""
+    mias = {p.ticker for p in resumen.positions}
+    for a in mercado:
+        if a["ticker"] in mias:
+            continue
+        if _sin_tildes(a["ticker"]) in q or _sin_tildes(a["nombre"]) in q:
+            return a
+    return None
+
+
+def local_chat_fallback(pregunta: str, resumen: Resumen, mercado: list[dict] | None = None) -> str:
+    """Respuesta del chat sin IA. Si piden una recomendación, explica que no la damos.
+    `mercado` son todas las acciones (ver routes/ai.py), para hablar de las que no tiene."""
+    q = _sin_tildes(pregunta)
+    otra = _fuera_del_portafolio(q, resumen, mercado or [])
+    if otra and not PIDE_RECOMENDACION.search(q):
+        c = otra["variacion_hoy_pct"]
+        verbo = "subió" if c > 0 else "bajó" if c < 0 else "no cambió"
+        cambio = f" {pct(abs(c), signo=False)}" if c else ""
+        return (f"{otra['nombre']} no está en tu portafolio. Hoy {verbo}{cambio} y su precio es "
+                f"{cop(otra['precio_cop'])}.\n{otra['que_la_mueve']}")
     if not resumen.positions:
         return ("Tu portafolio de práctica está vacío. Agrega una acción y te cuento qué pasó "
                 "con ella.")
-    q = _sin_tildes(pregunta)
     accion = _accion_mencionada(q, resumen)
     if PIDE_RECOMENDACION.search(q):
         lista = [accion] if accion else resumen.positions[:3]

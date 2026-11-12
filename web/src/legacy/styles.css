@@ -2097,3 +2097,22 @@ body:not(.on-landing) .ld-hint{display:none}
   .ob-foot-btns{flex-direction:column-reverse;align-items:stretch;width:100%}
   .ob-foot-btns .btn-primary,.ob-foot-btns .btn-ghost{width:100%;white-space:nowrap}
 }
+
+/* Modo liviano (equipos de 4 núcleos o menos, lo activa PERF en app.js):
+   sin desenfoque detrás de las barras y sin animaciones decorativas que repintan sin parar. */
+html.lite *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.lite .topbar,html.lite .ld-top{background:rgba(7,8,11,.96)}
+html.lite body.trace-ambient #appShell::after,html.lite .ld-aurora i,html.lite .tab.tab-advisor,html.lite .fab-chat,
+html.lite .advisor-waves svg,html.lite .ld-orb .logo,html.lite .ld-mag::after,html.lite .trace-row.pulse-hint{animation:none!important}
+
+/* Insights: las flechas se ven claras para quien entra por primera vez.
+   La de «siguiente» es blanca y late suave hasta que la persona avanza una vez (body.story-used). */
+.story-nav{opacity:1;width:56px;height:56px;font-size:32px;background:rgba(16,18,24,.82);border-color:rgba(255,255,255,.32);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.story-nav-next{background:#f4f5f7;color:#0b0d12;border-color:#fff}
+.story-nav-next:hover,.story-nav-next:focus-visible{background:#fff;border-color:#fff}
+body:not(.story-used) .story-nav-next{animation:storyNudge 2s ease-in-out infinite}
+@keyframes storyNudge{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.45),0 8px 24px rgba(0,0,0,.45)}50%{box-shadow:0 0 0 12px rgba(255,255,255,0),0 8px 24px rgba(0,0,0,.45)}}
+@media(max-width:760px){
+  .story-nav{display:grid!important;top:auto;transform:none;bottom:calc(96px + env(safe-area-inset-bottom,0px));width:48px;height:48px;font-size:28px}
+  .story-nav-prev{left:16px}.story-nav-next{right:16px}
+}
