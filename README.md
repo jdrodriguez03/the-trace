@@ -4,97 +4,141 @@
 
 [![CI](https://github.com/jdrodriguez03/the-trace/actions/workflows/ci.yml/badge.svg)](https://github.com/jdrodriguez03/the-trace/actions/workflows/ci.yml)
 
-App web mobile-first para que principiantes en Colombia practiquen con un portafolio de acciones colombianas, sin dinero real, y entiendan con IA y en lenguaje simple qué pasó y por qué.
+The Trace es una app web, pensada primero para el celular, para que principiantes en Colombia practiquen con un portafolio de acciones colombianas sin dinero real. Con IA y en lenguaje simple, explica qué pasó con su portafolio y por qué.
 
 > **The Trace informa, no recomienda.** Ningún texto, pantalla o respuesta de la IA sugiere comprar, vender o mantener una acción.
 
-**Estado:** MVP en construcción, del 12 de octubre al 10 de noviembre de 2026.
+**Pruébala:** [traceweb.onrender.com](https://traceweb.onrender.com). Puedes entrar sin correo, como invitado.
 
----
+<p align="center">
+  <img src="docs/capturas/movil-insights.jpg" width="250" alt="Resumen del día en el celular: tu portafolio bajó 1,0 %">
+  <img src="docs/capturas/movil-hoy.jpg" width="250" alt="Pantalla Hoy en el celular: qué movió tu día">
+  <img src="docs/capturas/movil-portafolio.jpg" width="250" alt="Tu portafolio en el celular, con su gráfica">
+</p>
 
-## Para el equipo: empieza aquí
+<details>
+<summary>Más capturas (computador)</summary>
 
-1. **[Guía rápida del repositorio (LEER PRIMERO)](docs/guias/guia-rapida.md):** estructura, dueños, reglas, comandos y primer arranque.
-2. **[Guía día por día](docs/guias/guia-dia-a-dia.md):** qué hace cada persona cada día y cuándo está listo.
-3. **[Plan del MVP](docs/guias/plan-mvp.md):** alcance, calendario, modelo de datos y rutas.
+| Portada | Elige tus empresas |
+| --- | --- |
+| ![Portada de The Trace](docs/capturas/portada.jpg) | ![Paso 1: elige las empresas con las que quieres practicar](docs/capturas/onboarding.jpg) |
+| **Hoy** | **Tu portafolio** |
+| ![Pantalla Hoy](docs/capturas/hoy.jpg) | ![Pantalla de tu portafolio](docs/capturas/portafolio.jpg) |
 
-Las guías se editan solo aquí, con un PR `docs:`. Si lo que construyes cambia lo que dicen, actualízalas en el mismo PR.
+</details>
 
-## Qué hace el MVP
+**Estado:** MVP presentado el 10 de noviembre de 2026. Sigue en desarrollo.
 
-- Entrar como invitado o con correo (enlace mágico).
-- Armar un portafolio de práctica con acciones de la Bolsa de Colombia, a precios actuales (con unos 15 minutos de retraso).
-- Registrar compras y ventas y ver el costo promedio y la ganancia o pérdida, por acción y en total.
-- **Hoy:** qué pasó con tu portafolio y por qué, con una explicación de respaldo y otra con IA.
-- Gráficas del historial de cada acción y de tu portafolio.
-- Chat con Trace AI y una lectura de tu portafolio con IA.
-- Noticias que te afectan, Mercado colombiano y la hoja de Trace+.
-- Se instala en el celular.
+## Qué hace
 
-## Arranque rápido
+- **Entrar sin fricción:** como invitado o con un enlace mágico al correo.
+- **Portafolio de práctica:** acciones de la Bolsa de Colombia a precios actuales, con unos 15 minutos de retraso.
+- **Compras y ventas de práctica:** costo promedio y ganancia o pérdida, por acción y en total.
+- **Hoy:** qué pasó con tu portafolio y por qué. Trae una explicación de respaldo y otra con IA.
+- **Gráficas:** el historial de cada acción y de tu portafolio.
+- **Trace AI:** un chat y una lectura de tu portafolio, que explican sin recomendar.
+- **Noticias que te afectan:** ordenadas según cuánto pesan en tu dinero.
+- **Mercado colombiano:** las acciones del catálogo y el COLCAP.
+- **App instalable:** se agrega a la pantalla de inicio del celular.
 
-Necesitas Git, Node.js 24 y [uv](https://docs.astral.sh/uv/). Los pasos completos están en la [guía rápida](docs/guias/guia-rapida.md#primer-arranque-en-20-minutos).
+## Cómo funciona
 
-```bash
-cp api/.env.example api/.env              # y pega las claves que comparte Julian
-cp web/.env.example web/.env.local
-
-cd api && uv sync && uv run fastapi dev app/main.py    # API: http://localhost:8000/docs
-cd web && npm install && npm run dev                   # Web: http://localhost:5173 (otra terminal)
-
-bash check.sh                                          # lo mismo que el CI, desde la raíz
 ```
+Navegador (web/)  ──token──▶  API (api/)  ──▶  Supabase (PostgreSQL)
+      │                          ├──▶  Gemini (solo desde el servidor)
+      └──▶ Supabase Auth          └──▶  Yahoo Finance (precios)
+```
+
+- **La web** solo dibuja. Pide todo a la API con el token de sesión de Supabase.
+- **La API** revisa el token y solo deja ver y cambiar lo propio. Hace todos los cálculos en Python.
+- **La IA** se llama solo desde el servidor. Nunca recibe nombre ni correo. Un filtro revisa cada respuesta: si recomienda algo, se cambia por la explicación de respaldo.
+- **Los precios** se piden a Yahoo Finance cada 15 minutos en horario de bolsa, y solo cuando alguien usa la app. Si Yahoo falla, la app muestra el último precio guardado con su hora.
 
 ## Stack
 
 | Pieza | Herramienta |
 | --- | --- |
-| API | Python 3.12, FastAPI, Pydantic, uv, ruff, pytest |
-| Base de datos y login | Supabase (PostgreSQL + Auth), SQLModel, Alembic |
-| Web | React, Vite, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Recharts |
-| IA | Gemini, solo desde el servidor |
+| API | Python 3.12, FastAPI, Pydantic, SQLModel, Alembic, uv, ruff, pytest |
+| Base de datos y login | Supabase (PostgreSQL + Auth) |
+| Web | Vite + TypeScript, con las pantallas del prototipo aprobado ([ADR-0006](docs/adr/0006-web-con-el-prototipo.md)) |
+| IA | Gemini, con `google-genai` |
 | Precios | Yahoo Finance con `yfinance`, con CSV de respaldo |
-| Hosting | Render (sitio estático y servicio web) |
+| Hosting | Render: la web como sitio estático y la API como servicio ([`render.yaml`](render.yaml)) |
 | Calidad | GitHub Actions (ruff, pytest, lint, build y gitleaks), Sentry y PostHog |
+
+Las decisiones de arquitectura están en [`docs/adr/`](docs/adr/).
+
+## Correr en tu computador
+
+Necesitas Git, Node.js 24 y [uv](https://docs.astral.sh/uv/).
+
+### Solo la web, en modo demo
+
+No necesita claves: usa los datos del prototipo.
+
+```bash
+cp web/.env.example web/.env.local     # trae VITE_USE_MOCKS=true
+cd web && npm install && npm run dev   # http://localhost:5173
+```
+
+### La app completa
+
+1. **Crea un proyecto en [Supabase](https://supabase.com).** En **Authentication → Sign In / Providers**, activa *Allow anonymous sign-ins* y el correo con enlace mágico. Copia la URL del proyecto, la llave publicable y la cadena de conexión **Session pooler**.
+2. **Crea una clave de Gemini** en [Google AI Studio](https://aistudio.google.com/), con un límite de gasto mensual.
+3. **Llena las variables:**
+   ```bash
+   cp api/.env.example api/.env           # DATABASE_URL, SUPABASE_URL, GEMINI_API_KEY, GEMINI_MODEL
+   cp web/.env.example web/.env.local     # VITE_USE_MOCKS=false y las VITE_SUPABASE_*
+   ```
+   Todo lo que empieza por `VITE_` termina dentro de la app y cualquiera lo puede leer. Nunca pongas ahí una clave secreta.
+4. **Prepara la base y arranca la API:**
+   ```bash
+   cd api
+   uv sync
+   uv run alembic upgrade head                   # crea las tablas
+   uv run python -m scripts.seed_db              # carga las acciones del catálogo
+   uv run python -m scripts.backfill_prices      # baja un año de precios para las gráficas
+   uv run fastapi dev app/main.py                # http://localhost:8000/docs
+   ```
+5. **Arranca la web** en otra terminal: `cd web && npm install && npm run dev`.
+
+Antes de subir cambios, corre `bash check.sh` desde la raíz. Hace lo mismo que el CI.
+
+### Datos de respaldo
+
+- **Precios:** si Yahoo falla, `uv run python -m scripts.load_prices precios.csv` carga precios desde un CSV (hay un ejemplo en [`api/scripts/ejemplos/`](api/scripts/ejemplos/)).
+- **Noticias:** se cargan con `uv run python -m scripts.load_news noticias.csv`.
+
+## Sobre los precios
+
+Yahoo Finance es gratis y no pide clave, pero no es un servicio oficial y sus condiciones no permiten uso comercial. Por eso el código lee los precios a través de una interfaz en [`api/app/providers/`](api/app/providers/). Pasar a un proveedor con licencia es escribir un archivo nuevo ahí, sin tocar el resto de la app.
 
 ## Estructura
 
 ```
 the-trace/
 ├─ api/        API en Python: rutas, cálculos, precios, IA y scripts de datos
-├─ web/        App web en React, mobile-first
+├─ web/        App web, primero para el celular
 ├─ docs/
-│  ├─ guias/      guías del equipo
 │  ├─ adr/        decisiones de arquitectura
-│  ├─ qa/         revisiones y prueba con personas
 │  └─ prototype/  prototipo de referencia
 ├─ sandbox/    visor para probar la API en local (no es parte de la app)
 └─ .github/    CI, dueños por carpeta y plantilla de PR
 ```
 
-Cada carpeta tiene su dueño en [`.github/CODEOWNERS`](.github/CODEOWNERS) y un `README.md` que explica qué va adentro.
-
-## Cómo se trabaja
-
-1. Nunca trabajes en `main`: una rama por tarea (`j/`, `ja/`, `i/` + tema).
-2. Solo edita tus carpetas.
-3. No cambies el contrato (`api/app/schemas.py`) sin acordarlo.
-4. Nunca subas una clave: `api/.env` y `web/.env.local` no se suben.
-5. Textos, cifras y colores salen de su lugar (`content/`, formatos y tema).
-
-Cada PR necesita el CI en verde y la aprobación de una de las otras dos personas. Lo que llega a `main` se publica solo. Más detalle en [CONTRIBUTING](docs/CONTRIBUTING.md).
-
-## Operación
-
-Julian completa esta sección en la semana 3: cómo se publica, cómo funcionan los precios de Yahoo y qué hacer si fallan, cómo cargar noticias desde CSV, cómo cambiar la clave de Gemini y cómo restaurar la copia de seguridad.
+Cada carpeta tiene un `README.md` que explica qué va adentro.
 
 ## Equipo
 
 | Persona | Frente |
 | --- | --- |
-| Julian | Plataforma, datos y backend |
-| Juan Angel | App web e IA |
-| Isabela | Diseño, contenido y calidad |
+| Julián David Rodríguez ([@jdrodriguez03](https://github.com/jdrodriguez03)) | Plataforma, datos y backend |
+| Juan Triana ([@agarslok](https://github.com/agarslok)) | App web e IA |
+| Isabela ([@isabellapensamiento-data](https://github.com/isabellapensamiento-data)) | Diseño, contenido y calidad |
+
+## Licencia
+
+Copyright © 2026 Julián David Rodríguez. **Todos los derechos reservados.** El código es público solo para consulta: no se puede copiar, modificar ni usar sin permiso por escrito. Ver [LICENSE](LICENSE).
 
 ---
 
