@@ -16,9 +16,9 @@ from app.ai.guardrails import violates_rules
 from app.ai.prompts import instrucciones
 from app.auth import CurrentUser
 from app.config import get_settings
+from app.content.drivers import DRIVER_DEFAULT, DRIVERS
 from app.core.context import build_portfolio_context
 from app.core.fallback import NO_RECOMIENDA, local_chat_fallback, local_portfolio_insight
-from app.content.drivers import DRIVER_DEFAULT, DRIVERS
 from app.core.loaders import latest_colcap, load_news, load_summary
 from app.core.prices import latest_prices
 from app.core.today import Noticia, colcap_line, today_head, today_lead, today_model
