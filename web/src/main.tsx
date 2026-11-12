@@ -3,6 +3,7 @@
 // 3) Abre las pantallas del prototipo aprobado (public/legacy/app.js), que leen de ese puente.
 import Chart from 'chart.js/auto'
 import './legacy/styles.css'
+import './legacy/mobile.css'
 import { iniciarTrace } from './connect/trace'
 
 declare global {
@@ -18,6 +19,12 @@ async function arrancar() {
   window.TRACE = await iniciarTrace()
   const s = document.createElement('script')
   s.src = '/legacy/app.js?v=' + __BUILD_ID__
+  // 4) La versión de celular va encima de las pantallas del prototipo (ver public/legacy/mobile.js).
+  s.onload = () => {
+    const m = document.createElement('script')
+    m.src = '/legacy/mobile.js?v=' + __BUILD_ID__
+    document.body.appendChild(m)
+  }
   document.body.appendChild(s)
 }
 

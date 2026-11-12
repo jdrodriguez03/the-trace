@@ -17,3 +17,6 @@
 - `app.js` es un archivo grande sin tipos, así que ESLint no lo revisa.
 - Los componentes de `web/src/components/` y `web/src/features/` no se usan por ahora. Son la base de la migración en la v2.
 - No se agregó Motion: las animaciones ya vienen en el CSS y el JavaScript del prototipo.
+
+
+**Actualización (11 nov):** en celular, `web/public/legacy/mobile.js` y `web/src/legacy/mobile.css` dibujan las pantallas con un diseño propio para el teléfono, encima del prototipo. Solo aplican con la clase `html.mob` (760 px o menos).
