@@ -8,7 +8,24 @@ The Trace es una app web, pensada primero para el celular, para que principiante
 
 > **The Trace informa, no recomienda.** Ningún texto, pantalla o respuesta de la IA sugiere comprar, vender o mantener una acción.
 
-<!-- CAPTURAS -->
+**Pruébala:** [traceweb.onrender.com](https://traceweb.onrender.com). Puedes entrar sin correo, como invitado.
+
+<p align="center">
+  <img src="docs/capturas/movil-insights.jpg" width="250" alt="Resumen del día en el celular: tu portafolio bajó 1,0 %">
+  <img src="docs/capturas/movil-hoy.jpg" width="250" alt="Pantalla Hoy en el celular: qué movió tu día">
+  <img src="docs/capturas/movil-portafolio.jpg" width="250" alt="Tu portafolio en el celular, con su gráfica">
+</p>
+
+<details>
+<summary>Más capturas (computador)</summary>
+
+| Portada | Elige tus empresas |
+| --- | --- |
+| ![Portada de The Trace](docs/capturas/portada.jpg) | ![Paso 1: elige las empresas con las que quieres practicar](docs/capturas/onboarding.jpg) |
+| **Hoy** | **Tu portafolio** |
+| ![Pantalla Hoy](docs/capturas/hoy.jpg) | ![Pantalla de tu portafolio](docs/capturas/portafolio.jpg) |
+
+</details>
 
 **Estado:** MVP presentado el 10 de noviembre de 2026. Sigue en desarrollo.
 
