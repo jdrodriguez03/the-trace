@@ -226,7 +226,8 @@ const SECTOR_PHOTO={'Petróleo y energía':'oil','Bancos':'medellin','Energía e
 const assetOf=t=>POOL_EXPANDIDO.find(a=>a.t===t)||PORTFOLIO.find(a=>a.t===t)||{t,n:assetName(t),sector:''};
 /* Banco de imágenes por sector (hechas con IA, en public/img/sectores). Cada noticia toma siempre la misma
    imagen de su sector: se elige con el número de la noticia. Si el sector no tiene imágenes, la ilustración de antes. */
-const SECTOR_BANK={'Petróleo y energía':['petroleo-1','petroleo-2','petroleo-3'],'Bancos':['bancos-1','bancos-2','bancos-3'],'Energía eléctrica':['electrica-1','electrica-2','electrica-3'],'Seguros e inversiones':['seguros-1','seguros-2','seguros-3'],'Construcción':['construccion-1','construccion-2','construccion-3'],'Minería':['mineria-1','mineria-2']};
+/* Banco de imágenes por sector: 1-3 de noche, 4-5 de día (mineria-3 y -4 de día). */
+const SECTOR_BANK={'Petróleo y energía':['petroleo-1','petroleo-4','petroleo-2','petroleo-5','petroleo-3'],'Bancos':['bancos-1','bancos-4','bancos-2','bancos-5','bancos-3'],'Energía eléctrica':['electrica-1','electrica-4','electrica-2','electrica-5','electrica-3'],'Seguros e inversiones':['seguros-1','seguros-4','seguros-2','seguros-5','seguros-3'],'Construcción':['construccion-1','construccion-4','construccion-2','construccion-5','construccion-3'],'Minería':['mineria-1','mineria-3','mineria-2','mineria-4']};
 function photoFor(n){const a=assetOf(n.t||n.ticker);const bank=SECTOR_BANK[a.sector];
   if(bank&&bank.length){const k=bank[Math.abs(Number(n.id)||hashStr(String(n.titulo||n.title||'')))%bank.length];return{img:'/img/sectores/'+k+'.webp',alt:''}}
   return PHOTOS[NEWS_PHOTO[n.id]||SECTOR_PHOTO[a.sector]||'bogota']}
@@ -297,19 +298,21 @@ function bindLiveCharts(){
     const w=600,h=150,{min,rg}=scaleOf([...s,...inv],0.008),pad=10;
     const X=i=>(i/(s.length-1))*w,Y=v=>pad+(h-2*pad)*(1-(v-min)/rg);
     const line=svg.querySelector('.chart-hover-line'),dot=svg.querySelector('.chart-hover-dot');
-    const total=valEl?(valEl.dataset.final||valEl.textContent):'';
+    const total=valEl?(valEl.dataset.final||valEl.textContent):'';const lblEl=root.querySelector('.daychart-top .stat-label');
     const idle='Arrastra sobre la gráfica para ver cada día';
     const show=(i)=>{
       const idx=Math.max(0,Math.min(s.length-1,i)),v=s[idx],x=X(idx),y=Y(v),g=v-inv[idx];
       if(line){line.setAttribute('x1',x);line.setAttribute('x2',x);line.setAttribute('opacity','1')}
       if(dot){dot.setAttribute('cx',x);dot.setAttribute('cy',y)}
-      tip.hidden=false;tip.style.left=(idx/(s.length-1)*100)+'%';tip.style.top='0';
+      const f=idx/(s.length-1);tip.hidden=false;tip.style.left=(f*100)+'%';tip.style.top='0';
+      tip.style.transform=`translate(${f>.85?'-100%':f<.15?'0':'-50%'},calc(-100% - 10px))`;
+      if(lblEl){lblEl.dataset.base=lblEl.dataset.base||lblEl.textContent;lblEl.textContent=idx===s.length-1?lblEl.dataset.base:`Así valía el ${dayTxt(pts[idx].day)}`}
       tip.textContent=`${dayTxt(pts[idx].day)} · ${formatCOP(v)}`;
       if(valEl)valEl.textContent=formatCOP(v);
-      if(metaEl)metaEl.textContent=`Pagaste ${formatCOP(inv[idx])} · ${g>=0?'ganabas':'perdías'} ${formatCOP(Math.abs(g))}`;
+      if(metaEl)metaEl.textContent=`Ese día habías pagado ${formatCOP(inv[idx])} · ${g>=0?'ibas ganando':'ibas perdiendo'} ${formatCOP(Math.abs(g))}`;
     };
     plot.addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*w;show(Math.round((x/w)*(s.length-1)))});
-    plot.addEventListener('pointerleave',()=>{tip.hidden=true;if(line)line.setAttribute('opacity','0');if(valEl)valEl.textContent=total;if(metaEl)metaEl.textContent=idle});
+    plot.addEventListener('pointerleave',()=>{tip.hidden=true;if(lblEl&&lblEl.dataset.base)lblEl.textContent=lblEl.dataset.base;if(line)line.setAttribute('opacity','0');if(valEl)valEl.textContent=total;if(metaEl)metaEl.textContent=idle});
     if(metaEl)metaEl.textContent=idle;
   });
 }
@@ -328,7 +331,7 @@ const chgKey=c=>c>0?'up':c<0?'down':'flat';
 function scaleOf(s,minPct){const lo=Math.min(...s),hi=Math.max(...s),rg=Math.max(hi-lo,Math.abs(s[0])*minPct)||1,mid=(hi+lo)/2;return{min:mid-rg/2,rg}}
 function sparkSVG(s,k,w=88,h=30){if(!s||s.length<2)return'';const {min,rg}=scaleOf(s,0.02),pad=2;const X=i=>(i/(s.length-1))*w,Y=v=>pad+(h-2*pad)*(1-(v-min)/rg);const d=s.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join('');const by=Y(s[0]).toFixed(1);return `<svg class="spark ${k}" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="${by}" x2="${w}" y2="${by}"/><path class="area" d="${d}L${w} ${h}L0 ${h}Z" fill="url(#g-${k})"/><path class="line" d="${d}"/></svg>`}
 function dayChartHTML(s,{label,value,meta='',k='flat',cls='',aria='',axis=['Apertura','Ahora']}){if(!s||s.length<2)return'';const w=600,h=150,{min,rg}=scaleOf(s,0.008),pad=10;const X=i=>(i/(s.length-1))*w,Y=v=>pad+(h-2*pad)*(1-(v-min)/rg);const d=s.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join('');const by=Y(s[0]).toFixed(1);return `<div class="daychart ${k} ${cls}"><div class="daychart-top"><div><span class="stat-label">${label}</span><span class="daychart-val">${value}</span></div><span class="daychart-meta">${meta}</span></div><div class="daychart-plot" role="img" aria-label="${escapeHTML(aria)}"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><line class="base" x1="0" y1="${by}" x2="${w}" y2="${by}"/><path d="${d}L${w} ${h}L0 ${h}Z" fill="url(#g-${k})"/><path class="line" d="${d}"/></svg><span class="daychart-dot" style="left:100%;top:${(Y(s[s.length-1])/h*100).toFixed(1)}%"></span></div><div class="daychart-axis"><span>${escapeHTML(axis[0])}</span><span>${escapeHTML(axis[1])}</span></div></div>`}
-function tickItem(a,dup){const x=dup?' class="tick dup" tabindex="-1" aria-hidden="true"':' class="tick"';const k=chgKey(a.chg);return a.t==='COLCAP'?`<button type="button"${x.replace('tick','tick tick-index')} onclick="switchView('market')"><b>COLCAP</b>${COLCAP.proxy?'':`<span class="px">${NUM_FMT.format(COLCAP.valor)}</span>`}<span class="chg ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span></button>`:`<button type="button"${x} onclick="openMarketAsset('${escapeHTML(a.t)}')">${logoHTML(a,true)}<b>${escapeHTML(a.n)}</b><span class="px">${formatCOP(a.price)}</span><span class="chg ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span></button>`}
+function tickItem(a,dup){const x=dup?' class="tick dup" tabindex="-1" aria-hidden="true"':' class="tick"';const k=chgKey(a.chg);return a.t==='COLCAP'?`<button type="button"${x.replace('tick','tick tick-index')} onclick="switchView('market')"><b>COLCAP</b>${COLCAP.proxy?'':`<span class="px">${NUM_FMT.format(COLCAP.valor)}</span>`}<span class="chg ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span></button>`:`<button type="button"${x} onclick="openMarketAsset('${escapeHTML(a.t)}')">${logoHTML(a,true)}<b>${escapeHTML(a.n)}</b><span class="px">${formatCOP(a.price)}</span><span class="chg ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span></button>`}
 function renderTicker(){const el=$('tickerTrack');if(!el)return;const list=[{t:'COLCAP',chg:COLCAP.chg},...POOL_EXPANDIDO];el.innerHTML=list.map(a=>tickItem(a,false)).join('')+list.map(a=>tickItem(a,true)).join('')}
 function renderLoginPreview(){const el=$('loginPreview');if(!el)return;const rows=[['ISA','+$19.700','up'],['PFBCOLOM','+$10.300','up'],['ECOPETROL','−$1.600','down']];el.innerHTML=rows.map(([t,v,k])=>{const a=assetOf(t);return `<div class="preview-row">${logoHTML(a,true)}<b>${escapeHTML(a.n)}</b>${sparkSVG(assetSeries(a),chgKey(a.chg),70,24)}<span class="chg ${k}">${v}</span></div>`}).join('')}
 function saveLogoKey(){logoKey=$('logoDevKey').value.trim();if(logoKey)localStorage.setItem('logo_dev_token',logoKey);else localStorage.removeItem('logo_dev_token');closeApiModal();renderLoginPreview();renderTicker();if($('appShell').classList.contains('app-shell-active'))refreshAll();showToast(logoKey?'Clave de logos guardada':'Se quitó la clave de logos')}
@@ -471,7 +474,7 @@ function renderHoldings(){const c=calculatePortfolio();if(activeSectorFilter!=='
   $('heroInvested').textContent=formatCOP(c.invested);
   $('heroGain').innerHTML=(c.total?gainHTML(c.gain,c.gain_pct):'—')+(Math.round(c.realized)?`<small class="summary-real">Con lo que ya vendiste: ${escapeHTML(signedCOP(c.realized))}</small>`:'');
   const up=c.delta>=0,ch=$('heroChange'),flat=Math.round(c.delta)===0;ch.textContent=!c.total?'—':flat?'Sin cambios hoy':(up?'▲ Hoy subió ':'▼ Hoy bajó ')+formatCOP(Math.abs(c.delta))+' ('+fmtPct(c.weightedChange,2)+')';ch.className='summary-chg '+(!c.total||flat?'flat':up?'up':'down');
-  $('colcapLine').textContent=COLCAP.proxy?`Como referencia, el COLCAP, ${COLCAP.frase}, hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`:`Como referencia, el COLCAP, ${COLCAP.frase}, está en ${NUM_FMT.format(COLCAP.valor)} puntos y hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`;
+  $('colcapLine').textContent=COLCAP.proxy?`Como referencia, el COLCAP, ${COLCAP.frase}, hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`:`Como referencia, el COLCAP, ${COLCAP.frase}, está en ${NUM_FMT.format(COLCAP.valor)} puntos y hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`;
   renderConcNotice(c);
   const list=PORTFOLIO.map((p,i)=>[p,i]).filter(([p])=>activeSectorFilter==='all'||p.sector===activeSectorFilter);
   $('holdingsBody').innerHTML=list.map(([p,i])=>holdCard(p,i,c)).join('')||`<div class="empty-state"><div class="empty-icon"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></div><h3>Tu portafolio está vacío</h3><p>Compra una acción de práctica para empezar.</p><button class="btn-primary" type="button" onclick="openTradeModal('buy')">Comprar una acción</button></div>`;
@@ -861,9 +864,9 @@ function renderTodayMain(m){
 <p class="hero-sentence">${headRich(m)}</p>
 ${liveDayChartHTML('todayPortChart',portfolioSeriesForRange(),{label:'Cuánto vale hoy',value:formatCOP(m.c.total),meta:'',k:chgKey(Math.round(m.c.gain)),aria:`Cómo ha ido tu portafolio: ${todayPortMove(m)} hoy`})}
 <div class="hero-stats">
-  <div class="hero-stat"><span class="stat-label">Cuánto movió tu dinero</span><span class="stat-value chg ${m.dir}">${escapeHTML(signedCOP(m.delta))}</span><span class="stat-note">${dirArrow(m.dir)} ${t4pct(m.pct)} % del portafolio</span></div>
+  <div class="hero-stat"><span class="stat-label">Cuánto movió tu dinero</span><span class="stat-value chg ${m.dir}">${escapeHTML(signedCOP(m.delta))}</span><span class="stat-note">${dirArrow(m.dir)} ${t4pct(m.pct)} % del portafolio</span></div>
   <div class="hero-stat"><span class="stat-label">La acción que más pesó</span><span class="stat-value stat-value-asset">${logoHTML(t.p,true)}<span>${escapeHTML(t.p.n)}</span></span><span class="stat-note chg ${k}">${t4chgTxt(t.chg)} · ${pctTxt(t.w)} de tu dinero</span></div>
-  <div class="hero-stat"><span class="stat-label">COLCAP hoy</span><span class="stat-value chg ${ck}">${dirArrow(ck)} ${t4pct(cc)} %</span><span class="stat-note">${vs}</span></div>
+  <div class="hero-stat"><span class="stat-label">COLCAP hoy</span><span class="stat-value chg ${ck}">${dirArrow(ck)} ${t4pct(cc)} %</span><span class="stat-note">${vs}</span></div>
 </div>
 <p class="hero-lead">${todayLead(m).map(escapeHTML).join(' ')}</p>
 <section class="panel trace-panel" aria-labelledby="traceTitle">
@@ -875,7 +878,7 @@ ${liveDayChartHTML('todayPortChart',portfolioSeriesForRange(),{label:'Cuánto va
   bindLiveCharts();
 }
 function compareRow(label,v,mx){const k=v>0?'up':v<0?'down':'flat',w=Math.max(Math.abs(v)/mx*100,3);return `<div class="compare-row"><span>${label}</span><div class="compare-track" aria-hidden="true"><span class="${k}" style="width:${w.toFixed(1)}%"></span></div><span class="chg ${k}">${dirArrow(k)} ${t4pct(v)} %</span></div>`}
-function renderTodayColcap(m){const c=COLCAP.chg,k=c>0?'up':c<0?'down':'flat';const mx=Math.max(Math.abs(c),m?Math.abs(m.pct):0,0.1);$('todayColcap').innerHTML=`<h2 class="rail-title">COLCAP hoy</h2><div class="cc-row">${COLCAP.proxy?`<span class="cc-val chg ${k}">${dirArrow(k)} ${t4pct(c)} %</span><span class="chg flat">Cambio de hoy</span>`:`<span class="cc-val">${NUM_FMT.format(COLCAP.valor)}</span><span class="chg ${k}">${t4chgTxt(c)}</span>`}</div><div class="cc-spark">${sparkSVG(colcapSeries(),k,300,52).replace('width="300"','width="100%"')}</div><p class="rail-sub">El COLCAP es ${COLCAP.frase}.${COLCAP.proxy?' Lo seguimos con el fondo ICOLCAP, que copia al índice. Por eso solo mostramos cuánto cambió.':''}</p>${m?`<div class="compare">${compareRow('Tu portafolio',m.pct,mx)}${compareRow('COLCAP',c,mx)}</div>`:''}<p class="cc-line">${escapeHTML(colcapLine(m))}</p>`}
+function renderTodayColcap(m){const c=COLCAP.chg,k=c>0?'up':c<0?'down':'flat';const mx=Math.max(Math.abs(c),m?Math.abs(m.pct):0,0.1);$('todayColcap').innerHTML=`<h2 class="rail-title">COLCAP hoy</h2><div class="cc-row">${COLCAP.proxy?`<span class="cc-val chg ${k}">${dirArrow(k)} ${t4pct(c)} %</span><span class="chg flat">Cambio de hoy</span>`:`<span class="cc-val">${NUM_FMT.format(COLCAP.valor)}</span><span class="chg ${k}">${t4chgTxt(c)}</span>`}</div><div class="cc-spark">${sparkSVG(colcapSeries(),k,300,52).replace('width="300"','width="100%"')}</div><p class="rail-sub">El COLCAP es ${COLCAP.frase}.${COLCAP.proxy?' Lo seguimos con el fondo ICOLCAP, que copia al índice. Por eso solo mostramos cuánto cambió.':''}</p>${m?`<div class="compare">${compareRow('Tu portafolio',m.pct,mx)}${compareRow('COLCAP',c,mx)}</div>`:''}<p class="cc-line">${escapeHTML(colcapLine(m))}</p>`}
 /* Noticias de Hoy: misma lógica que el radar (mismos datos y orden), en una versión compacta. */
 /* Las 3 noticias que más te afectan: TodayOut.news (mismo orden que GET /v1/news). */
 function todayNewsItems(){return localRadarResults(true).slice(0,3)}
@@ -1086,8 +1089,8 @@ function initDotField(){
   draw();
 }
 function wordSpans(text){return String(text||'').split(' ').filter(Boolean).map((w,i)=>`<span class="word" style="--d:${80+i*70}ms">${escapeHTML(w)}</span>`).join(' ')}
-function headRich(m){if(m.dir==='flat')return 'Hoy tu portafolio casi no cambió';const up=m.dir==='up',cls=up?'up':'down',verb=up?'subió':'bajó',amt=t4amt(m.delta);return `Hoy tu portafolio <span class="hl ${cls}">${verb} ${escapeHTML(t4pct(m.pct))} %</span>${amt?`, <span class="hl ${cls}">${escapeHTML(amt)}</span>`:''}`}
-function storyHeadHTML(m){if(m.dir==='flat')return wordSpans('Hoy tu portafolio casi no cambió');const up=m.dir==='up',cls=up?'up':'down',verb=up?'subió':'bajó';const bits=['Hoy','tu','portafolio',verb];const rest=[t4pct(m.pct)+' %'];const amt=t4amt(m.delta);if(amt)rest.push(...amt.split(' '));const all=bits.map(w=>({w,mark:w===verb})).concat(rest.map(w=>({w,mark:true})));return all.map((o,i)=>`<span class="word${o.mark?' hl '+cls:''}" style="--d:${70+i*65}ms">${escapeHTML(o.w+(i===bits.length&&amt?',':''))}</span>`).join(' ')}
+function headRich(m){if(m.dir==='flat')return 'Hoy tu portafolio casi no cambió';const up=m.dir==='up',cls=up?'up':'down',verb=up?'subió':'bajó',amt=t4amt(m.delta);return `Hoy tu portafolio <span class="hl ${cls}">${verb} ${escapeHTML(t4pct(m.pct))} %</span>${amt?`, <span class="hl ${cls}">${escapeHTML(amt)}</span>`:''}`}
+function storyHeadHTML(m){if(m.dir==='flat')return wordSpans('Hoy tu portafolio casi no cambió');const up=m.dir==='up',cls=up?'up':'down',verb=up?'subió':'bajó';const bits=['Hoy','tu','portafolio',verb];const rest=[t4pct(m.pct)+' %'];const amt=t4amt(m.delta);if(amt)rest.push(...amt.split(' '));const all=bits.map(w=>({w,mark:w===verb})).concat(rest.map(w=>({w,mark:true})));return all.map((o,i)=>`<span class="word${o.mark?' hl '+cls:''}" style="--d:${70+i*65}ms">${escapeHTML(o.w+(i===bits.length&&amt?',':''))}</span>`).join(' ')}
 function renderTodayStory(m){
   const el=$('todayModeStory');if(!el)return;
   if(!m){el.innerHTML=todayModesEmptyHTML();return}
@@ -1300,7 +1303,7 @@ function storySlides(m,t){
   return [
     `<div class="story-section-inner"><h2 class="story-h">${storyHeadHTML(m)}</h2><p class="story-p">${escapeHTML((todayLead(m)[0]||'').split('.').slice(0,1).join('.'))}.</p></div>`,
     `<div class="story-section-inner"><h2 class="story-h">${wordSpans('Cuánto movió tu dinero')}</h2><p class="story-metric chg ${m.dir}">${escapeHTML(signedCOP(m.delta))}</p></div>`,
-    `<div class="story-section-inner story-slide-action-inner"><p class="story-flash chg ${ck}">${escapeHTML(t4chgTxt(t.chg))}</p><h2 class="story-h">${wordSpans(t.p.n)}</h2><p class="story-p">${pctTxt(t.w)} de tu dinero.</p></div>`,
+    `<div class="story-section-inner story-slide-action-inner"><span class="story-logo">${logoHTML(t.p)}</span><p class="story-flash chg ${ck}">${escapeHTML(t4chgTxt(t.chg))}</p><h2 class="story-h">${wordSpans(t.p.n)}</h2><p class="story-p">${pctTxt(t.w)} de tu dinero.</p></div>`,
     `<div class="story-section-inner story-portfolio-inner"><h2 class="story-h">${wordSpans('Tu portafolio')}</h2><div class="home-split story-portfolio-split"><div class="story-donut-zone"><div class="home-donut story-donut-live" role="img" aria-label="Distribución del portafolio"><div class="home-donut-bg" aria-hidden="true"></div><div class="home-donut-lit" aria-hidden="true"></div><div class="home-donut-hole">${hole}</div></div><p class="story-donut-hint">Toca o desliza aquí para cambiar de pantalla</p></div><div class="home-split-picks" role="region" aria-label="Lista de tus acciones"><p class="home-split-picks-k">Tus acciones · desliza solo esta lista</p>${picks}<div class="home-split-picks-spacer" aria-hidden="true"></div></div></div></div>`,
     `<div class="story-section-inner"><h2 class="story-h">${wordSpans('Sigue por aquí')}</h2>${storyRoutesHTML(m)}</div>`
   ];
@@ -1312,14 +1315,16 @@ function renderTodayStudio(m){
   const news=todayNewsItems();const feat=news[0],side=news.slice(1,3);
   el.innerHTML=`<div class="studio-wrap">
     <header class="studio-hero"><p class="studio-eyebrow">The Trace · Colombia</p><h2 class="studio-title">${escapeHTML(todayHead(m))}</h2><p class="studio-lede">${escapeHTML(todayLead(m).slice(0,2).join(' '))}</p><button class="studio-cta" type="button" onclick="setTodayMode('tech')">Explorar datos</button></header>
-    <div class="studio-stats"><div class="studio-stat"><strong class="chg ${m.dir}">${t4pct(m.pct)} %</strong><span>Cambio de tu portafolio hoy</span></div><div class="studio-stat"><strong>${formatCompactCOP(m.c.total)}</strong><span>Valor total hoy</span></div><div class="studio-stat"><strong class="chg ${ck}">${t4pct(cc)} %</strong><span>COLCAP hoy</span></div></div>
-    <section class="studio-section"><h3 class="studio-section-h">Explora tu día</h3><p class="studio-section-p">Vista editorial con titulares claros y un acceso directo al detalle numérico del día.</p>
+    <div class="studio-stats"><div class="studio-stat"><strong class="chg ${m.dir}">${t4pct(m.pct)} %</strong><span>Cambio de tu portafolio hoy</span></div><div class="studio-stat"><strong>${formatCompactCOP(m.c.total)}</strong><span>Valor total hoy</span></div><div class="studio-stat"><strong class="chg ${ck}">${t4pct(cc)} %</strong><span>COLCAP hoy</span></div></div>
+    <section class="studio-section"><h3 class="studio-section-h">Explora tu día</h3><p class="studio-section-p">Elige por dónde seguir.</p>
       <div class="studio-cards">
-        <button type="button" class="studio-card" onclick="setTodayMode('tech')"><span class="studio-card-k">Datos</span><h3>Panel técnico</h3><p>Gráficas, trazas por acción, COLCAP y noticias con detalle.</p><span class="studio-card-link">Abrir vista técnica →</span></button>
+        <button type="button" class="studio-card" onclick="setTodayMode('tech')"><span class="studio-card-k">Datos</span><h3>Tu día en cifras</h3><p>Gráficas, lo que sumó o restó cada acción y el COLCAP.</p><span class="studio-card-link">Abrir →</span></button>
+        <button type="button" class="studio-card" onclick="switchView('portfolio')"><span class="studio-card-k">Portafolio</span><h3>Lo que tienes</h3><p>Cuánto vale, cuánto pagaste y de qué sector depende.</p><span class="studio-card-link">Abrir →</span></button>
+        <button type="button" class="studio-card" onclick="switchView('radar')"><span class="studio-card-k">Noticias</span><h3>Qué te afecta</h3><p>Lo que pasó con tus empresas, explicado en palabras simples.</p><span class="studio-card-link">Abrir →</span></button>
       </div>
     </section>
     <section class="studio-section"><h3 class="studio-section-h">Perspectivas de hoy</h3><p class="studio-section-p">${topSec?`Donde más tienes tu dinero: ${escapeHTML(topSec[0])}. `:''}Estas piezas conectan noticias con el peso de cada acción.</p>
-      <div class="studio-news">${feat?`<article class="studio-news-main"><span class="studio-tag">${escapeHTML(labelDir(feat.direccion||'Neutro'))}</span><h3>${escapeHTML(feat.titulo||feat.title||'Noticia destacada')}</h3><p>${escapeHTML(feat.impactWhy||feat.dek||'')}</p></article>`:`<article class="studio-news-main"><p>Hoy no hay noticias sobre tus acciones.</p></article>`}
+      <div class="studio-news">${feat?`<article class="studio-news-main">${mediaHTML(photoFor(feat),{w:900})}<span class="studio-tag">${escapeHTML(labelDir(feat.direccion||'Neutro'))}</span><h3>${escapeHTML(feat.titulo||feat.title||'Noticia destacada')}</h3><p>${escapeHTML(feat.impactWhy||feat.dek||'')}</p></article>`:`<article class="studio-news-main"><p>Hoy no hay noticias sobre tus acciones.</p></article>`}
         <div class="studio-news-side">${side.length?side.map(n=>`<div><span class="studio-tag">${escapeHTML(assetName(n.t||n.ticker))}</span><h4>${escapeHTML(n.titulo||n.title||'')}</h4><p>${escapeHTML((n.impactWhy||n.dek||'').slice(0,120))}…</p></div>`).join(''):'<p style="color:var(--studio-muted);font-size:14px">No hay más noticias por hoy.</p>'}</div>
       </div>
     </section>
@@ -1336,7 +1341,9 @@ const ADS=[
 function adHTML(off){const d=new Date(),day=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),a=ADS[(day+off)%ADS.length];return `<aside class="ad" aria-label="Publicidad"><div class="ad-top"><span class="ad-tag">Publicidad</span><button class="btn-ghost ad-off" type="button" onclick="openPlanSheet()">Quitar anuncios</button></div><div class="ad-body"><div class="ad-logo" style="background:${a.c}" aria-hidden="true">${a.i}</div><div><div class="ad-brand">${escapeHTML(a.b)}</div><p class="ad-line">${escapeHTML(a.l)}</p></div></div><p class="ad-note">Los anuncios no usan tu portafolio.</p></aside>`}
 /* Anuncio propio: invita a marcas a anunciarse. Se muestra en Portafolio; en Hoy rota un patrocinador. */
 function houseAdHTML(){return `<aside class="ad ad-house" aria-label="Publicidad"><div class="ad-top"><span class="ad-tag">Publicidad</span><button class="btn-ghost ad-off" type="button" onclick="openPlanSheet()">Quitar anuncios</button></div><div class="ad-body"><div class="ad-logo ad-logo-house" aria-hidden="true"><svg class="brand-mark" viewBox="0 0 24 24"><use href="#i-logo"/></svg></div><div><div class="ad-brand">Anúnciate en The Trace</div><p class="ad-line">Llega a personas que están aprendiendo a invertir en Colombia.</p></div></div><div class="ad-house-foot"><a class="btn-secondary btn-sm" href="mailto:thetracefinance@gmail.com?subject=Quiero%20anunciarme%20en%20The%20Trace">Escríbenos</a><p class="ad-note">Los anuncios no usan tu portafolio.</p></div></aside>`}
-function renderAds(){const a=$('adSlotToday'),b=$('adSlotPortfolio');if(a)a.innerHTML=adHTML(0);if(b)b.innerHTML=houseAdHTML()}
+/* Espacio publicitario neutro: no mostramos marcas inventadas. Cuando haya un aliado real, va aquí. */
+function adSpaceHTML(){return `<aside class="ad ad-space" aria-label="Espacio publicitario"><span class="ad-space-k">Espacio publicitario</span><p>Aquí va el anuncio de una marca aliada.</p><div class="ad-space-foot"><a href="mailto:thetracefinance@gmail.com?subject=Quiero%20anunciar%20en%20The%20Trace">¿Quieres anunciar aquí?</a><button type="button" onclick="openPlanSheet()">Sin anuncios con Trace+</button></div></aside>`}
+function renderAds(){const a=$('adSlotToday'),b=$('adSlotPortfolio');if(a)a.innerHTML=adSpaceHTML();if(b)b.innerHTML=adSpaceHTML()}
 /* Plan de pago Trace+. Sin pagos: el botón solo muestra un aviso. */
 let planReturnFocus=null;
 const planIsOpen=()=>$('planSheet').classList.contains('open');
@@ -1433,7 +1440,7 @@ document.addEventListener('keydown',e=>{
    ========================================================================= */
 document.documentElement.classList.add('js');
 /* Portada e inicio de sesión: fotos del banco de imágenes. Si una no carga, queda la ilustración. */
-const ART_PHOTO={towers:'electrica-1',bogota:'seguros-1',login:'bancos-1'};
+const ART_PHOTO={towers:'electrica-5',bogota:'bogota-1',login:'bancos-4'};
 document.querySelectorAll('img[data-art]').forEach(i=>{const k=ART_PHOTO[i.dataset.art];const fb=artURI(i.dataset.art==='login'?'bogota':i.dataset.art);if(!k){i.src=fb;return}i.onerror=()=>{i.onerror=null;i.src=fb};i.src='/img/sectores/'+k+'.webp'});
 const safe=(fn,name)=>{try{fn()}catch(e){console.warn('[visual] '+name,e)}};
 
@@ -1458,7 +1465,7 @@ function openLogin(){document.body.classList.remove('on-landing');$('loginScreen
 function backToLanding(){magicBack();showLanding()}
 let ldBound=false,ldTick=false,ldStep=-1;
 function initLanding(){if(ldBound)return;ldBound=true;
-  const mq=$('ldMarquee');if(mq&&!mq.children.length){const items=POOL_EXPANDIDO.map(a=>`<span>${logoHTML(a,true)}${escapeHTML(a.n)}<em class="${a.chg>=0?'up':'down'}">${a.chg>=0?'▲':'▼'} ${t4pct(a.chg)} %</em></span>`).join('');mq.innerHTML=items+items}
+  const mq=$('ldMarquee');if(mq&&!mq.children.length){const items=POOL_EXPANDIDO.map(a=>`<span>${logoHTML(a,true)}${escapeHTML(a.n)}<em class="${a.chg>=0?'up':'down'}">${a.chg>=0?'▲':'▼'} ${t4pct(a.chg)} %</em></span>`).join('');mq.innerHTML=items+items}
   const ft=$('ldFillTxt');if(ft&&!ft.dataset.split){ft.dataset.split='1';const hl=['explicamos','pasó,','tú.'];ft.innerHTML=ft.textContent.trim().split(/\s+/).map(w=>`<span class="fw${hl.includes(w)?' hl':''}">${escapeHTML(w)}</span>`).join(' ')}
   observeRv([...document.querySelectorAll('#landing .rv')]);
   document.querySelectorAll('.ld-card').forEach(c=>c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')}));
@@ -1498,7 +1505,7 @@ function traceRows(m){
   const body=steps.map((s,i)=>{const r=s.r,k=r.d>0.5?'up':r.d<-0.5?'down':'flat',ck=chgKey(r.chg),act=activeTraceTicker===r.p.t;const l=pos(Math.min(s.a,s.b)),w=Math.max(Math.abs(pos(s.b)-pos(s.a)),.8);const tk=escapeHTML(r.p.t);
     return `<li class="trace-row wf${act?' is-active':''}" style="--i:${i}" role="button" tabindex="0" onclick="setActiveTrace('${tk}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setActiveTrace('${tk}')}"><span class="trace-name">${logoHTML(r.p,true)}<span><strong>${escapeHTML(r.p.n)}</strong><small>${pctTxt(r.w)} de tu dinero</small></span></span><span class="trace-bar wf" style="--zero:${zero}%" aria-hidden="true"><span class="${k}" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%"></span></span><span class="trace-val"><strong class="chg ${k}">${signedCOP(r.d)}</strong><small class="chg ${ck}">${t4chgTxt(r.chg)}</small></span></li>`}).join('');
   const tk=m.delta>0.5?'up':m.delta<-0.5?'down':'flat',tl=pos(Math.min(0,cum)),tw=Math.max(Math.abs(pos(cum)-pos(0)),.8);
-  const total=`<li class="trace-row wf total" style="--i:${steps.length}"><span class="trace-name"><span class="wf-sum" aria-hidden="true">=</span><span><strong>Tu día</strong><small>La suma de todas tus acciones</small></span></span><span class="trace-bar wf" style="--zero:${zero}%" aria-hidden="true"><span class="${tk}" style="left:${tl.toFixed(2)}%;width:${tw.toFixed(2)}%"></span></span><span class="trace-val"><strong class="chg ${tk}">${signedCOP(m.delta)}</strong><small class="chg ${m.dir}">${dirArrow(m.dir)} ${t4pct(m.pct)} %</small></span></li>`;
+  const total=`<li class="trace-row wf total" style="--i:${steps.length}"><span class="trace-name"><span class="wf-sum" aria-hidden="true">=</span><span><strong>Tu día</strong><small>La suma de todas tus acciones</small></span></span><span class="trace-bar wf" style="--zero:${zero}%" aria-hidden="true"><span class="${tk}" style="left:${tl.toFixed(2)}%;width:${tw.toFixed(2)}%"></span></span><span class="trace-val"><strong class="chg ${tk}">${signedCOP(m.delta)}</strong><small class="chg ${m.dir}">${dirArrow(m.dir)} ${t4pct(m.pct)} %</small></span></li>`;
   return axis+body+total}
 let wfSeen=false;
 const _renderTodayMain=renderTodayMain;
@@ -1522,7 +1529,7 @@ const _renderInsights=renderInsights;renderInsights=function(){_renderInsights()
 /* =================== ESTUDIO =================== */
 const _renderTodayStudio=renderTodayStudio;
 renderTodayStudio=function(m){_renderTodayStudio(m);const hero=document.querySelector('#todayModeStudio .studio-hero');if(!hero||!m)return;
-  const p=PHOTOS[SECTOR_PHOTO[m.top.p.sector]||'bogota'];
+  const p=photoFor({t:m.top.p.t,id:new Date().getDate()});
   hero.insertAdjacentHTML('afterbegin',`<div class="studio-hero-media" aria-hidden="true"><img src="${photoUrl(p,1600)}" alt="" onerror="this.remove()"></div>`);
   
   revealItems($('todayModeStudio'),'.studio-section,.studio-stat,.studio-card');studioScroll()};
@@ -1534,7 +1541,7 @@ addEventListener('scroll',studioScroll,{passive:true});
 const _openAssetDetail=openAssetDetail;
 openAssetDetail=function(t,keep){_openAssetDetail(t,keep);const a=assetOf0(t);if(!a)return;const head=document.querySelector('#assetDrawer .drawer-head');
   let mini=$('drawerMini');if(!mini&&head){head.querySelector('.close-btn').insertAdjacentHTML('beforebegin','<div class="drawer-mini" id="drawerMini" aria-hidden="true"></div>');mini=$('drawerMini')}
-  if(mini)mini.innerHTML=`<strong>${formatCOP(a.price)}</strong><span class="chg ${chgKey(a.chg)}">${dirArrow(chgKey(a.chg))} ${t4pct(a.chg)} %</span>`;
+  if(mini)mini.innerHTML=`<strong>${formatCOP(a.price)}</strong><span class="chg ${chgKey(a.chg)}">${dirArrow(chgKey(a.chg))} ${t4pct(a.chg)} %</span>`;
   const body=$('drawerBody');markCharts(body,'drawer|'+t+'|'+drawerRange);
   if(body&&!body.dataset.mini){body.dataset.mini='1';body.addEventListener('scroll',()=>{const y=body.scrollTop;$('drawerMini')?.classList.toggle('show',y>150);const hero=body.querySelector('.drawer-hero');if(hero)hero.style.setProperty('--dy',Math.min(y,300))},{passive:true})}
   if(!keep){mini&&mini.classList.remove('show')}};
@@ -1576,7 +1583,7 @@ function bindDonut(root,items,fmt){const dn=root.querySelector('.dn');if(!dn)ret
 let pfLast=null;
 renderHoldings=function(){const c=calculatePortfolio();if(activeSectorFilter!=='all'&&!c.sectorTotals[activeSectorFilter])activeSectorFilter='all';
   $('heroAssets').textContent=PORTFOLIO.length?`${PORTFOLIO.length} ${PORTFOLIO.length===1?'acción':'acciones'} · ${freshShort()}`:'Aún no tienes acciones';
-  $('colcapLine').textContent=COLCAP.proxy?`Como referencia, el COLCAP hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`:`Como referencia, el COLCAP está en ${NUM_FMT.format(COLCAP.valor)} puntos y hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`;
+  $('colcapLine').textContent=COLCAP.proxy?`Como referencia, el COLCAP hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`:`Como referencia, el COLCAP está en ${NUM_FMT.format(COLCAP.valor)} puntos y hoy ${COLCAP.chg>=0?'subió':'bajó'} ${t4pct(COLCAP.chg)} %.`;
   renderConcNotice(c);renderPfHistory();renderPfDonut(c);renderSectorFilters(c);
   const list=PORTFOLIO.map((p,i)=>[p,i]).filter(([p])=>activeSectorFilter==='all'||p.sector===activeSectorFilter);
   $('holdingsBody').innerHTML=list.map(([p,i])=>pfCard(p,i)).join('')||`<div class="empty-state"><div class="empty-icon"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></div><h3>Tu portafolio está vacío</h3><p>Compra una acción de práctica para empezar.</p><button class="btn-primary" type="button" onclick="openTradeModal('buy')">Comprar una acción</button></div>`;
@@ -1587,7 +1594,7 @@ function pfCard(p,i){const tk=escapeHTML(p.t),k=chgKey(Math.round(p.gain)),col=s
   return `<article class="pfc${sel?' is-sel':''}${dim?' is-dim':''}" style="--c:${col}" data-t="${tk}">
   <button class="pfc-hit" type="button" aria-label="Ver detalle de ${escapeHTML(p.n)}" onclick="pfOpen(this,${i})"></button>
   <div class="pfc-spark" aria-hidden="true">${sparkSVG(assetSeries(p),chgKey(p.chg),240,70).replace('width="240"','width="100%"').replace('height="70"','height="100%"')}</div>
-  <div class="pfc-top">${logoHTML(p)}<div class="pfc-id"><strong>${escapeHTML(shortName(p.n))}</strong><span><i class="sec-dot" style="--c:${col}"></i>${escapeHTML(p.sector)}</span></div><span class="pill ${chgKey(p.chg)}">${dirArrow(chgKey(p.chg))} ${t4pct(p.chg)} %</span></div>
+  <div class="pfc-top">${logoHTML(p)}<div class="pfc-id"><strong>${escapeHTML(shortName(p.n))}</strong><span><i class="sec-dot" style="--c:${col}"></i>${escapeHTML(p.sector)}</span></div><span class="pill ${chgKey(p.chg)}">${dirArrow(chgKey(p.chg))} ${t4pct(p.chg)} %</span></div>
   <div class="pfc-val"><span>Vale hoy</span><strong>${formatCOP(p.value)}</strong></div>
   <div class="pfc-row"><span class="pill ${k} pill-lg">${escapeHTML(signedCOP(p.gain))} · ${fmtPct(p.gain_pct)}</span><span class="pfc-q">${qtyTxt(p.shares)} acciones · costo promedio ${formatCOP(p.avg_cost)}</span></div>
   <div class="pfc-w"><div class="pfc-w-top"><span>Qué parte de tu dinero</span><b>${pctTxt(p.weight_pct)}</b></div><div class="pfc-meter"><i style="--w:${Math.min(p.weight_pct,100)}%"></i></div></div>
@@ -1627,7 +1634,7 @@ runPortfolioAI=async function(q){const out=$('insightSummary');await _runPortfol
 function miniBarUpdate(){let b=$('miniBar');if(!b){document.body.insertAdjacentHTML('beforeend','<div class="minibar" id="miniBar" aria-hidden="true"><div class="mb-in"><span class="mb-k"></span><strong class="mb-v"></strong><span class="mb-c"></span><button class="btn-primary btn-sm mb-btn" type="button" tabindex="-1" onclick="openTradeModal(\'buy\')">Comprar o vender</button></div></div>');b=$('miniBar')}
   const v=document.body.dataset.currentView;const tech=v==='today'&&document.body.classList.contains('today-mode-tech');const c=calculatePortfolio();
   if(v==='portfolio'){b.querySelector('.mb-k').textContent='Tu portafolio';b.querySelector('.mb-v').textContent=formatCOP(c.total);const k=chgKey(Math.round(c.gain));b.querySelector('.mb-c').innerHTML=`<span class="chg ${k}">${escapeHTML(signedCOP(c.gain))}</span>`;b.querySelector('.mb-btn').hidden=false}
-  else if(tech&&PORTFOLIO.length){const m=todayModel();b.querySelector('.mb-k').textContent='Hoy';b.querySelector('.mb-v').innerHTML=`<span class="chg ${m.dir}">${dirArrow(m.dir)} ${t4pct(m.pct)} %</span>`;b.querySelector('.mb-c').innerHTML=`<span class="chg ${m.dir}">${escapeHTML(signedCOP(m.delta))}</span>`;b.querySelector('.mb-btn').hidden=true}
+  else if(tech&&PORTFOLIO.length){const m=todayModel();b.querySelector('.mb-k').textContent='Hoy';b.querySelector('.mb-v').innerHTML=`<span class="chg ${m.dir}">${dirArrow(m.dir)} ${t4pct(m.pct)} %</span>`;b.querySelector('.mb-c').innerHTML=`<span class="chg ${m.dir}">${escapeHTML(signedCOP(m.delta))}</span>`;b.querySelector('.mb-btn').hidden=true}
   miniBarScroll()}
 function miniBarScroll(){const b=$('miniBar');if(!b)return;const v=document.body.dataset.currentView;const on=(v==='portfolio'||(v==='today'&&document.body.classList.contains('today-mode-tech')))&&scrollY>360&&$('appShell').classList.contains('app-shell-active');b.classList.toggle('show',on)}
 addEventListener('scroll',()=>requestAnimationFrame(miniBarScroll),{passive:true});
@@ -1660,7 +1667,7 @@ renderOnboarding=function(){const hint=$('obTopHint');if(hint)hint.textContent=O
       <span class="obc-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>
       <span class="obc-top">${logoHTML(a)}</span>
       <span class="obc-name">${escapeHTML(shortName(a.n))}</span><span class="obc-sec"><i></i>${escapeHTML(a.sector)}</span>
-      <span class="obc-foot"><span class="obc-price">${formatCOP(a.price)}</span><span class="pill ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span></span></button>`}).join('')}</div>`;
+      <span class="obc-foot"><span class="obc-price">${formatCOP(a.price)}</span><span class="pill ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span></span></button>`}).join('')}</div>`;
     $('obFoot').innerHTML=`<div class="ob-tray" id="obTray" aria-label="Empresas elegidas"><span class="ob-tray-k">Tu portafolio</span><span class="ob-tray-logos" id="obTrayLogos"></span></div><p class="ob-next-hint" id="obNextHint">Luego decides cuántos pesos de práctica repartir entre ellas.</p><div class="ob-foot-btns"><button class="btn-ghost" type="button" onclick="obUseSeed()">Ver un portafolio de ejemplo</button><button class="btn-primary" type="button" id="obNext" onclick="obGo(2)" disabled>Continuar</button></div>`;
     document.querySelectorAll('.obc').forEach(c=>c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')}));
     revealItems($('obBody'),'.obc');obUpdate()}
@@ -1756,7 +1763,7 @@ renderTodayMain=function(m){_renderTodayMain3(m);const el=$('todayMain');if(!el|
   const hs=el.querySelector('.hero-sentence');if(hs){if(!renderTodayMain._tw){renderTodayMain._tw=1;typeIn(hs)}hs.insertAdjacentHTML('beforeend',`<svg class="hs-pulse ${m.dir}" viewBox="0 0 600 24" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 14 H230 L248 14 L262 3 L280 22 L296 9 L308 14 H600"/></svg>`)}
   const stats=el.querySelectorAll('.hero-stat');
   if(stats[1]){const s=sparkSVG(assetSeries(m.top.p),chgKey(m.top.chg),140,30);stats[1].insertAdjacentHTML('beforeend',`<span class="hs-spark">${s}</span>`)}
-  if(stats[2]){const mx=Math.max(Math.abs(m.pct),Math.abs(COLCAP.chg),.1);const bar=(l,v)=>`<div class="race-r"><span>${l}</span><span class="race-t"><i class="${chgKey(v)}" style="--w:${(Math.abs(v)/mx*100).toFixed(1)}%"></i></span><b class="chg ${chgKey(v)}">${dirArrow(chgKey(v))} ${t4pct(v)} %</b></div>`;stats[2].querySelector('.stat-note')?.insertAdjacentHTML('beforebegin',`<div class="race">${bar('Tú',m.pct)}${bar('COLCAP',COLCAP.chg)}</div>`)}
+  if(stats[2]){const mx=Math.max(Math.abs(m.pct),Math.abs(COLCAP.chg),.1);const bar=(l,v)=>`<div class="race-r"><span>${l}</span><span class="race-t"><i class="${chgKey(v)}" style="--w:${(Math.abs(v)/mx*100).toFixed(1)}%"></i></span><b class="chg ${chgKey(v)}">${dirArrow(chgKey(v))} ${t4pct(v)} %</b></div>`;stats[2].querySelector('.stat-note')?.insertAdjacentHTML('beforebegin',`<div class="race">${bar('Tú',m.pct)}${bar('COLCAP',COLCAP.chg)}</div>`)}
   el.querySelectorAll('.hero-stat').forEach((s,i)=>{s.classList.add('rv-i');s.style.setProperty('--i',i)});observeRv([...el.querySelectorAll('.hero-stat')]);
   const tp=el.querySelector('.trace-panel');if(tp&&!tp.classList.contains('wf-done')){tp.classList.add('wf-wait');const o=new IntersectionObserver(es=>{if(es[0].isIntersecting){tp.classList.add('wf-go');o.disconnect()}},{threshold:.15});o.observe(tp);setTimeout(()=>tp.classList.add('wf-go'),6000)}
   el.querySelectorAll('.trace-row.is-active').forEach(r=>{const t=(r.getAttribute('onclick')||'').match(/'([^']+)'/)?.[1];const row=m.rows.find(x=>x.p.t===t);if(!row)return;const cz=todayCause(row.p,row.chg);r.insertAdjacentHTML('beforeend',`<span class="trace-why">${cz?`Por qué: ${escapeHTML(cz.text)}.`:'Hoy no hay una noticia clara que lo explique.'}</span>`)});
@@ -1854,7 +1861,7 @@ const MK={f:'all',v:'list'};
 function mkSet(k,v){MK[k]=v;renderMarket()}
 renderMarket=function(){const all=[...POOL_EXPANDIDO].sort((a,b)=>Math.abs(b.chg)-Math.abs(a.chg)),n=all.length,up=all.filter(a=>a.chg>0).length,dn=all.filter(a=>a.chg<0).length;
   const ck=chgKey(COLCAP.chg),mf=$('marketFresh');if(mf)mf.textContent=freshTxt();
-  const s=$('mkSent');if(s)s.innerHTML=`Hoy el mercado <span class="chg ${ck}">${COLCAP.chg>0?'subió':COLCAP.chg<0?'bajó':'casi no cambió'} ${t4pct(COLCAP.chg)} %</span>.`;
+  const s=$('mkSent');if(s)s.innerHTML=`Hoy el mercado <span class="chg ${ck}">${COLCAP.chg>0?'subió':COLCAP.chg<0?'bajó':'casi no cambió'} ${t4pct(COLCAP.chg)} %</span>.`;
   const b=$('mkBreadth');if(b)b.innerHTML=`<div class="mk-br"><i class="up" style="--w:${up/n*100}%"></i><i class="down" style="--w:${dn/n*100}%"></i></div><p><b class="chg up">${up} subieron</b> · <b class="chg down">${dn} bajaron</b>${n-up-dn?` · ${n-up-dn} sin cambio`:''}</p>`;
   document.querySelectorAll('#mkFilters [data-f]').forEach(x=>{const on=x.dataset.f===MK.f;x.classList.toggle('active',on);x.setAttribute('aria-pressed',String(on))});
   const sw=document.querySelector('.mk-switch');if(sw){sw.dataset.on=MK.v;sw.querySelectorAll('[data-mk]').forEach(x=>x.classList.toggle('active',x.dataset.mk===MK.v))}
@@ -1862,9 +1869,9 @@ renderMarket=function(){const all=[...POOL_EXPANDIDO].sort((a,b)=>Math.abs(b.chg
   const L=$('moversList'),T=$('marketHeatmap');L.hidden=MK.v!=='list';T.hidden=MK.v!=='tiles';
   const own=t=>PORTFOLIO.find(p=>p.t===t);
   if(!list.length){L.innerHTML=T.innerHTML=`<div class="empty-state"><h3>${MK.f==='mine'?'Aún no tienes acciones':'Nada con este filtro'}</h3><p>${MK.f==='mine'?'Compra una acción de práctica para verla aquí.':'Prueba otro filtro.'}</p></div>`;return}
-  L.innerHTML=list.map(a=>{const k=chgKey(a.chg),tk=escapeHTML(a.t),o=own(a.t);return `<div class="mk-row" data-t="${tk}" role="button" tabindex="0" aria-label="Ver ${escapeHTML(a.n)}" onclick="openMarketAsset('${tk}')" onkeydown="if(event.key==='Enter'){openMarketAsset('${tk}')}">${logoHTML(a)}<div class="mk-id"><strong>${escapeHTML(shortName(a.n))}${o?`<span class="mk-own">Tienes · ${pctTxt(o.weight_pct)}</span>`:''}</strong><span>${escapeHTML(a.t)} · <i class="sec-dot" style="--c:${sectorColor(a.sector)}"></i>${escapeHTML(a.sector)}</span></div><span class="mk-spark">${sparkSVG(assetSeries(a),k,120,34)}</span><strong class="mk-price">${formatCOP(a.price)}</strong><span class="pill ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span><button class="btn-secondary btn-sm mk-buy" type="button" onclick="event.stopPropagation();openTradeModal('buy','${tk}')">Comprar</button></div>`}).join('');
+  L.innerHTML=list.map(a=>{const k=chgKey(a.chg),tk=escapeHTML(a.t),o=own(a.t);return `<div class="mk-row" data-t="${tk}" role="button" tabindex="0" aria-label="Ver ${escapeHTML(a.n)}" onclick="openMarketAsset('${tk}')" onkeydown="if(event.key==='Enter'){openMarketAsset('${tk}')}">${logoHTML(a)}<div class="mk-id"><strong>${escapeHTML(shortName(a.n))}${o?`<span class="mk-own">Tienes · ${pctTxt(o.weight_pct)}</span>`:''}</strong><span>${escapeHTML(a.t)} · <i class="sec-dot" style="--c:${sectorColor(a.sector)}"></i>${escapeHTML(a.sector)}</span></div><span class="mk-spark">${sparkSVG(assetSeries(a),k,120,34)}</span><strong class="mk-price">${formatCOP(a.price)}</strong><span class="pill ${k}">${dirArrow(k)} ${t4pct(a.chg)} %</span><button class="btn-secondary btn-sm mk-buy" type="button" onclick="event.stopPropagation();openTradeModal('buy','${tk}')">Comprar</button></div>`}).join('');
   const mx=Math.max(...list.map(a=>Math.abs(a.chg)),.1);
-  T.innerHTML=list.map(a=>{const k=chgKey(a.chg),tk=escapeHTML(a.t),o=own(a.t),al=(.08+Math.abs(a.chg)/mx*.32).toFixed(3);return `<button type="button" class="mk-tile ${k}" data-t="${tk}" style="--al:${al}" onclick="openMarketAsset('${tk}')"><span class="mk-tile-top">${logoHTML(a,true)}${o?'<span class="mk-own">Tienes</span>':''}</span><b>${escapeHTML(shortName(a.n))}</b><span class="mk-tile-v">${dirArrow(k)} ${t4pct(a.chg)} %</span><span class="mk-tile-p">${formatCOP(a.price)}</span></button>`}).join('');
+  T.innerHTML=list.map(a=>{const k=chgKey(a.chg),tk=escapeHTML(a.t),o=own(a.t),al=(.08+Math.abs(a.chg)/mx*.32).toFixed(3);return `<button type="button" class="mk-tile ${k}" data-t="${tk}" style="--al:${al}" onclick="openMarketAsset('${tk}')"><span class="mk-tile-top">${logoHTML(a,true)}${o?'<span class="mk-own">Tienes</span>':''}</span><b>${escapeHTML(shortName(a.n))}</b><span class="mk-tile-v">${dirArrow(k)} ${t4pct(a.chg)} %</span><span class="mk-tile-p">${formatCOP(a.price)}</span></button>`}).join('');
   revealItems(L,'.mk-row');revealItems(T,'.mk-tile');
   document.querySelectorAll('.mk-row,.mk-tile').forEach(el=>el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--mx',(e.clientX-r.left)+'px');el.style.setProperty('--my',(e.clientY-r.top)+'px')}))};
 
@@ -1989,3 +1996,7 @@ else{try{const ses=localStorage.getItem('trace_session');if(ses)enterApp(ses);el
 try{if(localStorage.getItem('trace_story_used'))document.body.classList.add('story-used')}catch{}
 ['storyGo'].forEach(k=>{const f=window[k];if(typeof f!=='function')return;
   window[k]=function(){document.body.classList.add('story-used');try{localStorage.setItem('trace_story_used','1')}catch{}return f.apply(this,arguments)}});
+
+function storyArrows(){const n=document.querySelectorAll('#todayModeStory .story-section').length,nx=document.querySelector('#todayModeStory .story-nav-next'),pv=document.querySelector('#todayModeStory .story-nav-prev');
+  if(nx)nx.classList.toggle('is-off',storySlide>=n-1);if(pv)pv.classList.toggle('is-off',storySlide<=0)}
+['storyGo','renderTodayStory'].forEach(k=>{const f=window[k];if(typeof f!=='function')return;window[k]=function(){const r=f.apply(this,arguments);storyArrows();setTimeout(storyArrows,450);return r}});
