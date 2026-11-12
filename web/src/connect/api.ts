@@ -5,9 +5,11 @@ const BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? 'http://lo
 
 export class ApiError extends Error {
   status: number
-  constructor(status: number, detail: string) {
+  code: string | null
+  constructor(status: number, detail: string, code: string | null = null) {
     super(detail)
     this.status = status
+    this.code = code
   }
 }
 
@@ -33,6 +35,8 @@ export async function api<T>(ruta: string, o: Opciones = {}): Promise<T> {
     const datos = await r.json().catch(() => ({}))
     if (!r.ok) {
       const d = datos?.detail
+      // El detalle llega como texto, como lista (errores de validación) o como {code, message}.
+      if (d && typeof d === 'object' && !Array.isArray(d) && d.message) throw new ApiError(r.status, d.message, d.code ?? null)
       const texto = typeof d === 'string' ? d : Array.isArray(d) ? (d[0]?.msg ?? 'Revisa los datos.') : 'Algo salió mal. Inténtalo de nuevo.'
       throw new ApiError(r.status, texto)
     }

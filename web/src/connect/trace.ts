@@ -5,6 +5,7 @@ import { api, ApiError } from './api'
 import { mensajeDeError, persona, supabase, type Persona } from './supabase'
 
 type Num = number
+type Cuota = { used: Record<string, number>; limit: number }
 type Asset = { ticker: string; name: string; sector: string; price: Num; change_pct: Num; updated_at: string; drivers?: string | null }
 type Colcap = { points: Num; change_pct: Num; day: string; updated_at: string; proxy: boolean }
 type Punto = { day: string; price: Num }
@@ -88,13 +89,22 @@ export function crearTrace(mercado: Mercado | null) {
     },
 
     /** Lo de la persona: sus movimientos y las noticias (con qué parte de su dinero tocan). */
-    async cargarPersona(): Promise<{ tx: Tx[]; news: Noticia[] }> {
-      await api('/v1/me') // crea la fila del usuario la primera vez
+    async cargarPersona(): Promise<{ tx: Tx[]; news: Noticia[]; quota: Cuota | null }> {
+      const me = await api<{ ai_quota?: Cuota | null }>('/v1/me') // crea la fila del usuario la primera vez
       const [tx, news] = await Promise.all([
         api<Tx[]>('/v1/portfolio/transactions'),
         api<Noticia[]>('/v1/news?mine=false').catch(() => []),
       ])
-      return { tx: tx.map(txNum), news }
+      return { tx: tx.map(txNum), news, quota: me.ai_quota ?? null }
+    },
+
+    /** Trace AI. El servidor arma el contexto con el portafolio: la web solo manda la pregunta. */
+    ia(tipo: 'today' | 'portfolio' | 'chat' | 'explain', pregunta?: string) {
+      return api<{ text: string; source: 'ia' | 'cache' | 'respaldo'; remaining: number }>(`/v1/ai/${tipo}`, {
+        method: 'POST',
+        body: { question: pregunta || null },
+        timeoutMs: 40000,
+      })
     },
 
     sync: {

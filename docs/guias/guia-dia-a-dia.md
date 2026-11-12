@@ -373,15 +373,15 @@ Para terminar lo que quedó pendiente y dejarlo fusionado.
 
 - [x] Tablas `AiUsage` (usuario, fecha, tipo, conteo), `AiCache` y `WaitlistEntry`, con su migración.
 - [x] `POST /v1/waitlist/trace-plus` (no duplica) y `GET /v1/me` con `ai_quota` (usados y límite del día).
-- [ ] Límite propio para `/v1/ai/*`: 10 peticiones por minuto por usuario.
+- [x] Límite propio para `/v1/ai/*`: 10 peticiones por minuto por usuario.
 
 * **Listo cuando:** las rutas aparecen en `/docs` y sus pruebas pasan.
 
 **Juan Angel · filtro, cuota y caché (2 h)**
 
-- [ ] `api/app/ai/guardrails.py`: palabras prohibidas (compra, compre, vende, venda, aprovecha, deberías, te recomiendo, mantén) y `violates_rules(texto)`. Si la respuesta las tiene, se pide una vez más; si vuelve a fallar, se responde con el respaldo de `core/fallback.py`.
-- [ ] `ai/quota.py`: cuenta usos en `AiUsage`; al pasar 5 por tipo al día responde 429 con `AI_QUOTA`. `ai/cache.py`: guarda respuestas 6 horas.
-- [ ] Prueba con un Gemini falso que responde «Deberías comprar»: sale el respaldo.
+- [x] `api/app/ai/guardrails.py`: palabras prohibidas (compra, compre, vende, venda, aprovecha, deberías, te recomiendo, mantén) y `violates_rules(texto)`. Si la respuesta las tiene, se pide una vez más; si vuelve a fallar, se responde con el respaldo de `core/fallback.py`.
+- [x] `ai/quota.py`: cuenta usos en `AiUsage`; al pasar 5 por tipo al día responde 429 con `AI_QUOTA`. `ai/cache.py`: guarda respuestas 6 horas.
+- [x] Prueba con un Gemini falso que responde «Deberías comprar»: sale el respaldo.
 
 * **Listo cuando:** las pruebas del filtro, la cuota y la caché pasan.
 
@@ -405,7 +405,7 @@ Para terminar lo que quedó pendiente y dejarlo fusionado.
 
 **Juan Angel · rutas de la IA y evaluación (2 h)**
 
-- [ ] `api/app/routes/ai.py`: `POST /v1/ai/today`, `POST /v1/ai/portfolio` y `POST /v1/ai/chat`. El contexto se arma en el servidor con las acciones del usuario, nunca con lo que mande la web. Necesita: contexto (Julian, hoy).
+- [x] `api/app/routes/ai.py`: `POST /v1/ai/today`, `POST /v1/ai/portfolio` y `POST /v1/ai/chat`. El contexto se arma en el servidor con las acciones del usuario, nunca con lo que mande la web. Necesita: contexto (Julian, hoy).
 - [ ] `api/scripts/eval_ia.py`: corre las 40 preguntas de Isabela y escribe un informe con cada respuesta y si pasó el filtro. Compartirlo en el chat.
 
 * **Listo cuando:** las 20 preguntas que piden recomendación reciben la respuesta de que The Trace no recomienda.
