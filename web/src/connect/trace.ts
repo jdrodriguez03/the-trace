@@ -3,6 +3,7 @@
 // en `window.TRACE` y guarda en el servidor cada compra, venta o borrado.
 import { api, ApiError } from './api'
 import { mensajeDeError, persona, supabase, type Persona } from './supabase'
+import { vigilarPrecios } from './precios-al-dia'
 
 type Num = number
 type Cuota = { used: Record<string, number>; limit: number }
@@ -164,7 +165,7 @@ function guardarMercado(m: Mercado) {
 /** Arranque rápido:
  *  1) Pide los precios y, si ya hay sesión, el portafolio, al mismo tiempo.
  *  2) Si los precios tardan más de 2,5 s y hay unos guardados de la visita anterior, abre con esos.
- *     Los nuevos quedan guardados para la próxima vez. */
+ *     Cuando llegan los nuevos, se guardan y se avisa en pantalla (ver precios-al-dia.ts). */
 export async function iniciarTrace() {
   const demo = import.meta.env.VITE_USE_MOCKS === 'true'
   if (demo) return crearTrace(null)
@@ -185,5 +186,6 @@ export async function iniciarTrace() {
     mercado = guardado // sin conexión: los últimos precios guardados; si no hay, modo demo
   }
   fresco.catch(() => undefined)
+  vigilarPrecios(mercado, fresco, () => cargarMercado().then((m) => { guardarMercado(m); return m }))
   return crearTrace(mercado, precarga)
 }

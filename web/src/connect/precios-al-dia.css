@@ -1,0 +1,44 @@
+/* Aviso de precios nuevos. Usa los colores del tema de las pantallas (src/legacy/styles.css). */
+.aviso-precios {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 16px;
+  z-index: 160; /* encima del botón de Trace AI y del aviso de errores */
+  width: max-content;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 28px);
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font: 500 14px/1.3 var(--font);
+  box-shadow: var(--pop);
+  animation: aviso-precios-entra 0.25s ease-out;
+}
+
+.aviso-precios button {
+  flex: none;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--canvas);
+  font: 600 14px/1 var(--font);
+  cursor: pointer;
+}
+
+.aviso-precios button:hover { background: var(--brand-hover); }
+
+@media (max-width: 760px) {
+  .aviso-precios { top: calc(84px + env(safe-area-inset-top, 0px)); font-size: 13px; }
+}
+
+@keyframes aviso-precios-entra {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
