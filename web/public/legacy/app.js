@@ -924,6 +924,17 @@ function initTodayReveals(){
   const first=root.querySelector('[data-reveal]');if(first)first.classList.add('is-visible');
 }
 let dotRAF=0,dotOn=false,auroraRAF=0,auroraOn=false,ambientMouse={x:.62,y:.42},auroraRipples=[],auroraStars=[],ambientLitTimer=0;
+/* Rendimiento: los fondos animados se dibujan a 30 cuadros por segundo (no 60) y a menor resolución.
+   En equipos con 4 núcleos o menos, o poca memoria, se activa el modo liviano (clase body.lite). */
+const PERF=(()=>{const lite=(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4;
+  if(lite)document.documentElement.classList.add('lite');
+  const P={lite,fps:lite?20:30,idleFps:lite?8:15,move:0,dpr:max=>Math.min(devicePixelRatio||1,lite?1:max)};
+  /* Si nadie mueve el cursor, toca la pantalla ni hace scroll por 2,5 s, el fondo baja el ritmo. */
+  const mov=()=>{P.move=performance.now()};['pointermove','pointerdown','scroll','touchmove'].forEach(e=>addEventListener(e,mov,{passive:true}));
+  return P})();
+/* Cambia una variable CSS solo si su valor cambió: cada cambio obliga al navegador a recalcular estilos. */
+function setVar(el,k,v){const c=el.__v||(el.__v={});if(c[k]!==v){c[k]=v;el.style.setProperty(k,v)}}
+function perfSkip(st,now){const fps=now-PERF.move<2500?PERF.fps:PERF.idleFps;if(now-(st.t||0)<1000/fps)return true;st.t=now;return false}
 function isMobileAmbient(){return window.matchMedia('(max-width:760px)').matches}
 function setAmbientLit(on){
   const shell=$('appShell');if(!shell||!shell.classList.contains('app-shell-active')||!isMobileAmbient())return;
@@ -983,13 +994,15 @@ function initAuroraField(){
   bindAmbientPointer();
   const ctx=c.getContext('2d');
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fit=()=>{const d=Math.min(window.devicePixelRatio||1,2);c.width=innerWidth*d;c.height=innerHeight*d;if(!auroraStars.length)seedAuroraStars(c.width,c.height)};
+  const fit=()=>{const d=PERF.lite?.5:.75;/* fondo suave: no necesita resolución completa */c.width=innerWidth*d;c.height=innerHeight*d;if(!auroraStars.length)seedAuroraStars(c.width,c.height)};
   if(!initAuroraField.bound){initAuroraField.bound=true;addEventListener('resize',()=>{fit();seedAuroraStars(c.width,c.height)})}
   fit();auroraOn=true;cancelAnimationFrame(auroraRAF);
-  let sweep=0;
-  const draw=()=>{
+  let sweep=0,hid=false;const st={};
+  const draw=ts=>{
     if(!auroraOn)return;
-    if(!auroraShouldShow()){ctx.clearRect(0,0,c.width,c.height);auroraRAF=requestAnimationFrame(draw);return}
+    if(perfSkip(st,ts||performance.now())){auroraRAF=requestAnimationFrame(draw);return}
+    if(!auroraShouldShow()){if(!hid){ctx.clearRect(0,0,c.width,c.height);hid=true}auroraRAF=requestAnimationFrame(draw);return}
+    hid=false;
     const w=c.width,h=c.height,s=w/innerWidth,mx=ambientMouse.x*w,my=ambientMouse.y*h;
     const rich=document.body.classList.contains('trace-ambient');
     const mob=isMobileAmbient();
@@ -1047,13 +1060,15 @@ function stopDotField(){dotOn=false;cancelAnimationFrame(dotRAF)}
 function initDotField(){
   const c=$('dotField');if(!c)return;
   const ctx=c.getContext('2d');
-  const fit=()=>{const d=Math.min(window.devicePixelRatio||1,2);c.width=innerWidth*d;c.height=innerHeight*d};
+  const fit=()=>{const d=PERF.dpr(1.5);c.width=innerWidth*d;c.height=innerHeight*d};
   if(!initDotField.bound){initDotField.bound=true;addEventListener('resize',fit);bindAmbientPointer()}
-  fit();dotOn=true;cancelAnimationFrame(dotRAF);
-  const draw=()=>{
+  fit();dotOn=true;cancelAnimationFrame(dotRAF);let firma='';const st={};
+  const draw=now=>{
     if(!dotOn)return;
     const show=document.body.dataset.currentView==='today'&&document.body.classList.contains('today-mode-story');
-    if(!show){dotRAF=requestAnimationFrame(draw);return}
+    if(!show||perfSkip(st,now||performance.now())){dotRAF=requestAnimationFrame(draw);return}
+    const f=[ambientMouse.x.toFixed(3),ambientMouse.y.toFixed(3),c.width,c.height,$('appShell')?.classList.contains('trace-ambient-lit')].join();
+    if(f===firma){dotRAF=requestAnimationFrame(draw);return}firma=f;
     const w=c.width,h=c.height,gap=26*(w/innerWidth),ox=(ambientMouse.x-.5)*22,oy=(ambientMouse.y-.5)*22;
     const mob=isMobileAmbient();
     const lit=mob&&$('appShell')?.classList.contains('trace-ambient-lit');
@@ -1883,14 +1898,19 @@ ldBg=function(){const ld=$('landing');if(!ld||ld.dataset.bg)return;ld.dataset.bg
 const PULSE=(()=>{const s=closesFor('COLCAP').filter(c=>c.day>=sinceFor('3m')).map(c=>c.price);const lo=Math.min(...s),hi=Math.max(...s),rg=(hi-lo)||1;return s.map(v=>(v-lo)/rg*2-1)})();
 function pulseY(u){const n=PULSE.length,f=((u%n)+n)%n,i=Math.floor(f),t=f-i;const p0=PULSE[(i-1+n)%n],p1=PULSE[i],p2=PULSE[(i+1)%n],p3=PULSE[(i+2)%n];return .5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+(-p0+3*p1-3*p2+p3)*t*t*t)}
 ldLoop=function(){cancelAnimationFrame(LD.raf);const c=$('ldDots');if(!c)return;const ctx=c.getContext('2d');const pulses=[...document.querySelectorAll('.ld-pulse-c')];
-  const fit=()=>{const d=Math.min(devicePixelRatio||1,2);c.width=innerWidth*d;c.height=innerHeight*d;pulses.forEach(p=>{p.width=p.clientWidth*d;p.height=p.clientHeight*d})};fit();if(!ldLoop.b){ldLoop.b=1;addEventListener('resize',fit)}
+  const fit=()=>{const d=PERF.dpr(1.5);c.width=innerWidth*d;c.height=innerHeight*d;pulses.forEach(p=>{p.width=p.clientWidth*d;p.height=p.clientHeight*d})};fit();if(!ldLoop.b){ldLoop.b=1;addEventListener('resize',fit)}
   let t0=performance.now(),lastY=scrollY,speed=0;
-  const step=now=>{if(!document.body.classList.contains('on-landing')||document.hidden){LD.raf=requestAnimationFrame(step);return}
+  const st={};const step=now=>{if(!document.body.classList.contains('on-landing')||document.hidden||perfSkip(st,now)){LD.raf=requestAnimationFrame(step);return}
     const dt=Math.min(.05,(now-t0)/1000);t0=now;speed+=((Math.abs(scrollY-lastY)/Math.max(dt,.001))/900-speed)*.1;lastY=scrollY;
-    LD.x+=(LD.tx-LD.x)*.06;LD.y+=(LD.ty-LD.y)*.06;const ld=$('landing');ld.style.setProperty('--ax',((LD.x-.5)*120).toFixed(1));ld.style.setProperty('--ay',((LD.y-.45)*90).toFixed(1));
+    LD.x+=(LD.tx-LD.x)*.06;LD.y+=(LD.ty-LD.y)*.06;const ld=$('landing');setVar(ld,'--ax',((LD.x-.5)*120).toFixed(1));setVar(ld,'--ay',((LD.y-.45)*90).toFixed(1));
     /* puntos */
     const w=c.width,h=c.height,s=w/innerWidth,gap=26*s,px=LD.x*w,py=LD.y*h,R=200*s,oy=-(scrollY*.15*s)%gap;ctx.clearRect(0,0,w,h);
-    for(let y=gap*.5+oy;y<h+gap;y+=gap)for(let x=gap*.5;x<w;x+=gap){const dx=x-px,dy=y-py,dd=Math.hypot(dx,dy),near=Math.max(0,1-dd/R);const a=.045+near*.55;
+    /* Los puntos lejos del cursor son todos iguales: se dibujan juntos en un solo trazo (mucho más liviano). */
+    const r0=.75*s;ctx.beginPath();
+    for(let y=gap*.5+oy;y<h+gap;y+=gap)for(let x=gap*.5;x<w;x+=gap){const dx=x-px,dy=y-py;if(dx*dx+dy*dy>=R*R){ctx.moveTo(x+r0,y);ctx.arc(x,y,r0,0,6.2832)}}
+    ctx.fillStyle='rgba(255,255,255,.045)';ctx.fill();
+    const x0=Math.max(gap*.5,gap*.5+Math.floor((px-R-gap*.5)/gap)*gap),y0=gap*.5+oy+Math.max(0,Math.floor((py-R-gap*.5-oy)/gap))*gap;
+    for(let y=y0;y<Math.min(h+gap,py+R+gap);y+=gap)for(let x=x0;x<Math.min(w,px+R+gap);x+=gap){const dx=x-px,dy=y-py,dd=Math.hypot(dx,dy);if(dd>=R)continue;const near=1-dd/R,a=.045+near*.55;
       ctx.fillStyle=near>.04?`rgba(190,240,220,${a.toFixed(3)})`:`rgba(255,255,255,${a.toFixed(3)})`;ctx.beginPath();ctx.arc(x-dx*near*.12,y-dy*near*.12,(0.75+near*1.7)*s,0,6.2832);ctx.fill()}
     /* línea de mercado en vivo: cada fracción de segundo llega un precio nuevo; la línea corre hacia la izquierda */
     if(!LD.tk){LD.tk=[];let v=0,ci=0;for(let i=0;i<90;i++){v=v*.94+(Math.random()-.5)*.36+(PULSE[ci++%PULSE.length]-v)*.05;LD.tk.push(v)}LD.ci=ci;LD.acc=0;LD.dir=1}
@@ -1909,8 +1929,8 @@ ldLoop=function(){cancelAnimationFrame(LD.raf);const c=$('ldDots');if(!c)return;
       const col=LD.dir>0?'61,204,142':'240,113,103';const gr=g.createRadialGradient(ex,ey,0,ex,ey,(16+LD.flash*14)*k);gr.addColorStop(0,`rgba(${col},${(.35+LD.flash*.4).toFixed(2)})`);gr.addColorStop(1,`rgba(${col},0)`);g.fillStyle=gr;g.beginPath();g.arc(ex,ey,(16+LD.flash*14)*k,0,6.2832);g.fill();
       g.fillStyle=LD.dir>0?'#eafff5':'#ffe9e6';g.beginPath();g.arc(ex,ey,3.4*k,0,6.2832);g.fill()});
     /* celular y foto siguen el cursor */
-    const ph=$('ldPhone');if(ph){ph.style.setProperty('--ptx',((LD.x-.5)*12).toFixed(2));ph.style.setProperty('--pty',((.5-LD.y)*8).toFixed(2))}
-    const z=$('ldZoom');if(z){z.style.setProperty('--mx2',((LD.x-.5)*-30).toFixed(1));z.style.setProperty('--my2',((LD.y-.5)*-20).toFixed(1))}
+    const ph=$('ldPhone');if(ph){setVar(ph,'--ptx',((LD.x-.5)*12).toFixed(2));setVar(ph,'--pty',((.5-LD.y)*8).toFixed(2))}
+    const z=$('ldZoom');if(z){setVar(z,'--mx2',((LD.x-.5)*-30).toFixed(1));setVar(z,'--my2',((LD.y-.5)*-20).toFixed(1))}
     ldOrbitStep();
     LD.raf=requestAnimationFrame(step)};LD.raf=requestAnimationFrame(step)};
 /* Final: logos que flotan y se apartan del cursor, botón magnético, cifra que cuenta */
@@ -1964,3 +1984,8 @@ renderLoginPreview();
 /* Al recargar, la sesión sigue abierta (Supabase la guarda en el navegador). */
 if(LIVE){TRACE.auth.actual().then(p=>p?liveEnter(p).then(()=>{if(!$('appShell').classList.contains('app-shell-active')&&!$('onboarding').classList.contains('active'))showLanding()}):showLanding()).catch(()=>showLanding()).finally(hideBootSplash)}
 else{try{const ses=localStorage.getItem('trace_session');if(ses)enterApp(ses);else showLanding()}catch(e){showLanding()}hideBootSplash()}
+
+/* Insights: cuando la persona avanza o retrocede una vez, la flecha deja de latir (se recuerda en este navegador). */
+try{if(localStorage.getItem('trace_story_used'))document.body.classList.add('story-used')}catch{}
+['storyGo'].forEach(k=>{const f=window[k];if(typeof f!=='function')return;
+  window[k]=function(){document.body.classList.add('story-used');try{localStorage.setItem('trace_story_used','1')}catch{}return f.apply(this,arguments)}});
