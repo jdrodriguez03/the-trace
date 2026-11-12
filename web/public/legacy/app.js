@@ -226,7 +226,8 @@ const SECTOR_PHOTO={'Petróleo y energía':'oil','Bancos':'medellin','Energía e
 const assetOf=t=>POOL_EXPANDIDO.find(a=>a.t===t)||PORTFOLIO.find(a=>a.t===t)||{t,n:assetName(t),sector:''};
 /* Banco de imágenes por sector (hechas con IA, en public/img/sectores). Cada noticia toma siempre la misma
    imagen de su sector: se elige con el número de la noticia. Si el sector no tiene imágenes, la ilustración de antes. */
-const SECTOR_BANK={'Petróleo y energía':['petroleo-1','petroleo-2','petroleo-3'],'Bancos':['bancos-1','bancos-2','bancos-3'],'Energía eléctrica':['electrica-1','electrica-2','electrica-3'],'Seguros e inversiones':['seguros-1','seguros-2','seguros-3'],'Construcción':['construccion-1','construccion-2','construccion-3'],'Minería':['mineria-1','mineria-2']};
+/* Banco de imágenes por sector: 1-3 de noche, 4-5 de día (mineria-3 y -4 de día). */
+const SECTOR_BANK={'Petróleo y energía':['petroleo-1','petroleo-4','petroleo-2','petroleo-5','petroleo-3'],'Bancos':['bancos-1','bancos-4','bancos-2','bancos-5','bancos-3'],'Energía eléctrica':['electrica-1','electrica-4','electrica-2','electrica-5','electrica-3'],'Seguros e inversiones':['seguros-1','seguros-4','seguros-2','seguros-5','seguros-3'],'Construcción':['construccion-1','construccion-4','construccion-2','construccion-5','construccion-3'],'Minería':['mineria-1','mineria-3','mineria-2','mineria-4']};
 function photoFor(n){const a=assetOf(n.t||n.ticker);const bank=SECTOR_BANK[a.sector];
   if(bank&&bank.length){const k=bank[Math.abs(Number(n.id)||hashStr(String(n.titulo||n.title||'')))%bank.length];return{img:'/img/sectores/'+k+'.webp',alt:''}}
   return PHOTOS[NEWS_PHOTO[n.id]||SECTOR_PHOTO[a.sector]||'bogota']}
@@ -1439,7 +1440,7 @@ document.addEventListener('keydown',e=>{
    ========================================================================= */
 document.documentElement.classList.add('js');
 /* Portada e inicio de sesión: fotos del banco de imágenes. Si una no carga, queda la ilustración. */
-const ART_PHOTO={towers:'electrica-1',bogota:'seguros-1',login:'bancos-1'};
+const ART_PHOTO={towers:'electrica-5',bogota:'seguros-1',login:'bancos-4'};
 document.querySelectorAll('img[data-art]').forEach(i=>{const k=ART_PHOTO[i.dataset.art];const fb=artURI(i.dataset.art==='login'?'bogota':i.dataset.art);if(!k){i.src=fb;return}i.onerror=()=>{i.onerror=null;i.src=fb};i.src='/img/sectores/'+k+'.webp'});
 const safe=(fn,name)=>{try{fn()}catch(e){console.warn('[visual] '+name,e)}};
 
