@@ -133,6 +133,7 @@ Cada carpeta tiene un `README.md` que explica qué va adentro.
 - Julián David Rodríguez ([@jdrodriguez03](https://github.com/jdrodriguez03))
 - Juan Triana ([@agarslok](https://github.com/agarslok))
 - Isabela ([@isabellapensamiento-data](https://github.com/isabellapensamiento-data))
+- [Claude](https://claude.com/product/claude-code), de Anthropic, como asistente de programación
 
 ## Licencia
 
