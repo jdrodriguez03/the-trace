@@ -12,4 +12,4 @@ Dueño: Julian. Lee esto antes de proponer o escribir código en este repositori
 8. **A la IA nunca se le envían nombre ni correo.**
 9. **Commits:** `prefijo: qué cambió` (`api:`, `ia:`, `web:`, `ui:`, `content:`, `fix:`, `docs:`, `chore:`), en presente y minúscula.
 10. Antes de dar algo por terminado, corre `bash check.sh`. Explica lo que escribes: el equipo son científicos de datos, no desarrolladores web.
-11. Antes de empezar una tarea, lee `docs/guias/guia-rapida.md` y tu día en `docs/guias/guia-dia-a-dia.md`. Si lo que construyes cambia lo que dicen, actualiza la guía en el mismo PR.
+11. Antes de empezar una tarea, lee la guía rápida y tu día en la guía día por día. Ya no están en el repo: viven en el proyecto privado del equipo. Si lo que construyes cambia lo que dicen, avísale a Julian para actualizarlas.

@@ -1,28 +1,27 @@
 # Dueño: Julian · Gana la última regla que coincide.
-*                                   @USUARIO_JULIAN
+*                                   @jdrodriguez03
 
 # Juan Angel · app web e IA
-/web/                               @USUARIO_JUAN_ANGEL
-/api/app/ai/                        @USUARIO_JUAN_ANGEL
-/api/app/routes/ai.py               @USUARIO_JUAN_ANGEL
-/api/scripts/eval_ia.py             @USUARIO_JUAN_ANGEL
+/web/                               @agarslok
+/api/app/ai/                        @agarslok
+/api/app/routes/ai.py               @agarslok
+/api/scripts/eval_ia.py             @agarslok
 
 # Isabela · diseño, contenido y calidad
-/web/src/index.css                  @USUARIO_ISABELA
-/web/src/components/                @USUARIO_ISABELA
-/web/src/content/                   @USUARIO_ISABELA
-/web/src/lib/analytics.ts           @USUARIO_ISABELA
-/web/src/features/news-radar/       @USUARIO_ISABELA
-/web/src/features/market/           @USUARIO_ISABELA
-/web/src/features/account/          @USUARIO_ISABELA
-/web/src/features/monetization/     @USUARIO_ISABELA
-/web/src/features/galeria/          @USUARIO_ISABELA
-/api/app/content/                   @USUARIO_ISABELA
-/docs/qa/                           @USUARIO_ISABELA
-/docs/CONTRIBUTING.md               @USUARIO_ISABELA
-/.github/ISSUE_TEMPLATE/            @USUARIO_ISABELA
+/web/src/index.css                  @isabellapensamiento-data
+/web/src/components/                @isabellapensamiento-data
+/web/src/content/                   @isabellapensamiento-data
+/web/src/lib/analytics.ts           @isabellapensamiento-data
+/web/src/features/news-radar/       @isabellapensamiento-data
+/web/src/features/market/           @isabellapensamiento-data
+/web/src/features/account/          @isabellapensamiento-data
+/web/src/features/monetization/     @isabellapensamiento-data
+/web/src/features/galeria/          @isabellapensamiento-data
+/api/app/content/                   @isabellapensamiento-data
+/docs/CONTRIBUTING.md               @isabellapensamiento-data
+/.github/ISSUE_TEMPLATE/            @isabellapensamiento-data
 
 # Julian · puente de la web con la API y pantallas del prototipo (ADR-0006)
-/web/src/connect/                   @USUARIO_JULIAN
-/web/src/legacy/                    @USUARIO_JULIAN
-/web/public/legacy/                 @USUARIO_JULIAN
+/web/src/connect/                   @jdrodriguez03
+/web/src/legacy/                    @jdrodriguez03
+/web/public/legacy/                 @jdrodriguez03

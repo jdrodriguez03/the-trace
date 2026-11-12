@@ -8,7 +8,7 @@
 
 ## Antes de pedir revisión
 
-- [ ] Cumple el «Listo cuando» de la guía día por día (día __).
+- [ ] Cumple lo que se acordó para la tarea.
 - [ ] Solo toca mis carpetas.
 - [ ] `bash check.sh` en verde.
 - [ ] No hay claves ni archivos `.env`.
