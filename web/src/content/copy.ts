@@ -5,6 +5,11 @@
 export const copy = {
   brand: "The Trace",
 
+  precios: {
+    nuevos: "Hay precios más recientes.",
+    actualizar: "Actualizar",
+  },
+
   practice: {
     tag: "De práctica · sin dinero real",
     stripStrong: "Modo práctica:",
