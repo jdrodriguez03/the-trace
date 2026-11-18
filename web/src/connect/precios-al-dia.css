@@ -3,7 +3,7 @@
   position: fixed;
   left: 0;
   right: 0;
-  top: 16px;
+  top: 84px; /* debajo de la barra de arriba */
   z-index: 160; /* encima del botón de Trace AI y del aviso de errores */
   width: max-content;
   margin: 0 auto;
